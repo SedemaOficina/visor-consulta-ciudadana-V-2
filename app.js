@@ -871,7 +871,7 @@ const SkeletonAnalysis = () => (
   </div>
 );
 
-const ResultsContent = ({ analysis, onExportPDF }) => {
+const LocationSummary = ({ analysis, onExportPDF }) => {
   const { status } = analysis;
   const isOutside = status === 'OUTSIDE_CDMX';
   const isSC = status === 'CONSERVATION_SOIL';
