@@ -1,4 +1,5 @@
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef } = window.React;
+const ReactDOM = window.ReactDOM;
 
 const ZONING_CAT_INFO = {
   AEE: { color: '#FF5F5F', label: 'Agroecológico Especial (AEE)' },
