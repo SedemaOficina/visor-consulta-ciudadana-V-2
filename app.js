@@ -697,7 +697,7 @@ const analyzeLocation = async (c) => {
 
         if (!hasColumn) {
           r.noActivitiesCatalog = true;
-        } else {
+        } else if (dataCache.rules[0] && r.zoningKey in dataCache.rules[0]) {
           dataCache.rules.forEach(row => {
             const val = (row[r.zoningKey] || '').trim().toUpperCase();
             if (!val) return;
@@ -2263,29 +2263,26 @@ const ResultsContent = ({ analysis, onExportReady }) => {
 /* ------------------------------------------------ */
 /* 7. INTERFAZ: BÚSQUEDA, CONTROLES, SIDEBAR */
 /* ------------------------------------------------ */
-const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef }) => {
+const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef, initialValue }) => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const debounceRef = useRef(null);
   const [flash, setFlash] = useState(false);
 
-  // ✅ Setter externo (sin window)
+  // ✅ Sync con estado padre
+  useEffect(() => {
+    setQuery(initialValue || '');
+  }, [initialValue]);
+
+  // ✅ Setter externo (sin window) - Deprecated but kept for compatibility just in case
   useEffect(() => {
     if (!setInputRef) return;
-
     setInputRef.current = (text) => {
       setQuery(text || '');
-      setSuggestions([]);
-
-      // ✅ flash visual al venir desde el mapa
-      setFlash(true);
-      setTimeout(() => setFlash(false), 650);
+      // setSuggestions([]); // No limpiar sugerencias al setear externo, o sí? Mejor solo update texto
     };
-
-    return () => {
-      setInputRef.current = null;
-    };
+    return () => { setInputRef.current = null; };
   }, [setInputRef]);
 
   const handleChange = (e) => {
@@ -2417,11 +2414,16 @@ const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef }) => {
     </div>
   );
 };
-const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef }) => {
+const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialValue }) => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const debounceRef = useRef(null);
+
+  // ✅ Sync con estado padre
+  useEffect(() => {
+    setQuery(initialValue || '');
+  }, [initialValue]);
 
   // ✅ Setter externo (sin window)
   useEffect(() => {
@@ -2552,7 +2554,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef }) => {
               p => {
                 const coord = { lat: p.coords.latitude, lng: p.coords.longitude };
                 onLocationSelect(coord);
-                setInputRef?.current?.(`${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}`);
+                // setInputRef?.current?.(`${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}`); // Ya no necesario, se actualiza por prop
               },
               () => alert("No se pudo obtener tu ubicación.")
             )
@@ -2684,7 +2686,9 @@ const SidebarDesktop = ({
             <SearchLogicDesktop
               onLocationSelect={onLocationSelect}
               onReset={onReset}
+              onReset={onReset}
               setInputRef={desktopSearchSetRef}
+              initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
             />
 
             {!analysis && (
@@ -3521,6 +3525,7 @@ const App = () => {
   const [extraDataLoaded, setExtraDataLoaded] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [location, setLocation] = useState(null);
+  const [addressText, setAddressText] = useState(''); // ✅ Nuevo estado compartido para la barra de búsqueda
 
   // Capas mapa
   const [visibleMapLayers, setVisibleMapLayers] = useState({
@@ -3581,7 +3586,9 @@ const App = () => {
     const coord = { lat, lng };
     const text = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
+    // ✅ Actualizamos local y global
     setLocation(coord);
+    setAddressText(text);
 
     // ✅ Empuja al textbox en desktop y móvil
     setDesktopSearchRef.current?.(text);
@@ -3596,8 +3603,9 @@ const App = () => {
     setAnalysis(null);
     setMobileSheetState('collapsed');
 
-    setDesktopSearchRef.current?.('');
-    setMobileSearchRef.current?.('');
+    setAnalysis(null);
+    setMobileSheetState('collapsed');
+    setAddressText('');
 
     resetMapViewRef.current?.();
   };
@@ -3789,6 +3797,7 @@ const App = () => {
             onLocationSelect={handleSelect}
             onReset={handleReset}
             setInputRef={setMobileSearchRef}
+            initialValue={addressText}
           />
 
           {/* BOTONES MÓVIL */}
