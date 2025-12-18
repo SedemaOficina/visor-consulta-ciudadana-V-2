@@ -3615,8 +3615,6 @@ const MapViewer = ({
 }
 
 
-
-
 {/* Nota inicial desktop */ }
 {
   !analysisStatus && (
