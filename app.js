@@ -181,6 +181,7 @@ const getZoningStyle = (f) => {
 };
 
 const getSectorStyle = (str) => {
+  str = (str ?? '').toString(); // ✅ evita TypeError si viene null/undefined
   const styles = [
     { bg: '#eff6ff', border: '#3b82f6', text: '#1e40af' },
     { bg: '#f0fdf4', border: '#22c55e', text: '#15803d' },
@@ -495,6 +496,7 @@ let dataCache = {
 };
 
 const isPointInPolygon = (point, feature) => {
+  if (!feature?.geometry?.type || !feature?.geometry?.coordinates) return false;
   const x = point.lng; // GeoJSON: X = longitud
   const y = point.lat; // GeoJSON: Y = latitud
 
@@ -553,8 +555,16 @@ const findFeature = (p, c) => {
 };
 
 const loadCoreData = async () => {
-  const fJ = async (u) => (await fetch(u)).json().catch(() => ({ type: "FeatureCollection", features: [] }));
-
+  const fJ = async (u) => {
+    try {
+      const res = await fetch(u, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${u}`);
+      return await res.json();
+    } catch (e) {
+      console.warn('No se pudo cargar JSON:', u, e);
+      return { type: "FeatureCollection", features: [] };
+    }
+  };
   const [cdmx, alcaldias, sc] = await Promise.all([
     fJ(DATA_FILES.LIMITES_CDMX),
     fJ(DATA_FILES.LIMITES_ALCALDIAS),
@@ -580,8 +590,16 @@ const mergeFeatureCollections = (collections) => {
 };
 
 const loadExtraData = async () => {
-  const fJ = async (u) =>
-    (await fetch(u)).json().catch(() => ({ type: "FeatureCollection", features: [] }));
+  const fJ = async (u) => {
+    try {
+      const res = await fetch(u, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${u}`);
+      return await res.json();
+    } catch (e) {
+      console.warn('No se pudo cargar JSON:', u, e);
+      return { type: "FeatureCollection", features: [] };
+    }
+  };
 
   const fC = async (u) =>
     new Promise((r) =>
