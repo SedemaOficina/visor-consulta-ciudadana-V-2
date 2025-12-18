@@ -1014,6 +1014,136 @@ const LocationSummary = ({ analysis, onExportPDF }) => {
   );
 };
 /* ------------------------------------------------ */
+/* 6.4 Help Modal (RESTAURADO) */
+/* ------------------------------------------------ */
+const HelpModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-in">
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-gray-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#9d2449] flex items-center justify-center text-white shadow-sm">
+              <span className="font-bold text-xl">?</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">Ayuda y Soporte</h2>
+              <p className="text-xs text-gray-500">Consulta Ciudadana de Zonificación</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-gray-200 text-gray-500 transition-colors"
+          >
+            <Icons.X className="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <div className="space-y-8">
+            {/* Sección 1 */}
+            <section>
+              <h3 className="flex items-center gap-2 text-lg font-bold text-[#9d2449] mb-3">
+                <Icons.MapPinned className="h-5 w-5" />
+                ¿Cómo realizar una consulta?
+              </h3>
+              <ul className="space-y-3 pl-2">
+                <li className="flex gap-3 text-sm text-gray-700">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2449] font-bold flex items-center justify-center text-xs border border-red-100">1</span>
+                  <span>
+                    <strong>Búsqueda por dirección:</strong> Escribe la calle y número en el buscador lateral (ej. "Av. Insurgentes Sur 100").
+                  </span>
+                </li>
+                <li className="flex gap-3 text-sm text-gray-700">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2449] font-bold flex items-center justify-center text-xs border border-red-100">2</span>
+                  <span>
+                    <strong>Búsqueda por coordenadas:</strong> Ingresa latitud y longitud (ej. "19.4326, -99.1332").
+                  </span>
+                </li>
+                <li className="flex gap-3 text-sm text-gray-700">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2449] font-bold flex items-center justify-center text-xs border border-red-100">3</span>
+                  <span>
+                    <strong>Navegación manual:</strong> Navega por el mapa y haz clic directamente sobre el predio de interés.
+                  </span>
+                </li>
+              </ul>
+            </section>
+
+            <hr className="border-gray-100" />
+
+            {/* Sección 2 */}
+            <section>
+              <h3 className="flex items-center gap-2 text-lg font-bold text-[#9d2449] mb-3">
+                <Icons.Layers className="h-5 w-5" />
+                Capas Disponibles
+              </h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <span className="block text-xs font-bold text-gray-900 mb-1 uppercase">Suelo de Conservación</span>
+                  <p className="text-xs text-gray-600">Delimitación oficial del suelo de conservación de la CDMX.</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <span className="block text-xs font-bold text-gray-900 mb-1 uppercase">Zonificación PGOEDF</span>
+                  <p className="text-xs text-gray-600">Áreas con regulación específica según el Programa General.</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <span className="block text-xs font-bold text-gray-900 mb-1 uppercase">Áreas Naturales Protegidas</span>
+                  <p className="text-xs text-gray-600">Polígonos de ANP federales y locales.</p>
+                </div>
+              </div>
+            </section>
+
+            <hr className="border-gray-100" />
+
+            {/* FAQ */}
+            <section>
+              <h3 className="text-lg font-bold text-[#9d2449] mb-3">Preguntas Frecuentes</h3>
+              <div className="space-y-3">
+                {FAQ_ITEMS.map((item, i) => (
+                  <details key={i} className="group bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50">
+                      <span className="text-sm font-semibold text-gray-800">{item.q}</span>
+                      <Icons.ChevronDown className="h-4 w-4 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-3 pb-3 pt-0 text-sm text-gray-600 leading-relaxed">
+                      {item.a}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
+
+            {/* Contacto */}
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
+              <div>
+                <h4 className="font-bold text-blue-900 text-sm mb-1">¿Necesitas más información?</h4>
+                <p className="text-xs text-blue-700">Comunícate a la Dirección General de Ordenamiento Ecológico.</p>
+              </div>
+              <div className="text-right">
+                <div className="text-xs font-bold text-blue-900">{CONTACT_INFO.phone}</div>
+                <div className="text-[10px] text-blue-700">{CONTACT_INFO.hours}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50 text-center">
+          <button
+            onClick={onClose}
+            className="bg-[#9d2449] text-white px-8 py-2.5 rounded-full text-sm font-bold shadow-md hover:bg-[#7d1d3a] transition-all active:scale-95"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+/* ------------------------------------------------ */
 /* 6.3 Actividades agrupadas */
 /* ------------------------------------------------ */
 const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, accentColor }) => {
@@ -2764,7 +2894,10 @@ const SidebarDesktop = ({
   onToggle,
   onExportReady,
   desktopSearchSetRef,
-  isLoading // ✅ New prop
+  onExportReady,
+  desktopSearchSetRef,
+  isLoading,
+  onOpenHelp // ✅ Prop para abrir ayuda
 }) => (
   <div className="hidden md:flex h-full z-[2000]">
     <div
@@ -2792,6 +2925,15 @@ const SidebarDesktop = ({
                   Dirección o coordenadas
                 </div>
               </div>
+
+              {/* ✅ Botón de Ayuda Restaurado */}
+              <button
+                onClick={onOpenHelp}
+                className="p-2 text-gray-400 hover:text-[#9d2449] hover:bg-red-50 rounded-full transition-colors"
+                title="Ayuda y Soporte"
+              >
+                <span className="font-bold text-xl">?</span>
+              </button>
             </div>
           </div>
 
@@ -3868,6 +4010,8 @@ const App = () => {
   const [analyzing, setAnalyzing] = useState(false); // Carga de análisis (geocoding/polígonos)
   const [extraDataLoaded, setExtraDataLoaded] = useState(false);
 
+  const [isHelpOpen, setIsHelpOpen] = useState(false); // ✅ Definir estado ayuda
+
   const { addToast } = useToast(); // ✅ Use newly added hook
   const [analysis, setAnalysis] = useState(null);
   const [location, setLocation] = useState(null);
@@ -3904,7 +4048,6 @@ const App = () => {
     EXPORT_STATE.visibleZoningCats = { ...visibleZoningCats };
   }, [activeBaseLayer, visibleMapLayers, visibleZoningCats]);
 
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [mobileSheetState, setMobileSheetState] = useState('collapsed'); // collapsed | mid | full
 
   // ✅ acá se guarda la función REAL que exporta el PDF (la define ResultsContent)
@@ -4062,7 +4205,8 @@ const App = () => {
         onToggle={() => setIsSidebarOpen(v => !v)}
         onExportReady={setExportHandler}
         desktopSearchSetRef={desktopSearchInputRef}
-        isLoading={analyzing} // ✅ Pass analyzing state
+        isLoading={analyzing}
+        onOpenHelp={() => setIsHelpOpen(true)} // ✅ Pasar handler
       />
 
       {/* Main Map Area */}
