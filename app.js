@@ -3606,7 +3606,7 @@ const MapViewer = ({
             </div>
           </div>
         </div>
-        </div>
+      </div>
   )
 }
 
