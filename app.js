@@ -3328,7 +3328,6 @@ const MapViewer = ({
     }
   }, [extraDataLoaded]);
 
-  // ✅ EFFECT: Manejo dinámico de Zonificación de ANP Seleccionada
   // ✅ EFFECT: Manejo dinámico de Zonificación de ANP Seleccionada (usando anpInternal)
   useEffect(() => {
     if (!mapInstance.current || !dataCache.anpInternal) return;
