@@ -2691,151 +2691,152 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
         </div>
 
       </div>
-      );
+    </div>
+  );
 };
 
 
-      /* 7.1 Acciones rápidas */
-      /* ------------------------------------------------ */
+/* 7.1 Acciones rápidas */
+/* ------------------------------------------------ */
 
-      const ActionButtonsDesktop = ({analysis, onExportPDF}) => {
+const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
   const handleCopyLink = () => {
     const url = `${window.location.origin}${window.location.pathname}?lat=${analysis.coordinate.lat}&lng=${analysis.coordinate.lng}&open=1`;
-      navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(url);
   };
 
-      return (
-      <div className="grid grid-cols-3 gap-2 w-full">
-        {/* Google Maps */}
-        <a
-          href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
-          target="_blank"
-          rel="noreferrer"
-          className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2449] text-gray-600 hover:text-[#9d2449]"
-        >
-          <Icons.MapIcon className="h-5 w-5 mb-1" />
-          <span className="text-[9px] font-bold">Google Maps</span>
-        </a>
+  return (
+    <div className="grid grid-cols-3 gap-2 w-full">
+      {/* Google Maps */}
+      <a
+        href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
+        target="_blank"
+        rel="noreferrer"
+        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2449] text-gray-600 hover:text-[#9d2449]"
+      >
+        <Icons.MapIcon className="h-5 w-5 mb-1" />
+        <span className="text-[9px] font-bold">Google Maps</span>
+      </a>
 
-        {/* Copiar enlace */}
-        <button
-          type="button"
-          onClick={handleCopyLink}
-          className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2449] text-gray-600 hover:text-[#9d2449]"
-        >
-          <Icons.Share className="h-5 w-5 mb-1" />
-          <span className="text-[9px] font-bold">Copiar enlace</span>
-        </button>
+      {/* Copiar enlace */}
+      <button
+        type="button"
+        onClick={handleCopyLink}
+        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2449] text-gray-600 hover:text-[#9d2449]"
+      >
+        <Icons.Share className="h-5 w-5 mb-1" />
+        <span className="text-[9px] font-bold">Copiar enlace</span>
+      </button>
 
-        {/* Exportar PDF (solo por acción del usuario) */}
-        <button
-          type="button"
-          onClick={() => onExportPDF?.()}
-          className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2449] text-gray-600 hover:text-[#9d2449]"
-        >
-          <Icons.Pdf className="h-5 w-5 mb-1" />
-          <span className="text-[9px] font-bold">Exportar PDF</span>
-        </button>
-      </div>
-      );
+      {/* Exportar PDF (solo por acción del usuario) */}
+      <button
+        type="button"
+        onClick={() => onExportPDF?.()}
+        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2449] text-gray-600 hover:text-[#9d2449]"
+      >
+        <Icons.Pdf className="h-5 w-5 mb-1" />
+        <span className="text-[9px] font-bold">Exportar PDF</span>
+      </button>
+    </div>
+  );
 };
 
 
-      /* ------------------------------------------------ */
-      /* 7.2 Sidebar Desktop */
-      /* ------------------------------------------------ */
-      const SidebarDesktop = ({
-        analysis,
-        onLocationSelect,
-        onReset,
-        isOpen,
-        onToggle,
-        onExportReady,
-        desktopSearchSetRef,
-        isLoading // ✅ New prop
-      }) => (
-      <div className="hidden md:flex h-full z-[2000]">
-        <div
-          id="sidebar-desktop"
-          className={`
+/* ------------------------------------------------ */
+/* 7.2 Sidebar Desktop */
+/* ------------------------------------------------ */
+const SidebarDesktop = ({
+  analysis,
+  onLocationSelect,
+  onReset,
+  isOpen,
+  onToggle,
+  onExportReady,
+  desktopSearchSetRef,
+  isLoading // ✅ New prop
+}) => (
+  <div className="hidden md:flex h-full z-[2000]">
+    <div
+      id="sidebar-desktop"
+      className={`
         flex flex-col h-full overflow-y-auto custom-scrollbar
         transition-all duration-300 ease-out
         ${isOpen
-              ? 'w-[360px] bg-white border-r border-gray-200 shadow-xl'
-              : 'w-0 bg-transparent border-0 shadow-none'}
+          ? 'w-[360px] bg-white border-r border-gray-200 shadow-xl'
+          : 'w-0 bg-transparent border-0 shadow-none'}
       `}
-        >
-          {isOpen && (
-            <>
-              <div className="p-4 bg-white border-b border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#9d2449] text-white flex items-center justify-center">
-                    <Icons.MapIcon className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-[18px] font-semibold text-gray-900 leading-tight">
-                      Consulta Ciudadana
-                    </h2>
-                    <div className="text-[12px] text-gray-600 mt-0.5">
-                      Dirección o coordenadas
-                    </div>
-                  </div>
+    >
+      {isOpen && (
+        <>
+          <div className="p-4 bg-white border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#9d2449] text-white flex items-center justify-center">
+                <Icons.MapIcon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-[18px] font-semibold text-gray-900 leading-tight">
+                  Consulta Ciudadana
+                </h2>
+                <div className="text-[12px] text-gray-600 mt-0.5">
+                  Dirección o coordenadas
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div className="p-4 space-y-4">
-                <SearchLogicDesktop
-                  onLocationSelect={onLocationSelect}
-                  onReset={onReset}
-                  setInputRef={desktopSearchSetRef}
-                  initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
-                />
+          <div className="p-4 space-y-4">
+            <SearchLogicDesktop
+              onLocationSelect={onLocationSelect}
+              onReset={onReset}
+              setInputRef={desktopSearchSetRef}
+              initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
+            />
 
-                {!analysis && !isLoading && (
-                  <div className="flex flex-col items-center justify-center text-center py-16 px-6 text-gray-400">
-                    <Icons.MapPinned className="h-12 w-12 mb-4 opacity-40" />
-                    <div className="text-[13px] font-medium text-gray-500">
-                      Selecciona un punto en el mapa
-                    </div>
-                    <div className="text-[11px] text-gray-400 mt-1 max-w-xs">
-                      Haz clic en el mapa o escribe una dirección o coordenadas para iniciar la consulta.
-                    </div>
-                  </div>
-                )}
-
-                {/* ✅ Show Skeleton when loading */}
-                {isLoading && <SkeletonAnalysis />}
-
-                {analysis && !isLoading && <ResultsContent analysis={analysis} onExportReady={onExportReady} />}
+            {!analysis && !isLoading && (
+              <div className="flex flex-col items-center justify-center text-center py-16 px-6 text-gray-400">
+                <Icons.MapPinned className="h-12 w-12 mb-4 opacity-40" />
+                <div className="text-[13px] font-medium text-gray-500">
+                  Selecciona un punto en el mapa
+                </div>
+                <div className="text-[11px] text-gray-400 mt-1 max-w-xs">
+                  Haz clic en el mapa o escribe una dirección o coordenadas para iniciar la consulta.
+                </div>
               </div>
-            </>
-          )}
-        </div>
+            )}
 
-        <button
-          onClick={onToggle}
-          className="
+            {/* ✅ Show Skeleton when loading */}
+            {isLoading && <SkeletonAnalysis />}
+
+            {analysis && !isLoading && <ResultsContent analysis={analysis} onExportReady={onExportReady} />}
+          </div>
+        </>
+      )}
+    </div>
+
+    <button
+      onClick={onToggle}
+      className="
         absolute top-24 transform -translate-x-1/2 z-[5000]
         w-8 h-16 bg-[#9d2449] text-white shadow-lg rounded-r-full
         flex items-center justify-center cursor-pointer
         hover:bg-[#7d1d3a] active:scale-95 transition-all duration-200
       "
-          style={{ left: isOpen ? 360 : 0 }}
-          title={isOpen ? 'Ocultar panel' : 'Mostrar panel'}
-        >
-          <span className="text-base font-extrabold">{isOpen ? '«' : '»'}</span>
-        </button>
-      </div>
-      );
+      style={{ left: isOpen ? 360 : 0 }}
+      title={isOpen ? 'Ocultar panel' : 'Mostrar panel'}
+    >
+      <span className="text-base font-extrabold">{isOpen ? '«' : '»'}</span>
+    </button>
+  </div>
+);
 
 
-      /* ------------------------------------------------ */
-      /* 7.3 Bottom Sheet Móvil */
-      /* ------------------------------------------------ */
-      const BottomSheetMobile = ({analysis, onLocationSelect, onReset, onClose, onStateChange, onExportPDF, onExportReady}) => {
+/* ------------------------------------------------ */
+/* 7.3 Bottom Sheet Móvil */
+/* ------------------------------------------------ */
+const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onStateChange, onExportPDF, onExportReady }) => {
   const [sheetState, setSheetState] = useState('collapsed'); // 'collapsed' | 'mid' | 'full'
-      const sheetRef = useRef(null);
-      const startY = useRef(0);
+  const sheetRef = useRef(null);
+  const startY = useRef(0);
 
   useEffect(() => {
     if (onStateChange) onStateChange(sheetState);
@@ -2843,7 +2844,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
 
   useEffect(() => {
     if (analysis) setSheetState('mid');
-      else setSheetState('collapsed');
+    else setSheetState('collapsed');
   }, [analysis]);
 
   const goUp = () => setSheetState(prev => (prev === 'collapsed' ? 'mid' : prev === 'mid' ? 'full' : 'full'));
@@ -2856,35 +2857,35 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
 
   const handleTouchEnd = (e) => {
     const endY = e.changedTouches[0].clientY;
-      const diff = startY.current - endY;
-      if (Math.abs(diff) < 60) return;
+    const diff = startY.current - endY;
+    if (Math.abs(diff) < 60) return;
     if (diff > 0) goUp();
-      else goDown();
+    else goDown();
   };
 
   const getHeight = () => {
     if (sheetState === 'collapsed') return '18svh';
-      if (sheetState === 'mid') return '45svh';
-      return '85svh';
+    if (sheetState === 'mid') return '45svh';
+    return '85svh';
   };
 
-      const isANP = analysis?.isANP;
+  const isANP = analysis?.isANP;
 
-      const statusLabel =
-      !analysis
+  const statusLabel =
+    !analysis
       ? 'Busca una dirección o toca el mapa para iniciar la consulta.'
       : analysis?.status === 'OUTSIDE_CDMX'
-      ? 'El punto se encuentra fuera de la Ciudad de México.'
-      : isANP
-      ? 'Área Natural Protegida — consulte el Programa de Manejo correspondiente.'
-      : analysis?.status === 'NO_DATA'
-      ? 'No se encontró información disponible para esta zona.'
-      : 'Detalle normativo del punto de consulta.';
+        ? 'El punto se encuentra fuera de la Ciudad de México.'
+        : isANP
+          ? 'Área Natural Protegida — consulte el Programa de Manejo correspondiente.'
+          : analysis?.status === 'NO_DATA'
+            ? 'No se encontró información disponible para esta zona.'
+            : 'Detalle normativo del punto de consulta.';
 
-      return (
-      <div
-        ref={sheetRef}
-        className="
+  return (
+    <div
+      ref={sheetRef}
+      className="
         md:hidden 
         fixed bottom-0 left-0 w-full 
         bg-white 
@@ -2894,159 +2895,159 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
         flex flex-col 
         transition-all duration-300 ease-out
       "
-        style={{ height: getHeight() }}
+      style={{ height: getHeight() }}
+    >
+      <div
+        className="sheet-header flex-shrink-0 pt-1 pb-2 px-4 cursor-grab active:cursor-grabbing"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onClick={analysis ? toggleFromTap : undefined}
       >
-        <div
-          className="sheet-header flex-shrink-0 pt-1 pb-2 px-4 cursor-grab active:cursor-grabbing"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onClick={analysis ? toggleFromTap : undefined}
-        >
-          <div className="w-10 h-1.5 bg-gray-300 rounded-full mx-auto mb-2" />
+        <div className="w-10 h-1.5 bg-gray-300 rounded-full mx-auto mb-2" />
 
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              {analysis ? (
-                <h3 className="font-bold text-sm text-[#9d2449] uppercase tracking-wide">
-                  RESULTADO DE CONSULTA
-                </h3>
-              ) : (
-                <>
-                  <h3 className="font-bold text-gray-900 text-sm truncate">Visor de Consulta Ciudadana</h3>
-                  <p className="text-[18px] text-gray-900 line-clamp-2 mt-0.5">{statusLabel}</p>
-                </>
-              )}
-            </div>
-
-            {analysis && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClose();
-                }}
-                className="p-1.5 rounded-full bg-[#9d2449] shadow-sm active:scale-95 transition"
-              >
-                <Icons.X className="h-4 w-4 text-white" />
-              </button>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            {analysis ? (
+              <h3 className="font-bold text-sm text-[#9d2449] uppercase tracking-wide">
+                RESULTADO DE CONSULTA
+              </h3>
+            ) : (
+              <>
+                <h3 className="font-bold text-gray-900 text-sm truncate">Visor de Consulta Ciudadana</h3>
+                <p className="text-[18px] text-gray-900 line-clamp-2 mt-0.5">{statusLabel}</p>
+              </>
             )}
           </div>
+
+          {analysis && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="p-1.5 rounded-full bg-[#9d2449] shadow-sm active:scale-95 transition"
+            >
+              <Icons.X className="h-4 w-4 text-white" />
+            </button>
+          )}
         </div>
-
-        {(sheetState === 'mid' || sheetState === 'full') && (
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-gray-50/50 mobile-upscale">
-            <ResultsContent analysis={analysis} onExportReady={onExportReady} />
-          </div>
-        )}
-
-        {analysis && (
-          <div className="flex-shrink-0 p-3 bg-white border-t border-gray-200 safe-area-bottom flex gap-3 overflow-x-auto">
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-[#9d2449] text-white py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-[#7d1d3a] transition-colors"
-            >
-              <Icons.MapIcon className="h-4 w-4" /> Google Maps
-            </a>
-
-            <button
-              onClick={async () => {
-                const url = `${window.location.origin}${window.location.pathname}?lat=${analysis.coordinate.lat}&lng=${analysis.coordinate.lng}&open=1`;
-                if (navigator.share) {
-                  try {
-                    await navigator.share({
-                      title: 'Consulta Ciudadana SEDEMA',
-                      text: `Ubicación: ${analysis.alcaldia}`,
-                      url
-                    });
-                  } catch { }
-                } else {
-                  navigator.clipboard.writeText(url);
-                }
-              }}
-              className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-gray-50"
-            >
-              <Icons.Share className="h-4 w-4" /> Compartir
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (onExportPDF) onExportPDF();
-                else alert('No se pudo generar el PDF. Intenta recargar la página.');
-              }}
-              className="flex-1 min-w-[110px] flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-gray-50"
-            >
-              <Icons.Pdf className="h-4 w-4" /> Exportar PDF
-            </button>
-          </div>
-        )}
       </div>
-      );
+
+      {(sheetState === 'mid' || sheetState === 'full') && (
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-gray-50/50 mobile-upscale">
+          <ResultsContent analysis={analysis} onExportReady={onExportReady} />
+        </div>
+      )}
+
+      {analysis && (
+        <div className="flex-shrink-0 p-3 bg-white border-t border-gray-200 safe-area-bottom flex gap-3 overflow-x-auto">
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-[#9d2449] text-white py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-[#7d1d3a] transition-colors"
+          >
+            <Icons.MapIcon className="h-4 w-4" /> Google Maps
+          </a>
+
+          <button
+            onClick={async () => {
+              const url = `${window.location.origin}${window.location.pathname}?lat=${analysis.coordinate.lat}&lng=${analysis.coordinate.lng}&open=1`;
+              if (navigator.share) {
+                try {
+                  await navigator.share({
+                    title: 'Consulta Ciudadana SEDEMA',
+                    text: `Ubicación: ${analysis.alcaldia}`,
+                    url
+                  });
+                } catch { }
+              } else {
+                navigator.clipboard.writeText(url);
+              }
+            }}
+            className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-gray-50"
+          >
+            <Icons.Share className="h-4 w-4" /> Compartir
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (onExportPDF) onExportPDF();
+              else alert('No se pudo generar el PDF. Intenta recargar la página.');
+            }}
+            className="flex-1 min-w-[110px] flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-gray-50"
+          >
+            <Icons.Pdf className="h-4 w-4" /> Exportar PDF
+          </button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 
-      /* ------------------------------------------------ */
-      /* COMPONENTE TOGGLE SWITCH (FALTABA ESTO) */
-      /* ------------------------------------------------ */
-      const ToggleSwitch = ({checked, onChange}) => (
-      <div
-        onClick={(e) => {
-          e.stopPropagation();
-          onChange && onChange(!checked);
-        }}
-        className={`w-7 h-4 flex items-center rounded-full p-[2px] duration-300 cursor-pointer ${checked ? 'bg-[#9d2449]' : 'bg-gray-300'
-          }`}
-      >
-        <div
-          className={`bg-white w-3 h-3 rounded-full shadow-md transform duration-300 ${checked ? 'translate-x-3' : ''}`}
-        />
-      </div>
-      );
+/* ------------------------------------------------ */
+/* COMPONENTE TOGGLE SWITCH (FALTABA ESTO) */
+/* ------------------------------------------------ */
+const ToggleSwitch = ({ checked, onChange }) => (
+  <div
+    onClick={(e) => {
+      e.stopPropagation();
+      onChange && onChange(!checked);
+    }}
+    className={`w-7 h-4 flex items-center rounded-full p-[2px] duration-300 cursor-pointer ${checked ? 'bg-[#9d2449]' : 'bg-gray-300'
+      }`}
+  >
+    <div
+      className={`bg-white w-3 h-3 rounded-full shadow-md transform duration-300 ${checked ? 'translate-x-3' : ''}`}
+    />
+  </div>
+);
 
-      const MapViewer = ({
-        location,
-        onLocationSelect,
-        analysisStatus,
-        visibleMapLayers,
-        setVisibleMapLayers,
-        visibleZoningCats,
-        setVisibleZoningCats,
-        isLegendOpen,
-        setIsLegendOpen,
-        extraDataLoaded,
-        activeBaseLayer,
-        setActiveBaseLayer,
-        invalidateMapRef,   // ✅ CLAVE
-        resetMapViewRef,     // ✅ NUEVO
-        selectedAnpId        // ✅ Prop nueva para filtrado
+const MapViewer = ({
+  location,
+  onLocationSelect,
+  analysisStatus,
+  visibleMapLayers,
+  setVisibleMapLayers,
+  visibleZoningCats,
+  setVisibleZoningCats,
+  isLegendOpen,
+  setIsLegendOpen,
+  extraDataLoaded,
+  activeBaseLayer,
+  setActiveBaseLayer,
+  invalidateMapRef,   // ✅ CLAVE
+  resetMapViewRef,     // ✅ NUEVO
+  selectedAnpId        // ✅ Prop nueva para filtrado
 
-      }) => {
+}) => {
   const mapRef = useRef(null);
-      const mapInstance = useRef(null);
-      const layersRef = useRef({ });          // sc, alcaldias, edomex, morelos, base
-      const zoningLayersRef = useRef({ });    // {ANP: layer, FC: layer, ... }
-      const selectedAnpLayerRef = useRef(null); // ✅ Ref para la capa dinámica
-      const markerRef = useRef(null);
-      const [tilesLoading, setTilesLoading] = useState(true);
+  const mapInstance = useRef(null);
+  const layersRef = useRef({});          // sc, alcaldias, edomex, morelos, base
+  const zoningLayersRef = useRef({});    // {ANP: layer, FC: layer, ... }
+  const selectedAnpLayerRef = useRef(null); // ✅ Ref para la capa dinámica
+  const markerRef = useRef(null);
+  const [tilesLoading, setTilesLoading] = useState(true);
 
   const toggleLayer = (key, nextValue) => {
-        setVisibleMapLayers(prev => ({
-          ...prev,
-          [key]: typeof nextValue === 'boolean' ? nextValue : !prev[key]
-        }));
+    setVisibleMapLayers(prev => ({
+      ...prev,
+      [key]: typeof nextValue === 'boolean' ? nextValue : !prev[key]
+    }));
   };
 
   const toggleZoningGroup = () => {
     const enabled = !visibleMapLayers.zoning;
 
     setVisibleMapLayers(prev => ({
-        ...prev,
-        zoning: enabled
+      ...prev,
+      zoning: enabled
     }));
 
     setVisibleZoningCats(() => {
-      const next = { };
+      const next = {};
       ZONING_ORDER.forEach(k => (next[k] = enabled));
       return next;
     });
@@ -3056,10 +3057,10 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
   useEffect(() => {
     if (!mapRef.current || mapInstance.current || !window.L) return;
 
-      const bounds = window.L.latLngBounds([18.7, -99.6], [19.9, -98.7]);
+    const bounds = window.L.latLngBounds([18.7, -99.6], [19.9, -98.7]);
 
-      const map = window.L.map(mapRef.current, {
-        zoomControl: false,
+    const map = window.L.map(mapRef.current, {
+      zoomControl: false,
       attributionControl: false,
       minZoom: 9,
       maxZoom: 18,
@@ -3068,53 +3069,53 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
       maxBoundsViscosity: 0.9
     }).setView(INITIAL_CENTER, INITIAL_ZOOM);
 
-      window.L.control.attribution({position: 'topleft', prefix: false }).addTo(map);
-      mapInstance.current = map;
-      // ✅ calcular bounds de CDMX una sola vez (si existe geojson)
-      let cdmxBounds = null;
-      try {
+    window.L.control.attribution({ position: 'topleft', prefix: false }).addTo(map);
+    mapInstance.current = map;
+    // ✅ calcular bounds de CDMX una sola vez (si existe geojson)
+    let cdmxBounds = null;
+    try {
       if (dataCache?.cdmx?.features?.length) {
         const tmp = window.L.geoJSON(dataCache.cdmx);
-      cdmxBounds = tmp.getBounds();
+        cdmxBounds = tmp.getBounds();
       }
     } catch { }
 
     // ✅ Exponer "reset view" a App
-      if (resetMapViewRef) {
-        resetMapViewRef.current = () => {
-          try {
-            const m = mapInstance.current;
-            if (!m) return;
+    if (resetMapViewRef) {
+      resetMapViewRef.current = () => {
+        try {
+          const m = mapInstance.current;
+          if (!m) return;
 
-            if (cdmxBounds && cdmxBounds.isValid()) {
-              m.fitBounds(cdmxBounds, { padding: [20, 20] });
-            } else {
-              m.setView(INITIAL_CENTER, INITIAL_ZOOM);
-            }
-          } catch { }
-        };
+          if (cdmxBounds && cdmxBounds.isValid()) {
+            m.fitBounds(cdmxBounds, { padding: [20, 20] });
+          } else {
+            m.setView(INITIAL_CENTER, INITIAL_ZOOM);
+          }
+        } catch { }
+      };
     }
 
-      // ✅ Exponer invalidateSize a App (sin window)
-      if (invalidateMapRef) {
-        invalidateMapRef.current = () => {
-          try { mapInstance.current?.invalidateSize(); } catch { }
-        };
+    // ✅ Exponer invalidateSize a App (sin window)
+    if (invalidateMapRef) {
+      invalidateMapRef.current = () => {
+        try { mapInstance.current?.invalidateSize(); } catch { }
+      };
     }
 
-      // PANES
-      map.createPane('paneBase');
-      map.getPane('paneBase').style.zIndex = 300;
+    // PANES
+    map.createPane('paneBase');
+    map.getPane('paneBase').style.zIndex = 300;
 
-      map.createPane('paneContext');
-      map.getPane('paneContext').style.zIndex = 350;
+    map.createPane('paneContext');
+    map.getPane('paneContext').style.zIndex = 350;
 
-      map.createPane('paneOverlay');
-      map.getPane('paneOverlay').style.zIndex = 400;
+    map.createPane('paneOverlay');
+    map.getPane('paneOverlay').style.zIndex = 400;
 
-      // BASE TILE
-      const base = window.L.tileLayer(getBaseLayerUrl(activeBaseLayer || 'SATELLITE'), {
-        pane: 'paneBase',
+    // BASE TILE
+    const base = window.L.tileLayer(getBaseLayerUrl(activeBaseLayer || 'SATELLITE'), {
+      pane: 'paneBase',
       maxZoom: 19,
       tileSize: 256,
       zoomOffset: 0,
@@ -3123,11 +3124,11 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
 
     base.on('loading', () => setTilesLoading(true));
     base.on('load', () => setTilesLoading(false));
-      base.addTo(map);
-      layersRef.current.base = base;
+    base.addTo(map);
+    layersRef.current.base = base;
 
-      // CORE layers desde cache
-      const {sc, alcaldias} = dataCache;
+    // CORE layers desde cache
+    const { sc, alcaldias } = dataCache;
 
     const addCoreLayer = (name, data, style, tooltipField, pane, interactive = true) => {
       if (!data?.features?.length) return;
@@ -3138,10 +3139,10 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
         interactive,
         onEachFeature: (feature, layerInstance) => {
           if (tooltipField && feature.properties?.[tooltipField]) {
-        layerInstance.bindTooltip(feature.properties[tooltipField], {
-          sticky: true,
-          className: 'custom-tooltip'
-        });
+            layerInstance.bindTooltip(feature.properties[tooltipField], {
+              sticky: true,
+              className: 'custom-tooltip'
+            });
           }
         }
       });
@@ -3150,48 +3151,48 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
       map.addLayer(layer);
     };
 
-      addCoreLayer(
+    addCoreLayer(
       'sc',
       sc,
       {
         color: LAYER_STYLES.sc.color,
-      weight: 1.8,
-      opacity: 0.9,
-      fillColor: LAYER_STYLES.sc.fill,
-      fillOpacity: 0.18,
-      interactive: false
+        weight: 1.8,
+        opacity: 0.9,
+        fillColor: LAYER_STYLES.sc.fill,
+        fillOpacity: 0.18,
+        interactive: false
       },
       null,
       'paneBase',
       false
-      );
+    );
 
-      addCoreLayer(
+    addCoreLayer(
       'alcaldias',
       alcaldias,
       {
         color: LAYER_STYLES.alcaldias.color,
-      weight: 3,
-      dashArray: '8,4',
-      opacity: 0.9,
-      fillOpacity: 0
+        weight: 3,
+        dashArray: '8,4',
+        opacity: 0.9,
+        fillOpacity: 0
       },
       null,
       'paneContext'
-      );
+    );
 
     map.on('click', e => onLocationSelect(e.latlng));
 
     setTimeout(() => {
-      try {map.invalidateSize(); } catch { }
+      try { map.invalidateSize(); } catch { }
     }, 200);
 
     return () => {
-      try {map.remove(); } catch { }
+      try { map.remove(); } catch { }
       mapInstance.current = null;
       if (resetMapViewRef) resetMapViewRef.current = null;
-      layersRef.current = { };
-      zoningLayersRef.current = { };
+      layersRef.current = {};
+      zoningLayersRef.current = {};
       markerRef.current = null;
 
       // ✅ limpiar ref al desmontar
@@ -3203,7 +3204,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
   useEffect(() => {
     if (!mapInstance.current || !extraDataLoaded || !window.L) return;
 
-      const {edomex, morelos, zoning, anp} = dataCache;
+    const { edomex, morelos, zoning, anp } = dataCache;
 
     const addLayer = (name, data, style, tooltipField, pane, interactive = true) => {
       if (!data?.features?.length) return;
@@ -3214,10 +3215,10 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
         interactive,
         onEachFeature: (feature, layerInstance) => {
           if (tooltipField && feature.properties?.[tooltipField]) {
-        layerInstance.bindTooltip(feature.properties[tooltipField], {
-          sticky: true,
-          className: 'custom-tooltip'
-        });
+            layerInstance.bindTooltip(feature.properties[tooltipField], {
+              sticky: true,
+              className: 'custom-tooltip'
+            });
           }
         }
       });
@@ -3226,93 +3227,93 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
       mapInstance.current.addLayer(layer);
     };
 
-      if (!layersRef.current.edomex) {
-        addLayer(
-          'edomex',
-          edomex,
-          {
-            color: LAYER_STYLES.edomex.color,
-            weight: 2,
-            dashArray: '4,4',
-            opacity: 0.9,
-            fillOpacity: 0.1
-          },
-          'NOMGEO',
-          'paneBase',
-          false
-        );
+    if (!layersRef.current.edomex) {
+      addLayer(
+        'edomex',
+        edomex,
+        {
+          color: LAYER_STYLES.edomex.color,
+          weight: 2,
+          dashArray: '4,4',
+          opacity: 0.9,
+          fillOpacity: 0.1
+        },
+        'NOMGEO',
+        'paneBase',
+        false
+      );
     }
 
-      if (!layersRef.current.morelos) {
-        addLayer(
-          'morelos',
-          morelos,
-          {
-            color: LAYER_STYLES.morelos.color,
-            weight: 2,
-            dashArray: '4,4',
-            opacity: 0.9,
-            fillOpacity: 0.1
-          },
-          'NOMGEO',
-          'paneBase',
-          false
-        );
+    if (!layersRef.current.morelos) {
+      addLayer(
+        'morelos',
+        morelos,
+        {
+          color: LAYER_STYLES.morelos.color,
+          weight: 2,
+          dashArray: '4,4',
+          opacity: 0.9,
+          fillOpacity: 0.1
+        },
+        'NOMGEO',
+        'paneBase',
+        false
+      );
     }
-      // ✅ ANP overlay (independiente de PGOEDF)
-      if (!layersRef.current.anp) {
-        addLayer(
-          'anp',
-          anp,
-          {
-            color: LAYER_STYLES.anp.color,
-            weight: 2.2,
-            opacity: 0.95,
-            fillColor: LAYER_STYLES.anp.fill,
-            fillOpacity: 0.22   // ✅ misma transparencia que zonificación
-          },
-          'NOMBRE',
-          'paneOverlay',
-          true
-        );
+    // ✅ ANP overlay (independiente de PGOEDF)
+    if (!layersRef.current.anp) {
+      addLayer(
+        'anp',
+        anp,
+        {
+          color: LAYER_STYLES.anp.color,
+          weight: 2.2,
+          opacity: 0.95,
+          fillColor: LAYER_STYLES.anp.fill,
+          fillOpacity: 0.22   // ✅ misma transparencia que zonificación
+        },
+        'NOMBRE',
+        'paneOverlay',
+        true
+      );
     }
 
 
-      // Build zoning layers por categoría una sola vez
-      if (zoning?.features?.length && Object.keys(zoningLayersRef.current).length === 0) {
-      const byKey = { };
+    // Build zoning layers por categoría una sola vez
+    if (zoning?.features?.length && Object.keys(zoningLayersRef.current).length === 0) {
+      const byKey = {};
       ZONING_ORDER.forEach(k => (byKey[k] = []));
 
       zoning.features.forEach(f => {
         let k = (f.properties?.CLAVE || '').toString().trim().toUpperCase();
 
-      // ✅ Fix: Si no tiene CLAVE pero es un archivo específico (tiene ZONIFICACION), usar 'ANP_ZON'
-      if (!k && f.properties?.ZONIFICACION) {
-        k = 'ANP_ZON';
+        // ✅ Fix: Si no tiene CLAVE pero es un archivo específico (tiene ZONIFICACION), usar 'ANP_ZON'
+        if (!k && f.properties?.ZONIFICACION) {
+          k = 'ANP_ZON';
         }
 
-      if (byKey[k]) byKey[k].push(f);
+        if (byKey[k]) byKey[k].push(f);
       });
 
       ZONING_ORDER.forEach(k => {
         const feats = byKey[k];
-      if (!feats?.length) return;
+        if (!feats?.length) return;
 
-      const fc = {type: 'FeatureCollection', features: feats };
-      const layer = window.L.geoJSON(fc, {
-        pane: 'paneOverlay',
+        const fc = { type: 'FeatureCollection', features: feats };
+        const layer = window.L.geoJSON(fc, {
+          pane: 'paneOverlay',
           style: (feature) => getZoningStyle(feature),
-      interactive: true,
+          interactive: true,
           onEachFeature: (feature, layerInstance) => {
-        layerInstance.on('mouseover', () => layerInstance.setStyle({ weight: 2.5 }));
-            layerInstance.on('mouseout', () => layerInstance.setStyle({weight: 1.4 }));
+            layerInstance.on('mouseover', () => layerInstance.setStyle({ weight: 2.5 }));
+            layerInstance.on('mouseout', () => layerInstance.setStyle({ weight: 1.4 }));
 
-      const label = feature.properties?.PGOEDF;
-      if (label) layerInstance.bindTooltip(label, {sticky: true, className: 'custom-tooltip' });
+            const label = feature.properties?.PGOEDF;
+            if (label) layerInstance.bindTooltip(label, { sticky: true, className: 'custom-tooltip' });
           }
         });
 
-      zoningLayersRef.current[k] = layer;
+        zoningLayersRef.current[k] = layer;
       });
     }
   }, [extraDataLoaded]);
@@ -3321,14 +3322,14 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
   useEffect(() => {
     if (!mapInstance.current || !dataCache.zoning) return;
 
-      // 1. Limpiar capa anterior si existe
-      if (selectedAnpLayerRef.current) {
-        mapInstance.current.removeLayer(selectedAnpLayerRef.current);
+    // 1. Limpiar capa anterior si existe
+    if (selectedAnpLayerRef.current) {
+      mapInstance.current.removeLayer(selectedAnpLayerRef.current);
       selectedAnpLayerRef.current = null;
     }
 
-      // 2. Si no hay ANP seleccionada o la capa "selectedAnpZoning" está apagada, salir
-      if (!selectedAnpId || !visibleMapLayers.selectedAnpZoning) return;
+    // 2. Si no hay ANP seleccionada o la capa "selectedAnpZoning" está apagada, salir
+    if (!selectedAnpId || !visibleMapLayers.selectedAnpZoning) return;
 
     // 3. Filtrar features del ANP seleccionado
     const candidates = dataCache.zoning.features.filter(f => {
@@ -3337,19 +3338,19 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
       if (!k && f.properties?.ZONIFICACION) {
         // Si tiene ANP_ID y coincide
         if (f.properties.ANP_ID && f.properties.ANP_ID === selectedAnpId) return true;
-      return false;
+        return false;
       }
       return false;
     });
 
-      if (candidates.length) {
-      const layer = window.L.geoJSON({type: 'FeatureCollection', features: candidates }, {
+    if (candidates.length) {
+      const layer = window.L.geoJSON({ type: 'FeatureCollection', features: candidates }, {
         pane: 'paneOverlay',
         style: (feature) => getZoningStyle(feature),
-      interactive: true,
+        interactive: true,
         onEachFeature: (feature, layerInstance) => {
           const label = feature.properties?.ZONIFICACION || 'Zonificación ANP';
-      layerInstance.bindTooltip(label, {sticky: true, className: 'custom-tooltip' });
+          layerInstance.bindTooltip(label, { sticky: true, className: 'custom-tooltip' });
         }
       });
       selectedAnpLayerRef.current = layer;
@@ -3362,8 +3363,8 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
   // 3) base layer change
   useEffect(() => {
     if (!mapInstance.current || !layersRef.current.base) return;
-      setTilesLoading(true);
-      layersRef.current.base.setUrl(getBaseLayerUrl(activeBaseLayer));
+    setTilesLoading(true);
+    layersRef.current.base.setUrl(getBaseLayerUrl(activeBaseLayer));
   }, [activeBaseLayer]);
 
   // 4) show/hide layers (core + extra + zoning)
@@ -3378,17 +3379,17 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
       if (!visibleMapLayers[k] && mapInstance.current.hasLayer(layer)) mapInstance.current.removeLayer(layer);
     });
 
-      if (Object.keys(zoningLayersRef.current).length) {
-        ZONING_ORDER.forEach(k => {
-          const zLayer = zoningLayersRef.current[k];
-          if (!zLayer) return;
+    if (Object.keys(zoningLayersRef.current).length) {
+      ZONING_ORDER.forEach(k => {
+        const zLayer = zoningLayersRef.current[k];
+        if (!zLayer) return;
 
-          const shouldShow = !!visibleMapLayers.zoning && (visibleZoningCats[k] !== false);
-          const has = mapInstance.current.hasLayer(zLayer);
+        const shouldShow = !!visibleMapLayers.zoning && (visibleZoningCats[k] !== false);
+        const has = mapInstance.current.hasLayer(zLayer);
 
-          if (shouldShow && !has) mapInstance.current.addLayer(zLayer);
-          if (!shouldShow && has) mapInstance.current.removeLayer(zLayer);
-        });
+        if (shouldShow && !has) mapInstance.current.addLayer(zLayer);
+        if (!shouldShow && has) mapInstance.current.removeLayer(zLayer);
+      });
     }
   }, [visibleMapLayers, visibleZoningCats, extraDataLoaded]);
 
@@ -3396,17 +3397,17 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
   useEffect(() => {
     if (!mapInstance.current || !location || !window.L) return;
 
-      if (markerRef.current) markerRef.current.remove();
+    if (markerRef.current) markerRef.current.remove();
 
-      const label =
+    const label =
       analysisStatus === 'CONSERVATION_SOIL' ? 'SC' :
-      analysisStatus === 'URBAN_SOIL' ? 'SU' : '';
+        analysisStatus === 'URBAN_SOIL' ? 'SU' : '';
 
-      const bgColor =
+    const bgColor =
       analysisStatus === 'CONSERVATION_SOIL' ? LAYER_STYLES.sc.color :
-      analysisStatus === 'URBAN_SOIL' ? '#3b82f6' : '#9ca3af';
+        analysisStatus === 'URBAN_SOIL' ? '#3b82f6' : '#9ca3af';
 
-      const iconHtml = `
+    const iconHtml = `
       <div class="marker-pop" style="
         width:32px;height:32px;background:${bgColor};color:#fff;
         border:3px solid #fff;border-radius:50%;
@@ -3418,320 +3419,320 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
       </div>
       `;
 
-      const icon = window.L.divIcon({
-        html: iconHtml,
+    const icon = window.L.divIcon({
+      html: iconHtml,
       className: '',
       iconSize: [32, 32],
       iconAnchor: [16, 16]
     });
 
-      markerRef.current = window.L.marker([location.lat, location.lng], {icon}).addTo(mapInstance.current);
+    markerRef.current = window.L.marker([location.lat, location.lng], { icon }).addTo(mapInstance.current);
 
-      const currentZoom = mapInstance.current.getZoom();
-      const targetZoom = Math.max(currentZoom, FOCUS_ZOOM);
-      mapInstance.current.flyTo([location.lat, location.lng], targetZoom, {duration: 0.8 });
+    const currentZoom = mapInstance.current.getZoom();
+    const targetZoom = Math.max(currentZoom, FOCUS_ZOOM);
+    mapInstance.current.flyTo([location.lat, location.lng], targetZoom, { duration: 0.8 });
   }, [location, analysisStatus]);
 
-      return (
-      <div className="relative h-full w-full">
-        <div id="main-map" ref={mapRef} className="h-full w-full bg-gray-200" />
+  return (
+    <div className="relative h-full w-full">
+      <div id="main-map" ref={mapRef} className="h-full w-full bg-gray-200" />
 
-        {tilesLoading && (
-          <div className="absolute inset-0 flex items-center justify-center z-[1200] bg-black/10 pointer-events-none">
-            <div className="flex flex-col items-center gap-2 bg-white/90 px-4 py-3 rounded-lg shadow">
-              <Icons.Loader2 className="h-5 w-5 animate-spin text-[#9d2449]" />
-              <span className="text-[11px] text-gray-700 font-medium">Cargando información geográfica...</span>
-            </div>
+      {tilesLoading && (
+        <div className="absolute inset-0 flex items-center justify-center z-[1200] bg-black/10 pointer-events-none">
+          <div className="flex flex-col items-center gap-2 bg-white/90 px-4 py-3 rounded-lg shadow">
+            <Icons.Loader2 className="h-5 w-5 animate-spin text-[#9d2449]" />
+            <span className="text-[11px] text-gray-700 font-medium">Cargando información geográfica...</span>
           </div>
-        )}
-
-        {/* PANEL CAPAS (MÓVIL + DESKTOP) */}
-        {/* ✅ BOTÓN CAPAS — DESKTOP arriba-derecha */}
-        <div className="hidden md:block absolute top-20 right-4 z-[3600]">
-          {!isLegendOpen && (
-            <button
-              onClick={() => setIsLegendOpen(true)}
-              aria-label="Mostrar capas"
-              className="w-11 h-11 flex items-center justify-center bg-white shadow-lg rounded-full border border-gray-200 text-[#9d2449] hover:bg-gray-50"
-            >
-              <Icons.Layers className="h-6 w-6" />
-            </button>
-          )}
         </div>
+      )}
 
-        {/* ✅ PANEL CAPAS (MÓVIL + DESKTOP) — flotante y con scroll */}
-        {isLegendOpen && (
-          <div
-            className="absolute top-24 right-4 md:top-20 md:right-4 z-[4500]"
-            onClick={(e) => e.stopPropagation()}
+      {/* PANEL CAPAS (MÓVIL + DESKTOP) */}
+      {/* ✅ BOTÓN CAPAS — DESKTOP arriba-derecha */}
+      <div className="hidden md:block absolute top-20 right-4 z-[3600]">
+        {!isLegendOpen && (
+          <button
+            onClick={() => setIsLegendOpen(true)}
+            aria-label="Mostrar capas"
+            className="w-11 h-11 flex items-center justify-center bg-white shadow-lg rounded-full border border-gray-200 text-[#9d2449] hover:bg-gray-50"
           >
-            <div
-              className="
+            <Icons.Layers className="h-6 w-6" />
+          </button>
+        )}
+      </div>
+
+      {/* ✅ PANEL CAPAS (MÓVIL + DESKTOP) — flotante y con scroll */}
+      {isLegendOpen && (
+        <div
+          className="absolute top-24 right-4 md:top-20 md:right-4 z-[4500]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="
     w-[300px] max-w-[92vw]
     bg-white border border-gray-200
     rounded-2xl shadow-2xl
     overflow-hidden flex flex-col
   "
-              style={{ maxHeight: "calc(100svh - 260px)" }}
-            >
-              {/* Header */}
-              <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+            style={{ maxHeight: "calc(100svh - 260px)" }}
+          >
+            {/* Header */}
+            <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
 
-                <div className="font-bold text-[#9d2449] text-sm uppercase tracking-wide">
-                  Capas del mapa
-                </div>
-                <button
-                  onClick={() => setIsLegendOpen(false)}
-                  className="w-8 h-8 rounded-full bg-[#9d2449] text-white flex items-center justify-center active:scale-95"
-                  aria-label="Cerrar"
-                  title="Cerrar"
-                >
-                  <Icons.X className="h-4 w-4" />
-                </button>
+              <div className="font-bold text-[#9d2449] text-sm uppercase tracking-wide">
+                Capas del mapa
               </div>
-
-              {/* ✅ BODY SCROLLEABLE */}
-              <div className="p-2 space-y-2 overflow-y-auto custom-scrollbar flex-1"
-                style={{
-                  // deja espacio al bottom sheet en móvil
-                  maxHeight: "calc(100svh - 340px)"
-                }}
+              <button
+                onClick={() => setIsLegendOpen(false)}
+                className="w-8 h-8 rounded-full bg-[#9d2449] text-white flex items-center justify-center active:scale-95"
+                aria-label="Cerrar"
+                title="Cerrar"
               >
-                {/* Mapa base */}
-                <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
-                  <div className="text-[10px] font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                    Mapa base
-                  </div>
+                <Icons.X className="h-4 w-4" />
+              </button>
+            </div>
 
-                  <div className="grid grid-cols-3 rounded-lg overflow-hidden border border-gray-200 bg-white">
-                    <button
-                      type="button"
-                      onClick={() => setActiveBaseLayer('STREETS')}
-                      className={`py-1.5 text-[11px] font-semibold ${activeBaseLayer === 'STREETS'
-                        ? 'bg-[#9d2449] text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                        }`}
-                    >
-                      Mapa
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setActiveBaseLayer('SATELLITE')}
-                      className={`py-1.5 text-[11px] font-semibold ${activeBaseLayer === 'SATELLITE'
-                        ? 'bg-[#9d2449] text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                        }`}
-                    >
-                      Satélite
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setActiveBaseLayer('TOPO')}
-                      className={`py-1.5 text-[11px] font-semibold ${activeBaseLayer === 'TOPO'
-                        ? 'bg-[#9d2449] text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                        }`}
-                      title="Topográfico suave"
-                    >
-                      Relieve
-                    </button>
-                  </div>
+            {/* ✅ BODY SCROLLEABLE */}
+            <div className="p-2 space-y-2 overflow-y-auto custom-scrollbar flex-1"
+              style={{
+                // deja espacio al bottom sheet en móvil
+                maxHeight: "calc(100svh - 340px)"
+              }}
+            >
+              {/* Mapa base */}
+              <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
+                <div className="text-[10px] font-semibold text-gray-700 mb-1 uppercase tracking-wide">
+                  Mapa base
                 </div>
 
-                {/* Límites y contexto */}
-                <div>
-                  <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                    Límites y contexto
-                  </div>
-
-                  {['alcaldias', 'edomex', 'morelos'].map(k => (
-                    <div
-                      key={k}
-                      className="flex items-center justify-between px-2 py-1.5 rounded-lg  hover:bg-gray-50 cursor-pointer border border-gray-100"
-                      onClick={() => toggleLayer(k)}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span
-                          className={`w-3 h-3 ${k === 'alcaldias'
-                            ? 'border-2 border-gray-500 border-dashed bg-white'
-                            : 'rounded-sm'
-                            }`}
-                          style={{ backgroundColor: k !== 'alcaldias' ? LAYER_STYLES[k].color : '' }}
-                        />
-                        <span className="text-[11px] text-gray-800 truncate">
-                          {LAYER_STYLES[k].label}
-                        </span>
-                      </div>
-
-                      <ToggleSwitch
-                        checked={!!visibleMapLayers[k]}
-                        onChange={() => toggleLayer(k)}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Suelo de conservación */}
-                <div>
-                  <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                    Suelo de conservación
-                  </div>
-
-                  <div
-                    className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100"
-                    onClick={() => toggleLayer('sc')}
+                <div className="grid grid-cols-3 rounded-lg overflow-hidden border border-gray-200 bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setActiveBaseLayer('STREETS')}
+                    className={`py-1.5 text-[11px] font-semibold ${activeBaseLayer === 'STREETS'
+                      ? 'bg-[#9d2449] text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
                   >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: LAYER_STYLES.sc.fill }} />
-                      <span className="text-[11px] text-gray-800 truncate">{LAYER_STYLES.sc.label}</span>
-                    </div>
+                    Mapa
+                  </button>
 
-                    <ToggleSwitch checked={!!visibleMapLayers.sc} onChange={() => toggleLayer('sc')} />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveBaseLayer('SATELLITE')}
+                    className={`py-1.5 text-[11px] font-semibold ${activeBaseLayer === 'SATELLITE'
+                      ? 'bg-[#9d2449] text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                  >
+                    Satélite
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveBaseLayer('TOPO')}
+                    className={`py-1.5 text-[11px] font-semibold ${activeBaseLayer === 'TOPO'
+                      ? 'bg-[#9d2449] text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    title="Topográfico suave"
+                  >
+                    Relieve
+                  </button>
                 </div>
-
               </div>
 
-              {/* ANP */}
+              {/* Límites y contexto */}
               <div>
                 <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                  Conservación especial
+                  Límites y contexto
                 </div>
 
-                <div className="space-y-1">
-                  {/* Capa General ANP */}
+                {['alcaldias', 'edomex', 'morelos'].map(k => (
                   <div
-                    className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100"
-                    onClick={() => toggleLayer('anp')}
+                    key={k}
+                    className="flex items-center justify-between px-2 py-1.5 rounded-lg  hover:bg-gray-50 cursor-pointer border border-gray-100"
+                    onClick={() => toggleLayer(k)}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: LAYER_STYLES.anp.fill }} />
-                      <span className="text-[11px] text-gray-800 truncate">{LAYER_STYLES.anp.label}</span>
+                      <span
+                        className={`w-3 h-3 ${k === 'alcaldias'
+                          ? 'border-2 border-gray-500 border-dashed bg-white'
+                          : 'rounded-sm'
+                          }`}
+                        style={{ backgroundColor: k !== 'alcaldias' ? LAYER_STYLES[k].color : '' }}
+                      />
+                      <span className="text-[11px] text-gray-800 truncate">
+                        {LAYER_STYLES[k].label}
+                      </span>
                     </div>
-                    <ToggleSwitch checked={!!visibleMapLayers.anp} onChange={() => toggleLayer('anp')} />
+
+                    <ToggleSwitch
+                      checked={!!visibleMapLayers[k]}
+                      onChange={() => toggleLayer(k)}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Suelo de conservación */}
+              <div>
+                <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                  Suelo de conservación
+                </div>
+
+                <div
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100"
+                  onClick={() => toggleLayer('sc')}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: LAYER_STYLES.sc.fill }} />
+                    <span className="text-[11px] text-gray-800 truncate">{LAYER_STYLES.sc.label}</span>
                   </div>
 
-                  {/* ✅ Capa Específica ANP (Zon_...) - Dependiente */}
-                  <div
-                    className={`flex items-center justify-between px-2 py-1.5 rounded-lg border border-gray-100 transition-colors
+                  <ToggleSwitch checked={!!visibleMapLayers.sc} onChange={() => toggleLayer('sc')} />
+                </div>
+              </div>
+
+            </div>
+
+            {/* ANP */}
+            <div>
+              <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                Conservación especial
+              </div>
+
+              <div className="space-y-1">
+                {/* Capa General ANP */}
+                <div
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100"
+                  onClick={() => toggleLayer('anp')}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: LAYER_STYLES.anp.fill }} />
+                    <span className="text-[11px] text-gray-800 truncate">{LAYER_STYLES.anp.label}</span>
+                  </div>
+                  <ToggleSwitch checked={!!visibleMapLayers.anp} onChange={() => toggleLayer('anp')} />
+                </div>
+
+                {/* ✅ Capa Específica ANP (Zon_...) - Dependiente */}
+                <div
+                  className={`flex items-center justify-between px-2 py-1.5 rounded-lg border border-gray-100 transition-colors
                       ${!selectedAnpId ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-50 cursor-pointer'}
                     `}
-                    title={!selectedAnpId ? "Selecciona un ANP en el mapa para ver su zonificación" : ""}
-                    onClick={() => {
+                  title={!selectedAnpId ? "Selecciona un ANP en el mapa para ver su zonificación" : ""}
+                  onClick={() => {
+                    if (!selectedAnpId) return;
+                    // Restricción: No activar si la capa superior ANP está visible?
+                    // O al revés? El usuario dijo: "no se pueda activar si la capa superior de anp está activada"
+                    if (visibleMapLayers.anp) {
+                      alert("Para ver la zonificación interna, desactiva primero la capa general de 'Áreas Naturales Protegidas'.");
+                      return;
+                    }
+                    toggleLayer('selectedAnpZoning');
+                  }}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-3 h-3 rounded border border-gray-300"
+                      style={{ backgroundColor: ZONING_CAT_INFO.ANP_ZON?.color || '#8b5cf6' }} />
+                    <span className="text-[11px] text-gray-800 truncate">
+                      Zonificación ANP Selecc.
+                    </span>
+                  </div>
+
+                  {/* Toggle deshabilitado visualmente si ANP general está activa (regla de negocio user) */}
+                  <ToggleSwitch
+                    checked={!!visibleMapLayers.selectedAnpZoning}
+                    onChange={() => {
                       if (!selectedAnpId) return;
-                      // Restricción: No activar si la capa superior ANP está visible?
-                      // O al revés? El usuario dijo: "no se pueda activar si la capa superior de anp está activada"
                       if (visibleMapLayers.anp) {
-                        alert("Para ver la zonificación interna, desactiva primero la capa general de 'Áreas Naturales Protegidas'.");
+                        // Opción: Auto-desactivar ANP general? 
+                        // El usuario dijo "no se pueda activar", implying disabled.
+                        // Vamos a bloquearlo.
+                        alert("Desactiva la capa 'Áreas Naturales Protegidas' para ver el detalle interno.");
                         return;
                       }
                       toggleLayer('selectedAnpZoning');
                     }}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-3 h-3 rounded border border-gray-300"
-                        style={{ backgroundColor: ZONING_CAT_INFO.ANP_ZON?.color || '#8b5cf6' }} />
-                      <span className="text-[11px] text-gray-800 truncate">
-                        Zonificación ANP Selecc.
-                      </span>
-                    </div>
-
-                    {/* Toggle deshabilitado visualmente si ANP general está activa (regla de negocio user) */}
-                    <ToggleSwitch
-                      checked={!!visibleMapLayers.selectedAnpZoning}
-                      onChange={() => {
-                        if (!selectedAnpId) return;
-                        if (visibleMapLayers.anp) {
-                          // Opción: Auto-desactivar ANP general? 
-                          // El usuario dijo "no se pueda activar", implying disabled.
-                          // Vamos a bloquearlo.
-                          alert("Desactiva la capa 'Áreas Naturales Protegidas' para ver el detalle interno.");
-                          return;
-                        }
-                        toggleLayer('selectedAnpZoning');
-                      }}
-                      disabled={!selectedAnpId || !!visibleMapLayers.anp}
-                    />
-                  </div>
+                    disabled={!selectedAnpId || !!visibleMapLayers.anp}
+                  />
                 </div>
+              </div>
+            </div>
+
+
+
+            {/* Zonificación PGOEDF */}
+            <div className="border-t pt-3">
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">
+                  Zonificación PGOEDF
+                </div>
+
+                <ToggleSwitch checked={!!visibleMapLayers.zoning} onChange={toggleZoningGroup} />
               </div>
 
 
+              {/* Sublista categorías */}
+              <div className="mt-2 space-y-2">
+                {ZONING_ORDER.filter(k => ZONING_CAT_INFO[k]).map(k => {
+                  const info = ZONING_CAT_INFO[k];
+                  const checked = visibleZoningCats[k] !== false;
 
-              {/* Zonificación PGOEDF */}
-              <div className="border-t pt-3">
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">
-                    Zonificación PGOEDF
-                  </div>
-
-                  <ToggleSwitch checked={!!visibleMapLayers.zoning} onChange={toggleZoningGroup} />
-                </div>
-
-
-                {/* Sublista categorías */}
-                <div className="mt-2 space-y-2">
-                  {ZONING_ORDER.filter(k => ZONING_CAT_INFO[k]).map(k => {
-                    const info = ZONING_CAT_INFO[k];
-                    const checked = visibleZoningCats[k] !== false;
-
-                    return (
-                      <div
-                        key={k}
-                        className="flex items-center justify-between px-2 py-1.5 rounded-lg  hover:bg-gray-50 cursor-pointer border border-gray-100"
-                        onClick={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: info.color }} />
-                          <span className="text-[11px] text-gray-700 truncate">
-                            {info.label}
-                          </span>
-                        </div>
-
-                        <ToggleSwitch
-                          checked={checked}
-                          onChange={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
-                        />
+                  return (
+                    <div
+                      key={k}
+                      className="flex items-center justify-between px-2 py-1.5 rounded-lg  hover:bg-gray-50 cursor-pointer border border-gray-100"
+                      onClick={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: info.color }} />
+                        <span className="text-[11px] text-gray-700 truncate">
+                          {info.label}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+
+                      <ToggleSwitch
+                        checked={checked}
+                        onChange={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Nota inicial desktop */}
-        {!analysisStatus && (
-          <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
-            <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
-              Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
-            </div>
+      {/* Nota inicial desktop */}
+      {!analysisStatus && (
+        <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
+          <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
+            Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
           </div>
-        )}
-      </div>
-      );
+        </div>
+      )}
+    </div>
+  );
 };
 
-      /* ------------------------------------------------ */
-      /* 8. LEYENDA FLOTANTE (Mejorada - Unificada) */
-      /* ------------------------------------------------ */
-      const Legend = ({
-        visibleMapLayers,
-        toggleLayer,
-        isOpen,
-        setIsOpen,
-        visibleZoningCats,
-        toggleZoningGroup,
-        setVisibleZoningCats,
-        toggleZoningCat,
-        activeBaseLayer,
-        setActiveBaseLayer,
-        selectedAnpId,
-        anpGeneralVisible
-      }) => {
+/* ------------------------------------------------ */
+/* 8. LEYENDA FLOTANTE (Mejorada - Unificada) */
+/* ------------------------------------------------ */
+const Legend = ({
+  visibleMapLayers,
+  toggleLayer,
+  isOpen,
+  setIsOpen,
+  visibleZoningCats,
+  toggleZoningGroup,
+  setVisibleZoningCats,
+  toggleZoningCat,
+  activeBaseLayer,
+  setActiveBaseLayer,
+  selectedAnpId,
+  anpGeneralVisible
+}) => {
   if (!isOpen) {
     return (
       <button
@@ -3746,148 +3747,148 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
       >
         <Icons.Layers className="h-7 w-7" />
       </button>
-      );
+    );
   }
 
-      return (
-      <div className="fixed bottom-24 right-4 z-[2000] w-80 glass-panel rounded-xl shadow-soft animate-fade-in flex flex-col max-h-[75vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white/50 rounded-t-xl shrink-0">
-          <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
-            <Icons.Layers className="h-4 w-4 text-[#9d2449]" />
-            Capas y Simbología
-          </h3>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <Icons.X className="h-4 w-4 text-gray-500" />
-          </button>
+  return (
+    <div className="fixed bottom-24 right-4 z-[2000] w-80 glass-panel rounded-xl shadow-soft animate-fade-in flex flex-col max-h-[75vh]">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white/50 rounded-t-xl shrink-0">
+        <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
+          <Icons.Layers className="h-4 w-4 text-[#9d2449]" />
+          Capas y Simbología
+        </h3>
+        <button
+          onClick={() => setIsOpen(false)}
+          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <Icons.X className="h-4 w-4 text-gray-500" />
+        </button>
+      </div>
+
+      {/* Content Scrollable - Single Block */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-white/80 space-y-6">
+
+        {/* 1. Contexto */}
+        <div>
+          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Contexto y Límites</div>
+          <div className="space-y-3">
+            <label className="flex items-center justify-between group cursor-pointer">
+              <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Alcaldías</span>
+              <ToggleSwitch checked={visibleMapLayers.alcaldias} onChange={() => toggleLayer('alcaldias')} />
+            </label>
+            <label className="flex items-center justify-between group cursor-pointer">
+              <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Suelo de Conservación</span>
+              <ToggleSwitch checked={visibleMapLayers.sc} onChange={() => toggleLayer('sc')} />
+            </label>
+            <label className="flex items-center justify-between group cursor-pointer">
+              <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Límite Edo. Méx</span>
+              <ToggleSwitch checked={visibleMapLayers.edomex} onChange={() => toggleLayer('edomex')} />
+            </label>
+            <label className="flex items-center justify-between group cursor-pointer">
+              <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Límite Morelos</span>
+              <ToggleSwitch checked={visibleMapLayers.morelos} onChange={() => toggleLayer('morelos')} />
+            </label>
+
+            {/* ANP Switch */}
+            <div className="pt-2 border-t border-gray-100">
+              <label className="flex items-center justify-between group cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[#a855f7] border border-white shadow-sm" />
+                  <span className="text-[13px] text-gray-800 font-bold">Áreas Naturales Protegidas</span>
+                </div>
+                <ToggleSwitch checked={visibleMapLayers.anp} onChange={() => toggleLayer('anp')} />
+              </label>
+            </div>
+
+            {/* ANP Zonificación (Dinámica) */}
+            <div
+              className={`transition-opacity ${!selectedAnpId ? 'opacity-50 pointer-events-none' : ''}`}
+            >
+              <label className="flex items-center justify-between group cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded border border-purple-500 bg-purple-100 shadow-sm" />
+                  <span className="text-[13px] text-purple-900 font-bold">Zonificación Interna ANP</span>
+                </div>
+                <ToggleSwitch
+                  checked={visibleMapLayers.selectedAnpZoning}
+                  onChange={() => {
+                    if (!selectedAnpId) return;
+                    if (anpGeneralVisible) {
+                      alert("Desactiva la capa 'Áreas Naturales Protegidas' para ver el detalle interno.");
+                      return;
+                    }
+                    toggleLayer('selectedAnpZoning');
+                  }}
+                />
+              </label>
+            </div>
+          </div>
         </div>
 
-        {/* Content Scrollable - Single Block */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-white/80 space-y-6">
+        {/* 2. Zonificación PGOEDF */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Zonificación PGOEDF 2000</div>
+            <button onClick={toggleZoningGroup} className="text-[10px] text-[#9d2449] font-bold hover:underline">
+              {visibleMapLayers.zoning ? 'Ocultar todo' : 'Mostrar todo'}
+            </button>
+          </div>
 
-          {/* 1. Contexto */}
-          <div>
-            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Contexto y Límites</div>
-            <div className="space-y-3">
-              <label className="flex items-center justify-between group cursor-pointer">
-                <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Alcaldías</span>
-                <ToggleSwitch checked={visibleMapLayers.alcaldias} onChange={() => toggleLayer('alcaldias')} />
-              </label>
-              <label className="flex items-center justify-between group cursor-pointer">
-                <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Suelo de Conservación</span>
-                <ToggleSwitch checked={visibleMapLayers.sc} onChange={() => toggleLayer('sc')} />
-              </label>
-              <label className="flex items-center justify-between group cursor-pointer">
-                <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Límite Edo. Méx</span>
-                <ToggleSwitch checked={visibleMapLayers.edomex} onChange={() => toggleLayer('edomex')} />
-              </label>
-              <label className="flex items-center justify-between group cursor-pointer">
-                <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Límite Morelos</span>
-                <ToggleSwitch checked={visibleMapLayers.morelos} onChange={() => toggleLayer('morelos')} />
-              </label>
-
-              {/* ANP Switch */}
-              <div className="pt-2 border-t border-gray-100">
-                <label className="flex items-center justify-between group cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#a855f7] border border-white shadow-sm" />
-                    <span className="text-[13px] text-gray-800 font-bold">Áreas Naturales Protegidas</span>
-                  </div>
-                  <ToggleSwitch checked={visibleMapLayers.anp} onChange={() => toggleLayer('anp')} />
-                </label>
-              </div>
-
-              {/* ANP Zonificación (Dinámica) */}
-              <div
-                className={`transition-opacity ${!selectedAnpId ? 'opacity-50 pointer-events-none' : ''}`}
-              >
-                <label className="flex items-center justify-between group cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded border border-purple-500 bg-purple-100 shadow-sm" />
-                    <span className="text-[13px] text-purple-900 font-bold">Zonificación Interna ANP</span>
+          <div className={`space-y-2 pl-1 transition-opacity duration-200 ${!visibleMapLayers.zoning ? 'opacity-50 pointer-events-none' : ''}`}>
+            {ZONING_ORDER.map(cat => {
+              const info = ZONING_CAT_INFO[cat];
+              const isChecked = visibleZoningCats[cat] !== false;
+              return (
+                <div key={cat} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="w-3 h-3 rounded shadow-sm shrink-0"
+                      style={{ backgroundColor: info?.color || '#999' }}
+                    />
+                    <span className="text-[11px] text-gray-600 font-medium leading-tight">
+                      {info?.label || cat}
+                    </span>
                   </div>
                   <ToggleSwitch
-                    checked={visibleMapLayers.selectedAnpZoning}
-                    onChange={() => {
-                      if (!selectedAnpId) return;
-                      if (anpGeneralVisible) {
-                        alert("Desactiva la capa 'Áreas Naturales Protegidas' para ver el detalle interno.");
-                        return;
-                      }
-                      toggleLayer('selectedAnpZoning');
-                    }}
+                    checked={isChecked}
+                    onChange={() => setVisibleZoningCats(prev => ({ ...prev, [cat]: !isChecked }))}
                   />
-                </label>
-              </div>
-            </div>
+                </div>
+              );
+            })}
           </div>
+        </div>
 
-          {/* 2. Zonificación PGOEDF */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Zonificación PGOEDF 2000</div>
-              <button onClick={toggleZoningGroup} className="text-[10px] text-[#9d2449] font-bold hover:underline">
-                {visibleMapLayers.zoning ? 'Ocultar todo' : 'Mostrar todo'}
-              </button>
-            </div>
-
-            <div className={`space-y-2 pl-1 transition-opacity duration-200 ${!visibleMapLayers.zoning ? 'opacity-50 pointer-events-none' : ''}`}>
-              {ZONING_ORDER.map(cat => {
-                const info = ZONING_CAT_INFO[cat];
-                const isChecked = visibleZoningCats[cat] !== false;
-                return (
-                  <div key={cat} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <span
-                        className="w-3 h-3 rounded shadow-sm shrink-0"
-                        style={{ backgroundColor: info?.color || '#999' }}
-                      />
-                      <span className="text-[11px] text-gray-600 font-medium leading-tight">
-                        {info?.label || cat}
-                      </span>
-                    </div>
-                    <ToggleSwitch
-                      checked={isChecked}
-                      onChange={() => setVisibleZoningCats(prev => ({ ...prev, [cat]: !isChecked }))}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 3. Mapa Base */}
-          <div>
-            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Mapa Base</div>
-            <div className="grid grid-cols-1 gap-2">
-              {[
-                { id: 'STREETS', label: 'Mapa Claro (Calles)' },
-                { id: 'SATELLITE', label: 'Satélite + Calles' },
-                { id: 'TOPO', label: 'Topográfico' }
-              ].map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setActiveBaseLayer(opt.id)}
-                  className={`
+        {/* 3. Mapa Base */}
+        <div>
+          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Mapa Base</div>
+          <div className="grid grid-cols-1 gap-2">
+            {[
+              { id: 'STREETS', label: 'Mapa Claro (Calles)' },
+              { id: 'SATELLITE', label: 'Satélite + Calles' },
+              { id: 'TOPO', label: 'Topográfico' }
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setActiveBaseLayer(opt.id)}
+                className={`
                     w-full text-left px-3 py-2.5 rounded-lg border flex items-center justify-between transition-all
                     ${activeBaseLayer === opt.id
-                      ? 'bg-[#9d2449]/5 border-[#9d2449] text-[#9d2449]'
-                      : 'bg-gray-50 border-transparent text-gray-600 hover:bg-white hover:border-gray-200 shadow-sm'}
+                    ? 'bg-[#9d2449]/5 border-[#9d2449] text-[#9d2449]'
+                    : 'bg-gray-50 border-transparent text-gray-600 hover:bg-white hover:border-gray-200 shadow-sm'}
                  `}
-                >
-                  <span className="text-[12px] font-bold">{opt.label}</span>
-                  {activeBaseLayer === opt.id && <Icons.CheckCircle className="h-4 w-4" />}
-                </button>
-              ))}
-            </div>
+              >
+                <span className="text-[12px] font-bold">{opt.label}</span>
+                {activeBaseLayer === opt.id && <Icons.CheckCircle className="h-4 w-4" />}
+              </button>
+            ))}
           </div>
-
         </div>
+
       </div>
-      );
+    </div>
+  );
 };
 
 /* ------------------------------------------------ */
@@ -3896,85 +3897,85 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
 
 const App = () => {
   const [loading, setLoading] = useState(true); // Carga inicial (datos)
-      const [analyzing, setAnalyzing] = useState(false); // Carga de análisis (geocoding/polígonos)
-      const [extraDataLoaded, setExtraDataLoaded] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false); // Carga de análisis (geocoding/polígonos)
+  const [extraDataLoaded, setExtraDataLoaded] = useState(false);
 
-      const {addToast} = useToast(); // ✅ Use newly added hook
-      const [analysis, setAnalysis] = useState(null);
-      const [location, setLocation] = useState(null);
-      // const [addressText, setAddressText] = useState(''); // ✅ Nuevo estado compartido para la barra de búsqueda
+  const { addToast } = useToast(); // ✅ Use newly added hook
+  const [analysis, setAnalysis] = useState(null);
+  const [location, setLocation] = useState(null);
+  // const [addressText, setAddressText] = useState(''); // ✅ Nuevo estado compartido para la barra de búsqueda
 
-      // Capas mapa
-      const [visibleMapLayers, setVisibleMapLayers] = useState({
-        sc: true,
-      anp: true,
-      zoning: true,
-      alcaldias: true,
-      edomex: true,
-      morelos: true,
-      selectedAnpZoning: true
+  // Capas mapa
+  const [visibleMapLayers, setVisibleMapLayers] = useState({
+    sc: true,
+    anp: true,
+    zoning: true,
+    alcaldias: true,
+    edomex: true,
+    morelos: true,
+    selectedAnpZoning: true
   });
 
   // Categorías zonificación
   const [visibleZoningCats, setVisibleZoningCats] = useState(() => {
-    const d = { };
+    const d = {};
     ZONING_ORDER.forEach(k => (d[k] = true));
-      return d;
+    return d;
   });
 
-      const [isLegendOpen, setIsLegendOpen] = useState(false);
-      const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-      const [activeBaseLayer, setActiveBaseLayer] = useState('SATELLITE');
+  const [isLegendOpen, setIsLegendOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [activeBaseLayer, setActiveBaseLayer] = useState('SATELLITE');
 
   // =====================================================
   // ✅ SINCRONIZA ESTADO DEL MAPA → EXPORT_STATE (para PDF)
   // =====================================================
   useEffect(() => {
-        EXPORT_STATE.activeBaseLayer = activeBaseLayer;
-      EXPORT_STATE.visibleMapLayers = {...visibleMapLayers};
-      EXPORT_STATE.visibleZoningCats = {...visibleZoningCats};
+    EXPORT_STATE.activeBaseLayer = activeBaseLayer;
+    EXPORT_STATE.visibleMapLayers = { ...visibleMapLayers };
+    EXPORT_STATE.visibleZoningCats = { ...visibleZoningCats };
   }, [activeBaseLayer, visibleMapLayers, visibleZoningCats]);
 
-      const [isHelpOpen, setIsHelpOpen] = useState(false);
-      const [mobileSheetState, setMobileSheetState] = useState('collapsed'); // collapsed | mid | full
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [mobileSheetState, setMobileSheetState] = useState('collapsed'); // collapsed | mid | full
 
-      // ✅ acá se guarda la función REAL que exporta el PDF (la define ResultsContent)
-      const [exportHandler, setExportHandler] = useState(null);
+  // ✅ acá se guarda la función REAL que exporta el PDF (la define ResultsContent)
+  const [exportHandler, setExportHandler] = useState(null);
 
   // ✅ Wrapper: solo se ejecuta por botón (acción del usuario)
   const handleExportClick = React.useCallback(() => {
     if (typeof exportHandler === 'function') {
-        exportHandler();
+      exportHandler();
     } else {
-        alert('Aún no se puede exportar. Intenta de nuevo en un momento.');
+      alert('Aún no se puede exportar. Intenta de nuevo en un momento.');
     }
   }, [exportHandler]);
 
-      // ✅ Refs (sin window.__*)
-      const invalidateMapRef = useRef(null);
-      const resetMapViewRef = useRef(null);
-      const desktopSearchInputRef = useRef(null);
-      const mobileSearchInputRef = useRef(null);
+  // ✅ Refs (sin window.__*)
+  const invalidateMapRef = useRef(null);
+  const resetMapViewRef = useRef(null);
+  const desktopSearchInputRef = useRef(null);
+  const mobileSearchInputRef = useRef(null);
 
   const handleLocationSelect = async (c) => {
     const lat = Number(c?.lat);
-      const lng = Number(c?.lng);
-      if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+    const lng = Number(c?.lng);
+    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
-      const coord = {lat, lng};
-      const text = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    const coord = { lat, lng };
+    const text = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
-      // ✅ Actualizamos local y global
-      setLocation(coord);
-      // setAddressText(text); // No longer needed, derived from analysis
+    // ✅ Actualizamos local y global
+    setLocation(coord);
+    // setAddressText(text); // No longer needed, derived from analysis
 
-      // ✅ Empuja al textbox en desktop y móvil
-      desktopSearchInputRef.current?.(text);
-      mobileSearchInputRef.current?.(text);
+    // ✅ Empuja al textbox en desktop y móvil
+    desktopSearchInputRef.current?.(text);
+    mobileSearchInputRef.current?.(text);
 
-      setAnalyzing(true); // Start analysis loading
+    setAnalyzing(true); // Start analysis loading
 
-      try {
+    try {
       const res = await analyzeLocation(coord);
       setAnalysis(res);
 
@@ -3984,183 +3985,183 @@ const App = () => {
         addToast('Análisis completado', 'success');
       }
     } catch (err) {
-        addToast('Error al analizar la ubicación', 'error');
+      addToast('Error al analizar la ubicación', 'error');
       console.error(err);
     } finally {
-        setAnalyzing(false); // End analysis loading
+      setAnalyzing(false); // End analysis loading
     }
   };
 
   const handleReset = () => {
-        setLocation(null);
-      setAnalysis(null);
-      setMobileSheetState('collapsed');
+    setLocation(null);
+    setAnalysis(null);
+    setMobileSheetState('collapsed');
 
-      setAnalysis(null);
-      setMobileSheetState('collapsed');
-      // setAddressText(''); // No longer needed
+    setAnalysis(null);
+    setMobileSheetState('collapsed');
+    // setAddressText(''); // No longer needed
 
-      resetMapViewRef.current?.();
+    resetMapViewRef.current?.();
   };
 
   const handleUserLocation = () => {
-        navigator.geolocation.getCurrentPosition(
-          p => {
-            const coord = { lat: p.coords.latitude, lng: p.coords.longitude };
-            handleLocationSelect(coord);
+    navigator.geolocation.getCurrentPosition(
+      p => {
+        const coord = { lat: p.coords.latitude, lng: p.coords.longitude };
+        handleLocationSelect(coord);
 
-            const text = `${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}`;
-            desktopSearchInputRef.current?.(text);
-            mobileSearchInputRef.current?.(text);
-          },
-          () => addToast("No se pudo obtener tu ubicación. Revisa permisos.", 'error')
-        );
+        const text = `${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}`;
+        desktopSearchInputRef.current?.(text);
+        mobileSearchInputRef.current?.(text);
+      },
+      () => addToast("No se pudo obtener tu ubicación. Revisa permisos.", 'error')
+    );
   };
 
   // Helper to toggle layers
   const toggleLayer = React.useCallback((key) => {
-        setVisibleMapLayers(prev => ({ ...prev, [key]: !prev[key] }));
+    setVisibleMapLayers(prev => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
   // Helper to toggle zoning group
   const toggleZoningGroup = React.useCallback(() => {
-        setVisibleMapLayers(prev => ({ ...prev, zoning: !prev.zoning }));
+    setVisibleMapLayers(prev => ({ ...prev, zoning: !prev.zoning }));
   }, []);
 
   useEffect(() => {
-        loadCoreData().then(() => {
-          setLoading(false);
+    loadCoreData().then(() => {
+      setLoading(false);
 
-          const params = new URLSearchParams(window.location.search);
-          const lat = parseFloat(params.get("lat"));
-          const lng = parseFloat(params.get("lng"));
-          const hasCoords = !isNaN(lat) && !isNaN(lng);
+      const params = new URLSearchParams(window.location.search);
+      const lat = parseFloat(params.get("lat"));
+      const lng = parseFloat(params.get("lng"));
+      const hasCoords = !isNaN(lat) && !isNaN(lng);
 
-          if (!hasCoords) setIsHelpOpen(true);
-          if (hasCoords) handleLocationSelect({ lat, lng });
+      if (!hasCoords) setIsHelpOpen(true);
+      if (hasCoords) handleLocationSelect({ lat, lng });
 
-          loadExtraData().then(() => setExtraDataLoaded(true));
-        });
+      loadExtraData().then(() => setExtraDataLoaded(true));
+    });
   }, []);
 
   useEffect(() => {
-        setTimeout(() => invalidateMapRef.current?.(), 120);
+    setTimeout(() => invalidateMapRef.current?.(), 120);
     setTimeout(() => invalidateMapRef.current?.(), 600);
   }, [isHelpOpen]);
 
   useEffect(() => {
-        setTimeout(() => invalidateMapRef.current?.(), 200);
+    setTimeout(() => invalidateMapRef.current?.(), 200);
   }, [isSidebarOpen]);
 
   useEffect(() => {
     if (location && extraDataLoaded) {
-        analyzeLocation(location).then(setAnalysis);
+      analyzeLocation(location).then(setAnalysis);
     }
   }, [location, extraDataLoaded]);
 
-      if (loading) {
+  if (loading) {
     return (
       <div className="h-screen flex items-center justify-center text-[#9d2449]">
         <Icons.Loader2 className="animate-spin h-10 w-10" />
       </div>
-      );
+    );
   }
 
-      return (
-      <div className="relative w-full h-full overflow-hidden flex flex-col md:flex-row bg-[#f3f4f6]">
+  return (
+    <div className="relative w-full h-full overflow-hidden flex flex-col md:flex-row bg-[#f3f4f6]">
 
-        {/* ✅ BARRA SUPERIOR MÓVIL (APP HEADER) */}
-        <div className="md:hidden absolute top-0 left-0 right-0 z-[1100] p-3 pointer-events-none">
-          <MobileSearchBar
-            onLocationSelect={handleLocationSelect}
-            onReset={handleReset}
-            setInputRef={mobileSearchInputRef}
-            initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
-          />
-        </div>
-
-        {/* Sidebar Desktop */}
-        <SidebarDesktop
-          analysis={analysis}
+      {/* ✅ BARRA SUPERIOR MÓVIL (APP HEADER) */}
+      <div className="md:hidden absolute top-0 left-0 right-0 z-[1100] p-3 pointer-events-none">
+        <MobileSearchBar
           onLocationSelect={handleLocationSelect}
           onReset={handleReset}
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(v => !v)}
-          onExportReady={setExportHandler}
-          desktopSearchSetRef={desktopSearchInputRef}
-          isLoading={analyzing} // ✅ Pass analyzing state
+          setInputRef={mobileSearchInputRef}
+          initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
+        />
+      </div>
+
+      {/* Sidebar Desktop */}
+      <SidebarDesktop
+        analysis={analysis}
+        onLocationSelect={handleLocationSelect}
+        onReset={handleReset}
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(v => !v)}
+        onExportReady={setExportHandler}
+        desktopSearchSetRef={desktopSearchInputRef}
+        isLoading={analyzing} // ✅ Pass analyzing state
+      />
+
+      {/* Main Map Area */}
+      <div className="relative flex-1 h-full w-full">
+        <MapViewer
+          location={location}
+          onLocationSelect={handleLocationSelect}
+          analysisStatus={analysis?.status}
+          visibleMapLayers={visibleMapLayers}
+          setVisibleMapLayers={setVisibleMapLayers}
+          visibleZoningCats={visibleZoningCats}
+          setVisibleZoningCats={setVisibleZoningCats}
+          // isLegendOpen={isLegendOpen} // Removed, Legend handles its own visibility
+          // setIsLegendOpen={setIsLegendOpen} // Removed
+          extraDataLoaded={extraDataLoaded}
+          activeBaseLayer={activeBaseLayer}
+          setActiveBaseLayer={setActiveBaseLayer}
+          invalidateMapRef={invalidateMapRef} // ✅ Pass REF
+          resetMapViewRef={resetMapViewRef}     // ✅ Pass REF
+          selectedAnpId={analysis?.anpId} // ✅ Pass ANP ID
         />
 
-        {/* Main Map Area */}
-        <div className="relative flex-1 h-full w-full">
-          <MapViewer
-            location={location}
-            onLocationSelect={handleLocationSelect}
-            analysisStatus={analysis?.status}
-            visibleMapLayers={visibleMapLayers}
-            setVisibleMapLayers={setVisibleMapLayers}
-            visibleZoningCats={visibleZoningCats}
-            setVisibleZoningCats={setVisibleZoningCats}
-            // isLegendOpen={isLegendOpen} // Removed, Legend handles its own visibility
-            // setIsLegendOpen={setIsLegendOpen} // Removed
-            extraDataLoaded={extraDataLoaded}
-            activeBaseLayer={activeBaseLayer}
-            setActiveBaseLayer={setActiveBaseLayer}
-            invalidateMapRef={invalidateMapRef} // ✅ Pass REF
-            resetMapViewRef={resetMapViewRef}     // ✅ Pass REF
-            selectedAnpId={analysis?.anpId} // ✅ Pass ANP ID
-          />
-
-          {/* Loading Overlay - Only on initial data load, NOT analysis */}
-          {loading && (
-            <div className="absolute inset-0 z-[3000] bg-white/60 backdrop-blur-sm flex items-center justify-center animate-fade-in">
-              <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center">
-                <div className="w-10 h-10 border-4 border-gray-200 border-l-[#9d2449] rounded-full animate-spin mb-3"></div>
-                <span className="text-gray-800 font-bold text-sm">Cargando mapa base...</span>
-              </div>
+        {/* Loading Overlay - Only on initial data load, NOT analysis */}
+        {loading && (
+          <div className="absolute inset-0 z-[3000] bg-white/60 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+            <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center">
+              <div className="w-10 h-10 border-4 border-gray-200 border-l-[#9d2449] rounded-full animate-spin mb-3"></div>
+              <span className="text-gray-800 font-bold text-sm">Cargando mapa base...</span>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Legend */}
-          <Legend
-            visibleMapLayers={visibleMapLayers}
-            toggleLayer={toggleLayer}
-            isOpen={isLegendOpen}
-            setIsOpen={setIsLegendOpen}
-            visibleZoningCats={visibleZoningCats}
-            toggleZoningGroup={toggleZoningGroup}
-            setVisibleZoningCats={setVisibleZoningCats}
-            activeBaseLayer={activeBaseLayer}
-            setActiveBaseLayer={setActiveBaseLayer}
-            selectedAnpId={analysis?.anpId}
-            anpGeneralVisible={visibleMapLayers.anp}
-          />
+        {/* Legend */}
+        <Legend
+          visibleMapLayers={visibleMapLayers}
+          toggleLayer={toggleLayer}
+          isOpen={isLegendOpen}
+          setIsOpen={setIsLegendOpen}
+          visibleZoningCats={visibleZoningCats}
+          toggleZoningGroup={toggleZoningGroup}
+          setVisibleZoningCats={setVisibleZoningCats}
+          activeBaseLayer={activeBaseLayer}
+          setActiveBaseLayer={setActiveBaseLayer}
+          selectedAnpId={analysis?.anpId}
+          anpGeneralVisible={visibleMapLayers.anp}
+        />
 
-          {/* Nota inicial desktop */}
-          {!analysis?.status && (
-            <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
-              <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
-                Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
-              </div>
+        {/* Nota inicial desktop */}
+        {!analysis?.status && (
+          <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
+            <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
+              Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
             </div>
-          )}
+          </div>
+        )}
 
-          {/* BOTONES MÓVIL */}
-          <div className="md:hidden absolute bottom-40 right-4 z-[3400] pointer-events-auto flex flex-col items-end gap-3">
-            <button
-              type="button"
-              onClick={() => setIsHelpOpen(true)}
-              className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2449] active:scale-95 transition"
-              aria-label="Ayuda"
-              title="Ayuda"
-            >
-              ?
-            </button>
+        {/* BOTONES MÓVIL */}
+        <div className="md:hidden absolute bottom-40 right-4 z-[3400] pointer-events-auto flex flex-col items-end gap-3">
+          <button
+            type="button"
+            onClick={() => setIsHelpOpen(true)}
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2449] active:scale-95 transition"
+            aria-label="Ayuda"
+            title="Ayuda"
+          >
+            ?
+          </button>
 
-            {(!analysis || mobileSheetState !== 'full') && (
-              <>
-                {/* The Legend component now handles its own button */}
-                {/* <button
+          {(!analysis || mobileSheetState !== 'full') && (
+            <>
+              {/* The Legend component now handles its own button */}
+              {/* <button
                 type="button"
                 onClick={() => setIsLegendOpen(o => !o)}
                 className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2449] active:scale-95 transition"
@@ -4170,42 +4171,42 @@ const App = () => {
                 <Icons.Layers className="h-5 w-5" />
               </button> */}
 
-                <button
-                  type="button"
-                  onClick={handleUserLocation}
-                  className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2449] active:scale-95 transition"
-                  aria-label="Mi ubicación"
-                  title="Mi ubicación"
-                >
-                  <Icons.Navigation className="h-5 w-5" />
-                </button>
-              </>
-            )}
-          </div>
+              <button
+                type="button"
+                onClick={handleUserLocation}
+                className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2449] active:scale-95 transition"
+                aria-label="Mi ubicación"
+                title="Mi ubicación"
+              >
+                <Icons.Navigation className="h-5 w-5" />
+              </button>
+            </>
+          )}
         </div>
-
-        {/* Mobile Bottom Sheet */}
-        <BottomSheetMobile
-          analysis={analysis}
-          onLocationSelect={handleLocationSelect}
-          onReset={handleReset}
-          onStateChange={setMobileSheetState}
-          onClose={() => {
-            // Close logic if needed, usually just collapsing
-            handleReset();
-          }}
-          onExportPDF={handleExportClick} // pass the handler that calls the state func
-          onExportReady={setExportHandler}
-        />
       </div>
-      );
+
+      {/* Mobile Bottom Sheet */}
+      <BottomSheetMobile
+        analysis={analysis}
+        onLocationSelect={handleLocationSelect}
+        onReset={handleReset}
+        onStateChange={setMobileSheetState}
+        onClose={() => {
+          // Close logic if needed, usually just collapsing
+          handleReset();
+        }}
+        onExportPDF={handleExportClick} // pass the handler that calls the state func
+        onExportReady={setExportHandler}
+      />
+    </div>
+  );
 };
 
 
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(
-      <ToastProvider>
-        <App />
-      </ToastProvider>
-      );
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <ToastProvider>
+    <App />
+  </ToastProvider>
+);
 
