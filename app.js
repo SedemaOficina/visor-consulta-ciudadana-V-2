@@ -1974,6 +1974,10 @@ const ResultsContent = ({ analysis, onExportReady }) => {
     if (!analysis || !pdfRef.current) return;
 
 
+    if (!window.jspdf?.jsPDF) {
+      alert('Error: La librería de PDF no se ha cargado correctamente.');
+      return;
+    }
     const { jsPDF } = window.jspdf;
 
     if (typeof html2canvas === 'undefined') {
