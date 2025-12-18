@@ -14,7 +14,7 @@ const ZONING_CAT_INFO = {
 
 
 
-const ZONING_ORDER = ['FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE', 'ANP_ZON'];
+const ZONING_ORDER = ['FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE'];
 
 const LAYER_STYLES = {
   sc: {
@@ -79,7 +79,8 @@ let EXPORT_STATE = {
     zoning: true,
     alcaldias: true,
     edomex: true,
-    morelos: true
+    morelos: true,
+    selectedAnpZoning: true // ✅ Nueva capa dinámica
   },
 
   visibleZoningCats: (() => {
@@ -2918,13 +2919,15 @@ const MapViewer = ({
   activeBaseLayer,
   setActiveBaseLayer,
   invalidateMapRef,   // ✅ CLAVE
-  resetMapViewRef     // ✅ NUEVO
+  resetMapViewRef,     // ✅ NUEVO
+  selectedAnpId        // ✅ Prop nueva para filtrado
 
 }) => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const layersRef = useRef({});          // sc, alcaldias, edomex, morelos, base
   const zoningLayersRef = useRef({});    // { ANP: layer, FC: layer, ... }
+  const selectedAnpLayerRef = useRef(null); // ✅ Ref para la capa dinámica
   const markerRef = useRef(null);
   const [tilesLoading, setTilesLoading] = useState(true);
 
@@ -3215,6 +3218,52 @@ const MapViewer = ({
     }
   }, [extraDataLoaded]);
 
+  // ✅ EFFECT: Manejo dinámico de Zonificación de ANP Seleccionada
+  useEffect(() => {
+    if (!mapInstance.current || !dataCache.zoning) return;
+
+    // 1. Limpiar capa anterior si existe
+    if (selectedAnpLayerRef.current) {
+      mapInstance.current.removeLayer(selectedAnpLayerRef.current);
+      selectedAnpLayerRef.current = null;
+    }
+
+    // 2. Si no hay ANP seleccionada o la capa "selectedAnpZoning" está apagada, salir
+    if (!selectedAnpId || !visibleMapLayers.selectedAnpZoning) return;
+
+    // 3. Filtrar features del ANP seleccionado
+    const candidates = dataCache.zoning.features.filter(f => {
+      const k = (f.properties?.CLAVE || '').toString().trim().toUpperCase();
+      // Es un feature de zonificación específica (sin CLAVE)
+      if (!k && f.properties?.ZONIFICACION) {
+        // Si tiene ANP_ID y coincide
+        if (f.properties.ANP_ID && f.properties.ANP_ID === selectedAnpId) return true;
+        return false;
+      }
+      return false;
+    });
+
+    if (candidates.length) {
+      const layer = window.L.geoJSON({ type: 'FeatureCollection', features: candidates }, {
+        pane: 'paneOverlay',
+        style: ZONING_CAT_INFO.ANP_ZON ? {
+          ...ZONING_CAT_INFO.ANP_ZON,
+          fillOpacity: 0.6,
+          weight: 1
+        } : { color: '#8b5cf6', weight: 1, fillOpacity: 0.6 },
+        interactive: true,
+        onEachFeature: (feature, layerInstance) => {
+          const label = feature.properties?.ZONIFICACION || 'Zonificación ANP';
+          layerInstance.bindTooltip(label, { sticky: true, className: 'custom-tooltip' });
+        }
+      });
+      selectedAnpLayerRef.current = layer;
+      mapInstance.current.addLayer(layer);
+    }
+
+  }, [selectedAnpId, visibleMapLayers.selectedAnpZoning, extraDataLoaded]);
+
+
   // 3) base layer change
   useEffect(() => {
     if (!mapInstance.current || !layersRef.current.base) return;
@@ -3448,12 +3497,16 @@ const MapViewer = ({
                 </div>
               </div>
 
-              {/* ANP */}
-              <div>
-                <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                  Conservación especial
-                </div>
+            </div>
 
+            {/* ANP */}
+            <div>
+              <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                Conservación especial
+              </div>
+
+              <div className="space-y-1">
+                {/* Capa General ANP */}
                 <div
                   className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100"
                   onClick={() => toggleLayer('anp')}
@@ -3462,66 +3515,112 @@ const MapViewer = ({
                     <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: LAYER_STYLES.anp.fill }} />
                     <span className="text-[11px] text-gray-800 truncate">{LAYER_STYLES.anp.label}</span>
                   </div>
-
                   <ToggleSwitch checked={!!visibleMapLayers.anp} onChange={() => toggleLayer('anp')} />
                 </div>
+
+                {/* ✅ Capa Específica ANP (Zon_...) - Dependiente */}
+                <div
+                  className={`flex items-center justify-between px-2 py-1.5 rounded-lg border border-gray-100 transition-colors
+                      ${!selectedAnpId ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-50 cursor-pointer'}
+                    `}
+                  title={!selectedAnpId ? "Selecciona un ANP en el mapa para ver su zonificación" : ""}
+                  onClick={() => {
+                    if (!selectedAnpId) return;
+                    // Restricción: No activar si la capa superior ANP está visible?
+                    // O al revés? El usuario dijo: "no se pueda activar si la capa superior de anp está activada"
+                    if (visibleMapLayers.anp) {
+                      alert("Para ver la zonificación interna, desactiva primero la capa general de 'Áreas Naturales Protegidas'.");
+                      return;
+                    }
+                    toggleLayer('selectedAnpZoning');
+                  }}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-3 h-3 rounded-sm border border-gray-300"
+                      style={{ backgroundColor: ZONING_CAT_INFO.ANP_ZON?.color || '#8b5cf6' }} />
+                    <span className="text-[11px] text-gray-800 truncate">
+                      Zonificación ANP Selecc.
+                    </span>
+                  </div>
+
+                  {/* Toggle deshabilitado visualmente si ANP general está activa (regla de negocio user) */}
+                  <ToggleSwitch
+                    checked={!!visibleMapLayers.selectedAnpZoning}
+                    onChange={() => {
+                      if (!selectedAnpId) return;
+                      if (visibleMapLayers.anp) {
+                        // Opción: Auto-desactivar ANP general? 
+                        // El usuario dijo "no se pueda activar", implying disabled.
+                        // Vamos a bloquearlo.
+                        alert("Desactiva la capa 'Áreas Naturales Protegidas' para ver el detalle interno.");
+                        return;
+                      }
+                      toggleLayer('selectedAnpZoning');
+                    }}
+                    disabled={!selectedAnpId || !!visibleMapLayers.anp}
+                  />
+                </div>
+              </div>
+            </div>
+
+
+
+            {/* Zonificación PGOEDF */}
+            <div className="border-t pt-3">
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">
+                  Zonificación PGOEDF
+                </div>
+
+                <ToggleSwitch checked={!!visibleMapLayers.zoning} onChange={toggleZoningGroup} />
               </div>
 
 
+              {/* Sublista categorías */}
+              <div className="mt-2 space-y-2">
+                {ZONING_ORDER.filter(k => ZONING_CAT_INFO[k]).map(k => {
+                  const info = ZONING_CAT_INFO[k];
+                  const checked = visibleZoningCats[k] !== false;
 
-              {/* Zonificación PGOEDF */}
-              <div className="border-t pt-3">
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">
-                    Zonificación PGOEDF
-                  </div>
-
-                  <ToggleSwitch checked={!!visibleMapLayers.zoning} onChange={toggleZoningGroup} />
-                </div>
-
-
-                {/* Sublista categorías */}
-                <div className="mt-2 space-y-2">
-                  {ZONING_ORDER.filter(k => ZONING_CAT_INFO[k]).map(k => {
-                    const info = ZONING_CAT_INFO[k];
-                    const checked = visibleZoningCats[k] !== false;
-
-                    return (
-                      <div
-                        key={k}
-                        className="flex items-center justify-between px-2 py-1.5 rounded-lg  hover:bg-gray-50 cursor-pointer border border-gray-100"
-                        onClick={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: info.color }} />
-                          <span className="text-[11px] text-gray-700 truncate">
-                            {info.label}
-                          </span>
-                        </div>
-
-                        <ToggleSwitch
-                          checked={checked}
-                          onChange={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
-                        />
+                  return (
+                    <div
+                      key={k}
+                      className="flex items-center justify-between px-2 py-1.5 rounded-lg  hover:bg-gray-50 cursor-pointer border border-gray-100"
+                      onClick={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: info.color }} />
+                        <span className="text-[11px] text-gray-700 truncate">
+                          {info.label}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+
+                      <ToggleSwitch
+                        checked={checked}
+                        onChange={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
-      )}
-
-      {/* Nota inicial desktop */}
-      {!analysisStatus && (
-        <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
-          <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
-            Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
-          </div>
         </div>
-      )}
+  )
+}
+
+{/* Nota inicial desktop */ }
+{
+  !analysisStatus && (
+    <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
+      <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
+        Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
+      </div>
     </div>
+  )
+}
+    </div >
   );
 };
 
@@ -3543,7 +3642,8 @@ const App = () => {
     zoning: true,
     alcaldias: true,
     edomex: true,
-    morelos: true
+    morelos: true,
+    selectedAnpZoning: true
   });
 
   // Categorías zonificación
@@ -3861,6 +3961,7 @@ const App = () => {
             setActiveBaseLayer={setActiveBaseLayer}
             invalidateMapRef={invalidateMapRef}
             resetMapViewRef={resetMapViewRef}
+            selectedAnpId={analysis?.anpId} // ✅ Pasamos ID
           />
 
           {/* ✅ BottomSheet SIEMPRE montado */}
