@@ -159,14 +159,22 @@ const getZoningColor = (c) => {
 };
 
 const getZoningStyle = (f) => {
-  const c = getZoningColor(f.properties?.CLAVE);
+  let c;
+  if (f.properties?.CLAVE) {
+    c = getZoningColor(f.properties.CLAVE);
+  } else if (f.properties?.ZONIFICACION) {
+    c = ZONING_CAT_INFO.ANP_ZON?.color || '#8b5cf6';
+  } else {
+    c = '#8c564b';
+  }
+
   return {
     color: c,
-    weight: 1.4,
-    dashArray: '3,3',
+    weight: 1.5,
+    dashArray: null, // Unified to solid line
     fillColor: c,
-    fillOpacity: 0.22,   // un poco más transparente
-    opacity: 0.8,        // borde visible
+    fillOpacity: 0.5, // Unified opacity
+    opacity: 1,
     stroke: true,
     interactive: true
   };
@@ -3246,11 +3254,7 @@ const MapViewer = ({
     if (candidates.length) {
       const layer = window.L.geoJSON({ type: 'FeatureCollection', features: candidates }, {
         pane: 'paneOverlay',
-        style: ZONING_CAT_INFO.ANP_ZON ? {
-          ...ZONING_CAT_INFO.ANP_ZON,
-          fillOpacity: 0.6,
-          weight: 1
-        } : { color: '#8b5cf6', weight: 1, fillOpacity: 0.6 },
+        style: (feature) => getZoningStyle(feature),
         interactive: true,
         onEachFeature: (feature, layerInstance) => {
           const label = feature.properties?.ZONIFICACION || 'Zonificación ANP';
