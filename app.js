@@ -486,6 +486,17 @@ const Icons = {
       <line x1="4" y1="6" x2="20" y2="6" />
       <line x1="4" y1="18" x2="20" y2="18" />
     </IconBase>
+  ),
+  Verified: (p) => (
+    <IconBase {...p}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </IconBase>
+  ),
+  Clock: (p) => (
+    <IconBase {...p}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </IconBase>
   )
 };
 
@@ -2485,6 +2496,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
   const [suggestions, setSuggestions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const debounceRef = useRef(null);
+  const localInputRef = useRef(null);
 
   // ✅ Sync con estado padre
   useEffect(() => {
@@ -4006,12 +4018,12 @@ const App = () => {
   };
 
   // Helper to toggle layers
-  const toggleLayer = useCallback((key) => {
+  const toggleLayer = React.useCallback((key) => {
         setVisibleMapLayers(prev => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
   // Helper to toggle zoning group
-  const toggleZoningGroup = useCallback(() => {
+  const toggleZoningGroup = React.useCallback(() => {
         setVisibleMapLayers(prev => ({ ...prev, zoning: !prev.zoning }));
   }, []);
 
