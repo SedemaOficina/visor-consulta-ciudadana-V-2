@@ -534,7 +534,9 @@ const isPointInPolygon = (point, feature) => {
 
 const findFeature = (p, c) => {
   if (!c?.features) return null;
-  for (const f of c.features) {
+  // ✅ Reverse loop: prioritize layers on top (last in array)
+  for (let i = c.features.length - 1; i >= 0; i--) {
+    const f = c.features[i];
     if (isPointInPolygon(p, f)) return f;
   }
   return null;
