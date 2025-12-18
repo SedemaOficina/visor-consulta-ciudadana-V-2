@@ -1,7 +1,8 @@
 /* ------------------------------------------------ */
 /* 1. CONFIGURACIÓN E IMPORTACIONES */
 /* ------------------------------------------------ */
-const { useState, useEffect, useRef } = window.React;
+const React = window.React;
+const { useState, useEffect, useRef } = React;
 const ReactDOM = window.ReactDOM;
 
 const ZONING_CAT_INFO = {
@@ -18,7 +19,7 @@ const ZONING_CAT_INFO = {
 
 
 
-const ZONING_ORDER = ['FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE'];
+const ZONING_ORDER = ['FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE', 'ANP_ZON'];
 
 const LAYER_STYLES = {
   sc: {
@@ -2986,13 +2987,14 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
 /* ------------------------------------------------ */
 /* COMPONENTE TOGGLE SWITCH (FALTABA ESTO) */
 /* ------------------------------------------------ */
-const ToggleSwitch = ({ checked, onChange }) => (
+const ToggleSwitch = ({ checked, onChange, disabled }) => (
   <div
     onClick={(e) => {
       e.stopPropagation();
-      onChange && onChange(!checked);
+      if (!disabled && onChange) onChange(!checked);
     }}
-    className={`w-7 h-4 flex items-center rounded-full p-[2px] duration-300 cursor-pointer ${checked ? 'bg-[#9d2449]' : 'bg-gray-300'
+    className={`w-7 h-4 flex items-center rounded-full p-[2px] duration-300 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${checked && !disabled ? 'bg-[#9d2449]' : 'bg-gray-300'
+
       }`}
   >
     <div
@@ -4028,19 +4030,24 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    loadCoreData().then(() => {
-      setLoading(false);
+    loadCoreData()
+      .then(() => {
+        setLoading(false);
 
-      const params = new URLSearchParams(window.location.search);
-      const lat = parseFloat(params.get("lat"));
-      const lng = parseFloat(params.get("lng"));
-      const hasCoords = !isNaN(lat) && !isNaN(lng);
+        const params = new URLSearchParams(window.location.search);
+        const lat = parseFloat(params.get("lat"));
+        const lng = parseFloat(params.get("lng"));
+        const hasCoords = !isNaN(lat) && !isNaN(lng);
 
-      if (!hasCoords) setIsHelpOpen(true);
-      if (hasCoords) handleLocationSelect({ lat, lng });
+        if (!hasCoords) setIsHelpOpen(true);
+        if (hasCoords) handleLocationSelect({ lat, lng });
 
-      loadExtraData().then(() => setExtraDataLoaded(true));
-    });
+        loadExtraData().then(() => setExtraDataLoaded(true));
+      })
+      .catch(err => {
+        console.error("Error loading initial data:", err);
+        setLoading(false); // Stop loading spinner so user isn't stuck
+      });
   }, []);
 
   useEffect(() => {
