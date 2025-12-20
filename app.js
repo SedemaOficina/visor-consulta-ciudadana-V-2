@@ -13,8 +13,6 @@ const ZONING_CAT_INFO = {
   FPE: { color: '#5AD2FF', label: 'Forestal Protección Esp. (FPE)' },
   FP: { color: '#7FA6FF', label: 'Forestal Protección (FP)' },
   FCE: { color: '#C77DFF', label: 'Forestal Conservación Esp. (FCE)' },
-  FC: { color: '#FF85D6', label: 'Forestal Conservación (FC)' },
-  FCE: { color: '#C77DFF', label: 'Forestal Conservación Esp. (FCE)' },
   FC: { color: '#FF85D6', label: 'Forestal Conservación (FC)' }
 };
 
@@ -3594,19 +3592,9 @@ const MapViewer = ({
         </div>
       )}
 
-      {/* PANEL CAPAS (MÓVIL + DESKTOP) */}
-      {/* ✅ BOTÓN CAPAS — DESKTOP arriba-derecha */}
-      <div className="hidden md:block absolute top-20 right-4 z-[3600]">
-        {!isLegendOpen && (
-          <button
-            onClick={() => setIsLegendOpen(true)}
-            aria-label="Mostrar capas"
-            className="w-11 h-11 flex items-center justify-center bg-white shadow-lg rounded-full border border-gray-200 text-[#9d2449] hover:bg-gray-50"
-          >
-            <Icons.Layers className="h-6 w-6" />
-          </button>
-        )}
-      </div>
+      {/* PANEL CAPAS (MÓVIL + DESKTOP) -- ELIMINADO para evitar duplicidad con Legend */}
+      {/* El botón de capas se maneja exclusivamente en el componente Legend */}
+      <div className="hidden"></div>
 
       {/* ✅ PANEL CAPAS (MÓVIL + DESKTOP) — flotante y con scroll */}
       {isLegendOpen && (
@@ -4076,6 +4064,10 @@ const App = () => {
     setLocation(coord);
     // setAddressText(text); // No longer needed, derived from analysis
 
+    // ✅ FIX: Reset armed state for PDF export to avoid auto-download
+    if (exportArmedRef) exportArmedRef.current = false;
+    // setAddressText(text); // No longer needed, derived from analysis
+
     // ✅ Empuja al textbox en desktop y móvil
     desktopSearchInputRef.current?.(text);
     mobileSearchInputRef.current?.(text);
@@ -4180,7 +4172,12 @@ const App = () => {
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden flex flex-col md:flex-row bg-[#f3f4f6]">
+    <div className="relative w-full h-full overflow-hidden flex flex-col md:flex-row bg-[#f3f4f6]" style={{ fontFamily: "'Inter', sans-serif" }}>
+      {/* ✅ Estilos Globales & Fuentes */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+      `}</style>
 
       {/* ✅ BARRA SUPERIOR MÓVIL (APP HEADER) */}
       <div className="md:hidden absolute top-0 left-0 right-0 z-[1100] p-3 pointer-events-none">
