@@ -13,7 +13,8 @@ const ZONING_CAT_INFO = {
   FPE: { color: '#5AD2FF', label: 'Forestal Protección Esp. (FPE)' },
   FP: { color: '#7FA6FF', label: 'Forestal Protección (FP)' },
   FCE: { color: '#C77DFF', label: 'Forestal Conservación Esp. (FCE)' },
-  FC: { color: '#FF85D6', label: 'Forestal Conservación (FC)' }
+  FC: { color: '#FF85D6', label: 'Forestal Conservación (FC)' },
+  ANP_ZON: { color: '#8b5cf6', label: 'Zonificación ANP (interna)' }
 };
 
 
@@ -507,8 +508,6 @@ let dataCache = {
   cdmx: null,
   alcaldias: null,
   sc: null,
-  edomex: null,
-  morelos: null,
   edomex: null,
   morelos: null,
   zoning: null,      // PGOEDF (Main)
@@ -2356,8 +2355,14 @@ const ResultsContent = ({ analysis, onExportReady }) => {
   }, [onExportReady, requestExportPDF]);
 
 
-  if (!analysis) return null;
-  const isANP = !!analysis.isANP;
+  const isANP = analysis.isANP;
+  const hasInternal = !!analysis.hasInternalAnpZoning;
+  const internalName = analysis.anpZoningData?.ZONIFICACION || analysis.anpZoningData?.ZONA || null;
+
+  const zoningColor =
+    isANP && hasInternal ? (ZONING_CAT_INFO.ANP_ZON?.color || '#8b5cf6')
+      : (analysis.zoningKey ? getZoningColor(analysis.zoningKey) : '#9ca3af');
+
   return (
     <div className="space-y-4 animate-in bg-white border border-gray-200 rounded-lg px-4 pt-2 pb-3">
       {/* PLANTILLA OCULTA PARA PDF */}
@@ -3635,217 +3640,23 @@ const MapViewer = ({
       {/* El botón de capas se maneja exclusivamente en el componente Legend */}
       <div className="hidden"></div>
 
-      {/* ✅ PANEL CAPAS (MÓVIL + DESKTOP) — flotante y con scroll */}
+      {/* Panel de capas se maneja solo en <Legend /> */}
       {isLegendOpen && (
-        <div
-          className="absolute top-24 right-4 md:top-20 md:right-4 z-[4500]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div
-            className="
-    w-[300px] max-w-[92vw]
-    bg-white border border-gray-200
-    rounded-2xl shadow-2xl
-    overflow-hidden flex flex-col
-  "
-            style={{ maxHeight: "calc(100svh - 260px)" }}
-          >
-            {/* Header */}
-            <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
-
-              <div className="font-bold text-[#9d2449] text-sm uppercase tracking-wide">
-                Capas del mapa
-              </div>
-              <button
-                onClick={() => setIsLegendOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#9d2449] text-white flex items-center justify-center active:scale-95"
-                aria-label="Cerrar"
-                title="Cerrar"
-              >
-                <Icons.X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* ✅ BODY SCROLLEABLE */}
-            <div className="p-2 space-y-2 overflow-y-auto custom-scrollbar flex-1"
-              style={{
-                // deja espacio al bottom sheet en móvil
-                maxHeight: "calc(100svh - 340px)"
-              }}
-            >
-              {/* Mapa base */}
-              <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
-                <div className="text-[10px] font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                  Mapa base
-                </div>
-
-                <div className="grid grid-cols-3 rounded-lg overflow-hidden border border-gray-200 bg-white">
-                  <button
-                    type="button"
-                    onClick={() => setActiveBaseLayer('STREETS')}
-                    className={`py-1.5 text-[11px] font-semibold ${activeBaseLayer === 'STREETS'
-                      ? 'bg-[#9d2449] text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
-                  >
-                    Mapa
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveBaseLayer('SATELLITE')}
-                    className={`py-1.5 text-[11px] font-semibold ${activeBaseLayer === 'SATELLITE'
-                      ? 'bg-[#9d2449] text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
-                  >
-                    Satélite
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveBaseLayer('TOPO')}
-                    className={`py-1.5 text-[11px] font-semibold ${activeBaseLayer === 'TOPO'
-                      ? 'bg-[#9d2449] text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
-                    title="Topográfico suave"
-                  >
-                    Relieve
-                  </button>
-                </div>
-              </div>
-
-              {/* Límites y contexto */}
-              <div>
-                <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                  Límites y contexto
-                </div>
-
-                {['alcaldias', 'edomex', 'morelos'].map(k => (
-                  <div
-                    key={k}
-                    className="flex items-center justify-between px-2 py-1.5 rounded-lg  hover:bg-gray-50 cursor-pointer border border-gray-100"
-                    onClick={() => toggleLayer(k)}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={`w-3 h-3 ${k === 'alcaldias'
-                          ? 'border-2 border-gray-500 border-dashed bg-white'
-                          : 'rounded-sm'
-                          }`}
-                        style={{ backgroundColor: k !== 'alcaldias' ? LAYER_STYLES[k].color : '' }}
-                      />
-                      <span className="text-[11px] text-gray-800 truncate">
-                        {LAYER_STYLES[k].label}
-                      </span>
-                    </div>
-
-                    <ToggleSwitch
-                      checked={!!visibleMapLayers[k]}
-                      onChange={() => toggleLayer(k)}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Suelo de conservación */}
-              <div>
-                <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                  Suelo de conservación
-                </div>
-
-                <div
-                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100"
-                  onClick={() => toggleLayer('sc')}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: LAYER_STYLES.sc.fill }} />
-                    <span className="text-[11px] text-gray-800 truncate">{LAYER_STYLES.sc.label}</span>
-                  </div>
-
-                  <ToggleSwitch checked={!!visibleMapLayers.sc} onChange={() => toggleLayer('sc')} />
-                </div>
-              </div>
-
-            </div>
-
-            {/* ANP */}
-            <div>
-              <div className="text-[11px] font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                Conservación especial
-              </div>
-
-              <div className="space-y-1">
-                {/* Capa General ANP */}
-                <div
-                  className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100"
-                  onClick={() => toggleLayer('anp')}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: LAYER_STYLES.anp.fill }} />
-                    <span className="text-[11px] text-gray-800 truncate">{LAYER_STYLES.anp.label}</span>
-                  </div>
-                  <ToggleSwitch checked={!!visibleMapLayers.anp} onChange={() => toggleLayer('anp')} />
-                </div>
-
-              </div>
-            </div>
-
-
-
-            {/* Zonificación PGOEDF */}
-            <div className="border-t pt-3">
-              <div className="flex items-center justify-between">
-                <div className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide">
-                  Zonificación PGOEDF
-                </div>
-
-                <ToggleSwitch checked={!!visibleMapLayers.zoning} onChange={toggleZoningGroup} />
-              </div>
-
-
-              {/* Sublista categorías */}
-              <div className="mt-2 space-y-2">
-                {ZONING_ORDER.filter(k => ZONING_CAT_INFO[k]).map(k => {
-                  const info = ZONING_CAT_INFO[k];
-                  const checked = visibleZoningCats[k] !== false;
-
-                  return (
-                    <div
-                      key={k}
-                      className="flex items-center justify-between px-2 py-1.5 rounded-lg  hover:bg-gray-50 cursor-pointer border border-gray-100"
-                      onClick={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: info.color }} />
-                        <span className="text-[11px] text-gray-700 truncate">
-                          {info.label}
-                        </span>
-                      </div>
-
-                      <ToggleSwitch
-                        checked={checked}
-                        onChange={() => setVisibleZoningCats(prev => ({ ...prev, [k]: prev[k] === false ? true : false }))}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
+        <div className="hidden"></div>
       )}
+
 
       {/* Nota inicial desktop */}
-      {!analysisStatus && (
-        <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
-          <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
-            Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
+      {
+        !analysisStatus && (
+          <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
+            <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
+              Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 
@@ -3860,7 +3671,7 @@ const Legend = ({
   visibleZoningCats,
   toggleZoningGroup,
   setVisibleZoningCats,
-  toggleZoningCat,
+
   activeBaseLayer,
   setActiveBaseLayer,
   selectedAnpId,
@@ -4104,7 +3915,7 @@ const App = () => {
     // setAddressText(text); // No longer needed, derived from analysis
 
     // ✅ FIX: Reset armed state for PDF export to avoid auto-download
-    if (exportArmedRef) exportArmedRef.current = false;
+    // if (exportArmedRef) exportArmedRef.current = false; // ERROR: exportArmedRef not defined here
     // setAddressText(text); // No longer needed, derived from analysis
 
     // ✅ Empuja al textbox en desktop y móvil
