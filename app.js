@@ -1069,48 +1069,6 @@ const HelpModal = ({ isOpen, onClose }) => {
 
             <hr className="border-gray-100" />
 
-            {/* Sección 2 */}
-            <section>
-              <h3 className="flex items-center gap-2 text-lg font-bold text-[#9d2148] mb-3">
-                <Icons.Layers className="h-5 w-5" />
-                Capas Disponibles
-              </h3>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <span className="block text-xs font-bold text-gray-900 mb-1 uppercase">Suelo de Conservación</span>
-                  <p className="text-xs text-gray-600">Delimitación oficial del suelo de conservación de la CDMX.</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <span className="block text-xs font-bold text-gray-900 mb-1 uppercase">Zonificación PGOEDF</span>
-                  <p className="text-xs text-gray-600">Áreas con regulación específica según el Programa General.</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <span className="block text-xs font-bold text-gray-900 mb-1 uppercase">Áreas Naturales Protegidas</span>
-                  <p className="text-xs text-gray-600">Polígonos de ANP federales y locales.</p>
-                </div>
-              </div>
-            </section>
-
-            <hr className="border-gray-100" />
-
-            {/* FAQ */}
-            <section>
-              <h3 className="text-lg font-bold text-[#9d2148] mb-3">Preguntas Frecuentes</h3>
-              <div className="space-y-3">
-                {FAQ_ITEMS.map((item, i) => (
-                  <details key={i} className="group bg-white border border-gray-200 rounded-lg overflow-hidden">
-                    <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50">
-                      <span className="text-sm font-semibold text-gray-800">{item.q}</span>
-                      <Icons.ChevronDown className="h-4 w-4 text-gray-400 group-open:rotate-180 transition-transform" />
-                    </summary>
-                    <div className="px-3 pb-3 pt-0 text-sm text-gray-600 leading-relaxed">
-                      {item.a}
-                    </div>
-                  </details>
-                ))}
-              </div>
-            </section>
-
             {/* Contacto */}
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div>
@@ -3671,17 +3629,17 @@ const Legend = ({
   return (
     <div className="fixed top-20 md:top-24 right-16 z-[2000] w-64 max-h-[60vh] md:max-h-[500px] glass-panel rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 flex flex-col border border-gray-100/50">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100 bg-white/80 backdrop-blur-md rounded-t-xl shrink-0">
-        <h3 className="font-bold text-gray-800 text-xs flex items-center gap-2">
-          <Icons.Layers className="h-3.5 w-3.5 text-[#9d2148]" />
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/20 bg-[#9d2148]/90 backdrop-blur-md rounded-t-xl shrink-0">
+        <h3 className="font-bold text-white text-xs flex items-center gap-2">
+          <Icons.Layers className="h-3.5 w-3.5 text-white" />
           Capas y Simbología
         </h3>
         <button
           onClick={() => setIsOpen(false)}
-          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-1 hover:bg-white/20 rounded-full transition-colors text-white"
           aria-label="Cerrar panel de capas"
         >
-          <Icons.X className="h-3.5 w-3.5 text-gray-500" />
+          <Icons.X className="h-3.5 w-3.5" />
         </button>
       </div>
 
