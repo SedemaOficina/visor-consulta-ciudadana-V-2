@@ -5,10 +5,10 @@ window.App.Utils = {};
 const Constants = window.App.Constants;
 
 /* ------------------------------------------------ */
-/* HELPERS GEOESPACIALES */
+/* HELPERS GEOESPACIALES (DEFINER LOCALES) */
 /* ------------------------------------------------ */
 
-window.App.Utils.isPointInPolygon = (point, feature) => {
+const isPointInPolygon = (point, feature) => {
     if (!feature?.geometry?.type || !feature?.geometry?.coordinates) return false;
     const x = point.lng; // GeoJSON: X = longitud
     const y = point.lat; // GeoJSON: Y = latitud
@@ -57,17 +57,17 @@ window.App.Utils.isPointInPolygon = (point, feature) => {
     return false;
 };
 
-window.App.Utils.findFeature = (p, c) => {
+const findFeature = (p, c) => {
     if (!c?.features) return null;
     // ✅ Reverse loop: prioritize layers on top (last in array)
     for (let i = c.features.length - 1; i >= 0; i--) {
         const f = c.features[i];
-        if (window.App.Utils.isPointInPolygon(p, f)) return f;
+        if (isPointInPolygon(p, f)) return f;
     }
     return null;
 };
 
-window.App.Utils.getZoningColor = (key) => {
+const getZoningColor = (key) => {
     if (!key) return '#ccc';
     const k = key.toString().toUpperCase();
     // Busca parcial (ej: "FCE 2" -> match "FCE")
@@ -75,8 +75,7 @@ window.App.Utils.getZoningColor = (key) => {
     return cat ? Constants.ZONING_CAT_INFO[cat].color : '#9ca3af';
 };
 
-// Helper para colores de Zonificación interna ANP
-window.App.Utils.getAnpZoningColor = (zoningName) => {
+const getAnpZoningColor = (zoningName) => {
     const name = (zoningName || '').toLowerCase();
 
     // Paleta semántica
@@ -98,17 +97,17 @@ window.App.Utils.getAnpZoningColor = (zoningName) => {
     return fallbackPalette[Math.abs(hash) % fallbackPalette.length];
 };
 
-window.App.Utils.getZoningStyle = (feature) => {
+const getZoningStyle = (feature) => {
     let color;
     let fillOpacity = 0.2; // Opacidad base
 
     // 1. Si tiene CLAVE (Zonificación PGOEDF)
     if (feature.properties?.CLAVE) {
-        color = window.App.Utils.getZoningColor(feature.properties.CLAVE);
+        color = getZoningColor(feature.properties.CLAVE);
     }
     // 2. Si tiene ZONIFICACION (Zonificación Interna ANP)
     else if (feature.properties?.ZONIFICACION) {
-        color = window.App.Utils.getAnpZoningColor(feature.properties.ZONIFICACION);
+        color = getAnpZoningColor(feature.properties.ZONIFICACION);
         fillOpacity = 0.4; // Un poco más opaco para que destaque sobre el fondo
     }
     // 3. Fallback
@@ -126,7 +125,7 @@ window.App.Utils.getZoningStyle = (feature) => {
     };
 };
 
-window.App.Utils.getSectorStyle = (sectorName) => {
+const getSectorStyle = (sectorName) => {
     const norm = (sectorName || '').toLowerCase().trim();
     if (norm.includes('agrícola') || norm.includes('agricola') || norm.includes('agro')) {
         return { bg: '#FEF9C3', border: '#FACC15', text: '#854D0E' }; // Amarillo/Dorado
@@ -151,12 +150,12 @@ window.App.Utils.getSectorStyle = (sectorName) => {
 /* HELPERS PARSING & SEARCH (MAPBOX) */
 /* ------------------------------------------------ */
 
-window.App.Utils.isStrictNumber = (val) => {
+const isStrictNumber = (val) => {
     if (typeof val !== 'string') return false;
     return !isNaN(val) && !isNaN(parseFloat(val));
 };
 
-window.App.Utils.parseCoordinateInput = (input) => {
+const parseCoordinateInput = (input) => {
     if (!input) return null;
     const s = input.trim();
 
@@ -168,7 +167,7 @@ window.App.Utils.parseCoordinateInput = (input) => {
         // Con coma: "19.41, -99.14"
         if (text.includes(',')) {
             const parts = text.split(',').map(p => p.trim());
-            if (parts.length === 2 && window.App.Utils.isStrictNumber(parts[0]) && window.App.Utils.isStrictNumber(parts[1])) {
+            if (parts.length === 2 && isStrictNumber(parts[0]) && isStrictNumber(parts[1])) {
                 const lat = Number(parts[0]);
                 const lng = Number(parts[1]);
                 if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
@@ -177,7 +176,7 @@ window.App.Utils.parseCoordinateInput = (input) => {
 
         // Con espacio: "19.41 -99.14"
         const spaceParts = text.trim().split(/\s+/);
-        if (spaceParts.length === 2 && window.App.Utils.isStrictNumber(spaceParts[0]) && window.App.Utils.isStrictNumber(spaceParts[1])) {
+        if (spaceParts.length === 2 && isStrictNumber(spaceParts[0]) && isStrictNumber(spaceParts[1])) {
             const lat = Number(spaceParts[0]);
             const lng = Number(spaceParts[1]);
             if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
@@ -210,10 +209,9 @@ window.App.Utils.parseCoordinateInput = (input) => {
     return null;
 };
 
-window.App.Utils.searchMapboxPlaces = async (query) => {
+const searchMapboxPlaces = async (query) => {
     if (!query) return [];
     const token = Constants.MAPBOX_TOKEN;
-    // Bounding box CDMX aprox (no restrictivo, pero ayuda)
     const bbox = '-99.3649,19.0482,-98.9403,19.5927';
     const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&bbox=${bbox}&country=mx&limit=5&language=es`;
 
@@ -234,7 +232,7 @@ window.App.Utils.searchMapboxPlaces = async (query) => {
     }
 };
 
-window.App.Utils.getBaseLayerUrl = (name) => {
+const getBaseLayerUrl = (name) => {
     const token = Constants.MAPBOX_TOKEN;
     if (name === 'STREETS') {
         return `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/256/{z}/{x}/{y}?access_token=${token}`;
@@ -251,3 +249,15 @@ window.App.Utils.getBaseLayerUrl = (name) => {
     // fallback seguro
     return `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/256/{z}/{x}/{y}?access_token=${token}`;
 };
+
+// EXPORTACIÓN FINAL A WINDOW
+window.App.Utils.isPointInPolygon = isPointInPolygon;
+window.App.Utils.findFeature = findFeature;
+window.App.Utils.getZoningColor = getZoningColor;
+window.App.Utils.getAnpZoningColor = getAnpZoningColor;
+window.App.Utils.getZoningStyle = getZoningStyle;
+window.App.Utils.getSectorStyle = getSectorStyle;
+window.App.Utils.isStrictNumber = isStrictNumber;
+window.App.Utils.parseCoordinateInput = parseCoordinateInput;
+window.App.Utils.searchMapboxPlaces = searchMapboxPlaces;
+window.App.Utils.getBaseLayerUrl = getBaseLayerUrl;
