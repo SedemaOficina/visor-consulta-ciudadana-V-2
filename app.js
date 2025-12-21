@@ -26,7 +26,8 @@ const {
   getSectorStyle,
   isStrictNumber,
   parseCoordinateInput,
-  searchMapboxPlaces
+  searchMapboxPlaces,
+  getBaseLayerUrl
 } = window.App.Utils;
 
 // Componentes UI
@@ -103,22 +104,7 @@ const preloadImage = (src) =>
 
 
 // ✅ Helper para tiles base (Leaflet)
-const getBaseLayerUrl = (name) => {
-  if (name === 'STREETS') {
-    return `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/256/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`;
-  }
-
-  if (name === 'SATELLITE') {
-    return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/256/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`;
-  }
-
-  if (name === 'TOPO') {
-    return `https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`;
-  }
-
-  // fallback seguro
-  return `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/256/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`;
-};
+// (Moved to src/utils/geoUtils.js)
 
 // (Moved to src/config/constants.js)
 
