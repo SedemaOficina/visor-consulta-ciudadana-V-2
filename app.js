@@ -352,6 +352,12 @@ const analyzeLocation = async (c) => {
       r.anpZoningData = { ...zInt.properties };
       // Aquí indicamos que EXISTE zonificación específica
       r.hasInternalAnpZoning = true;
+
+      // ✅ OVERWRITE UI fields
+      if (zInt.properties?.ZONIFICACION) {
+        r.zoningName = zInt.properties.ZONIFICACION;
+        // Optional: reset activities if needed, or keep PGOEDF as fallback
+      }
     }
   }
 

@@ -1,6 +1,6 @@
 const { useState } = window.React;
 const { ZONING_CAT_INFO, CONTACT_INFO } = window.App.Constants;
-const { getZoningColor, getSectorStyle } = window.App.Utils;
+const { getZoningColor, getSectorStyle, getAnpZoningColor } = window.App.Utils;
 const Icons = window.App.Components.Icons;
 
 /* ------------------------------------------------ */
@@ -168,7 +168,9 @@ const LocationSummary = ({ analysis, onExportPDF }) => {
     const isUrban = status === 'URBAN_SOIL';
     const isANP = analysis.isANP;
 
-    const zoningColor = analysis.zoningKey ? getZoningColor(analysis.zoningKey) : '#9ca3af';
+    const zoningColor = analysis.hasInternalAnpZoning
+        ? getAnpZoningColor(analysis.zoningName)
+        : (analysis.zoningKey ? getZoningColor(analysis.zoningKey) : '#9ca3af');
     const showZoningBlock = !isOutside && !isUrban;
 
     const [copied, setCopied] = useState(false);
@@ -234,7 +236,7 @@ const LocationSummary = ({ analysis, onExportPDF }) => {
                 {showZoningBlock && (
                     <div className="mb-4">
                         <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-1">
-                            {isANP ? 'Zonificación Interna' : 'Zonificación PGOEDF'}
+                            {analysis.hasInternalAnpZoning ? 'Zonificación Interna' : 'Zonificación PGOEDF'}
                         </div>
                         {analysis.zoningName ? (
                             <div className="flex items-start gap-2">
