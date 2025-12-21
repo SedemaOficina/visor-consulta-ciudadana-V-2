@@ -5,67 +5,40 @@ const React = window.React;
 const { useState, useEffect, useRef } = React;
 const ReactDOM = window.ReactDOM;
 
-const ZONING_CAT_INFO = {
-  AEE: { color: '#FF5F5F', label: 'Agroecológico Especial (AEE)' },
-  AE: { color: '#FFB55A', label: 'Agroecológico (AE)' },
-  AFE: { color: '#FFD447', label: 'Agroforestal Especial (AFE)' },
-  AF: { color: '#7BE495', label: 'Agroforestal (AF)' },
-  FPE: { color: '#5AD2FF', label: 'Forestal Protección Esp. (FPE)' },
-  FP: { color: '#7FA6FF', label: 'Forestal Protección (FP)' },
-  FCE: { color: '#C77DFF', label: 'Forestal Conservación Esp. (FCE)' },
-  FC: { color: '#FF85D6', label: 'Forestal Conservación (FC)' },
-  ANP_ZON: { color: '#8b5cf6', label: 'Zonificación ANP (interna)' }
-};
+const {
+  DATA_FILES,
+  LAYER_STYLES,
+  ZONING_CAT_INFO,
+  ZONING_ORDER,
+  CONTACT_INFO,
+  FAQ_ITEMS,
+  MAPBOX_TOKEN,
+  INITIAL_CENTER,
+  INITIAL_ZOOM,
+  FOCUS_ZOOM
+} = window.App.Constants;
 
-const ZONING_ORDER = ['FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE'];
+const {
+  isPointInPolygon,
+  findFeature,
+  getZoningColor,
+  getZoningStyle,
+  getSectorStyle,
+  isStrictNumber,
+  parseCoordinateInput,
+  searchMapboxPlaces
+} = window.App.Utils;
 
-const LAYER_STYLES = {
-  sc: {
-    color: '#3B7D23',
-    fill: '#3B7D23',
-    label: 'Suelo de Conservación'
-  },
-  anp: {
-    color: '#a855f7',
-    fill: '#a855f7',
-    label: 'Áreas Naturales Protegidas'
-  },
-  alcaldias: { color: '#FFFFFF', border: '#555', label: 'Límite Alcaldías' }, // W: 2 (Hierarchy)
-  edomex: { color: '#FFD86B', label: 'Estado de México' },
-  morelos: { color: '#B8A1FF', label: 'Estado de Morelos' }
-};
+// Componentes UI
+const Icons = window.App.Components.Icons;
+const InstitutionalHeader = window.App.Components.InstitutionalHeader;
 
-const DATA_FILES = {
-  LIMITES_CDMX: './data/cdmx.geojson',
-  LIMITES_ALCALDIAS: './data/alcaldias.geojson',
-  LIMITES_EDOMEX: './data/edomex.geojson',
-  LIMITES_MORELOS: './data/morelos.geojson',
-  SUELO_CONSERVACION: './data/suelo-de-conservacion-2020.geojson',
+// (Moved to src/config/constants.js)
 
-  // ✅ Zonificación principal (base)
-  ZONIFICACION_MAIN: './data/zoonificacion_pgoedf_2000_sin_anp.geojson',
-
-  // ✅ Zonificaciones extra (se agregan encima)
-  ZONIFICACION_FILES: [
-    './data/Zon_Bosque_de_Tlalpan.geojson',
-    './data/Zon_Cerro_de_la_Estrella.geojson',
-    './data/Zon_Desierto_de_los_Leones.geojson',
-    './data/Zon_Ejidos_de_Xochimilco.geojson',
-    './data/Zon_La_Loma.geojson',
-    './data/Zon_Sierra_de_Guadalupe.geojson',
-    './data/Zon_Sierra_de_Santa_Catarina.geojson'
-  ],
-
-  // ✅ CSV real
-  USOS_SUELO_CSV: './data/tabla_actividades_pgoedf.csv',
-
-  // ✅ ANP real
-  ANP: './data/anp_consolidada.geojson'
-
-};
+// (Moved to src/config/constants.js)
 
 
-const MAPBOX_TOKEN = 'pk.eyJ1Ijoiam9yZ2VsaWJlcjI4IiwiYSI6ImNtajA0eHR2eTA0b2gzZnB0NnU2a2xwY2oifQ.2BDJUISBBvrm1wM8RwXusg';
+// (Moved to src/config/constants.js)
 
 // =====================================================
 // ✅ ESTADO EXPORTABLE DEL MAPA (para PDF)
@@ -138,364 +111,22 @@ const getBaseLayerUrl = (name) => {
   return `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/256/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`;
 };
 
-const INITIAL_CENTER = [19.3200, -99.1500];
-const INITIAL_ZOOM = 10;
-const FOCUS_ZOOM = 15; // Zoom al hacer una consulta puntual
-
-const CONTACT_INFO = {
-  phone: "55-5345-8000 ext. 1234",
-  hours: "Lunes a Viernes de 9:00 a 18:00 hrs"
-};
-
-const FAQ_ITEMS = [
-  { q: "1. ¿Qué beneficios obtengo?", a: "Conocer la información normativa..." },
-  { q: "2. ¿Qué es Zonificación?", a: "Clasificación de áreas..." }
-];
+// (Moved to src/config/constants.js)
 
 /* ------------------------------------------------ */
 /* 2. UTILIDADES GEOESPACIALES Y GENERALES */
 /* ------------------------------------------------ */
 
-const getZoningColor = (c) => {
-  const k = (c || 'DEFAULT').toString().toUpperCase().trim();
-  return ZONING_CAT_INFO[k]?.color || '#8c564b';
-};
+// (Moved to src/utils/geoUtils.js)
 
-const getZoningStyle = (f) => {
-  let c;
-  if (f.properties?.CLAVE) {
-    c = getZoningColor(f.properties.CLAVE);
-  } else if (f.properties?.ZONIFICACION) {
-    c = ZONING_CAT_INFO.ANP_ZON?.color || '#8b5cf6';
-  } else {
-    c = '#8c564b';
-  }
-
-  return {
-    color: c,
-    weight: 1.5, // Standardized Line Weight
-    dashArray: null,
-    fillColor: c,
-    fillOpacity: 0.2, // Standardized Fill Opacity
-    opacity: 1,
-    stroke: true,
-    interactive: true
-  };
-};
-
-const getSectorStyle = (str) => {
-  str = (str ?? '').toString(); // ✅ evita TypeError si viene null/undefined
-  const styles = [
-    { bg: '#eff6ff', border: '#3b82f6', text: '#1e40af' },
-    { bg: '#f0fdf4', border: '#22c55e', text: '#15803d' },
-    { bg: '#fefce8', border: '#eab308', text: '#a16207' },
-    { bg: '#fff1f2', border: '#f43f5e', text: '#be123c' },
-    { bg: '#fdf4ff', border: '#d946ef', text: '#a21caf' }
-  ];
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return styles[Math.abs(hash) % styles.length];
-};
-
-// ----------------------------------------------------
-// Búsqueda en Mapbox (autocompletado de direcciones)
-// ----------------------------------------------------
-const searchMapboxPlaces = async (query) => {
-  const q = query.trim();
-  if (!q || q.length < 3) return [];
-
-  if (!MAPBOX_TOKEN || MAPBOX_TOKEN === 'TU_MAPBOX_TOKEN_AQUI') {
-    console.warn('MAPBOX_TOKEN no configurado');
-    return [];
-  }
-
-  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json` +
-    `?autocomplete=true` +
-    `&language=es` +
-    `&limit=5` +
-    `&proximity=-99.1332,19.4326` +
-    `&types=address,neighborhood,locality,place` +
-    `&bbox=-99.3644,19.0185,-98.9401,19.5926` +
-    `&access_token=${MAPBOX_TOKEN}`;
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    const data = await res.json();
-    if (!data.features) return [];
-
-    return data.features
-      .map(f => {
-        const ctx = f.context || [];
-
-        let alcaldia = null;
-        let ciudad = null;
-
-        ctx.forEach(c => {
-          // En CDMX, la alcaldía/municipio suele venir como locality o place
-          if (c.id.startsWith('locality') || c.id.startsWith('place')) {
-            alcaldia = c.text;
-          } else if (c.id.startsWith('region')) {
-            ciudad = c.text;
-          }
-        });
-
-        // Texto corto para el dropdown: Calle · Alcaldía (o Ciudad)
-        const principal = f.text; // nombre corto: calle, colonia, etc.
-        const partesSecundarias = [];
-        if (alcaldia) partesSecundarias.push(alcaldia);
-        else if (ciudad) partesSecundarias.push(ciudad);
-
-        const shortLabel = partesSecundarias.length
-          ? `${principal} · ${partesSecundarias.join(' · ')}`
-          : principal;
-
-        return {
-          id: f.id,
-          label: shortLabel,       // lo que verás en la lista
-          fullLabel: f.place_name, // texto completo de Mapbox
-          lat: f.center[1],
-          lng: f.center[0],
-          alcaldia,
-          ciudad
-        };
-      })
-      .filter(f => {
-        const full = f.fullLabel.toLowerCase();
-        const alc = (f.alcaldia || '').toLowerCase();
-        return (
-          full.includes("ciudad de méxico") ||
-          full.includes("cdmx") ||
-          alc.includes("ciudad de méxico") ||
-          alc.includes("cdmx")
-        );
-      });
-  } catch (e) {
-    console.error('Error en búsqueda Mapbox', e);
-    return [];
-  }
-};
-
-// ----------------------------------------------------
-// Parser de coordenadas: decimal, DMS, Google copy-paste
-// (UTM removido por completo)
-// ----------------------------------------------------
-const parseCoordinateInput = (value) => {
-  if (!value) return null;
-  let s = value.trim();
-  if (!s) return null;
-
-  // Quitar paréntesis envolventes: (19.41, -99.14)
-  if (s.startsWith('(') && s.endsWith(')')) {
-    s = s.slice(1, -1).trim();
-  }
-
-  // ------------ 1) Intento decimal (coma / espacio) ------------
-  const tryDecimal = (text) => {
-    // ✅ Solo aceptamos decimales PUROS (sin °, N/S/E/W, comillas, etc.)
-    const isStrictNumber = (v) => /^[-+]?\d+(\.\d+)?$/.test(v);
-
-    // Si trae símbolos de DMS o hemisferios, NO intentar decimal
-    if (/[°'"NnSsEeWw]/.test(text)) return null;
-
-    // Con coma: "19.41, -99.14"
-    if (text.includes(',')) {
-      const parts = text.split(',').map(p => p.trim());
-      if (parts.length === 2 && isStrictNumber(parts[0]) && isStrictNumber(parts[1])) {
-        const lat = Number(parts[0]);
-        const lng = Number(parts[1]);
-        if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
-      }
-    }
-
-    // Con espacio: "19.41 -99.14"
-    const spaceParts = text.trim().split(/\s+/);
-    if (spaceParts.length === 2 && isStrictNumber(spaceParts[0]) && isStrictNumber(spaceParts[1])) {
-      const lat = Number(spaceParts[0]);
-      const lng = Number(spaceParts[1]);
-      if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
-    }
-
-    return null;
-  };
-
-  const decimal = tryDecimal(s);
-  if (decimal) return decimal;
-
-  // ------------ 2) Intento DMS tipo Google: 19°25'04.3"N 99°08'37.9"W ------------
-  const dmsToDecimal = (deg, min, sec, hemi) => {
-    let d = parseFloat(deg) + parseFloat(min) / 60 + parseFloat(sec) / 3600;
-    hemi = (hemi || '').toUpperCase();
-    if (hemi === 'S' || hemi === 'W') d *= -1;
-    return d;
-  };
-
-  const latMatch = s.match(/(\d+)[°\s]+(\d+)[\'’\s]+(\d+(?:\.\d+)?)[\"\s]*([NnSs])/);
-  const lonMatch = s.match(/(\d+)[°\s]+(\d+)[\'’\s]+(\d+(?:\.\d+)?)[\"\s]*([EeWw])/);
-
-  if (latMatch && lonMatch) {
-    const lat = dmsToDecimal(latMatch[1], latMatch[2], latMatch[3], latMatch[4]);
-    const lng = dmsToDecimal(lonMatch[1], lonMatch[2], lonMatch[3], lonMatch[4]);
-    if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
-  }
-
-  // Si nada coincide
-  return null;
-};
+// (Moved to src/utils/geoUtils.js)
 
 /* ------------------------------------------------ */
 /* 3. ICONOS (SVG) */
 /* ------------------------------------------------ */
 
 /* 1. PRIMERO defines el componente base */
-const IconBase = ({ children, className, ...props }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    {...props}
-  >
-    {children}
-  </svg>
-);
-
-/* 2. LUEGO defines el objeto Icons (UNA SOLA VEZ) */
-const Icons = {
-  Search: (p) => (
-    <IconBase {...p}>
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </IconBase>
-  ),
-  MapPin: (p) => (
-    <IconBase {...p}>
-      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </IconBase>
-  ),
-  MapPinned: (p) => (
-    <IconBase {...p}>
-      <path d="M12 17v5" />
-      <path d="M8 21h8" />
-      <path d="M17 9a5 5 0 1 0-10 0c0 4 5 8 5 8s5-4 5-8z" />
-      <circle cx="12" cy="9" r="1.5" />
-    </IconBase>
-  ),
-  Navigation: (p) => (
-    <IconBase {...p}>
-      <polygon points="3 11 22 2 13 21 11 13 3 11" />
-    </IconBase>
-  ),
-  Layers: (p) => (
-    <IconBase {...p}>
-      <polygon points="12 2 2 7 12 12 22 7 12 2" />
-      <polyline points="2 17 12 22 22 17" />
-      <polyline points="2 12 12 17 22 12" />
-    </IconBase>
-  ),
-  CheckCircle: (p) => (
-    <IconBase {...p}>
-      <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </IconBase>
-  ),
-  AlertCircle: (p) => (
-    <IconBase {...p}>
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="8" x2="12" y2="12" />
-      <line x1="12" y1="16" x2="12.01" y2="16" />
-    </IconBase>
-  ),
-  XCircle: (p) => (
-    <IconBase {...p}>
-      <circle cx="12" cy="12" r="10" />
-      <line x1="15" y1="9" x2="9" y2="15" />
-      <line x1="9" y1="9" x2="15" y2="15" />
-    </IconBase>
-  ),
-  ChevronDown: (p) => (
-    <IconBase {...p}>
-      <polyline points="6 9 12 15 18 9" />
-    </IconBase>
-  ),
-  RotateCcw: (p) => (
-    <IconBase {...p}>
-      <polyline points="1 4 1 10 7 10" />
-      <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
-    </IconBase>
-  ),
-  MapIcon: (p) => (
-    <IconBase {...p}>
-      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-      <line x1="8" y1="2" x2="8" y2="18" />
-      <line x1="16" y1="6" x2="16" y2="22" />
-    </IconBase>
-  ),
-
-  Copy: (p) => (
-    <IconBase {...p}>
-      <rect x="9" y="9" width="13" height="13" rx="2" />
-      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-    </IconBase>
-  ),
-  Share: (p) => (
-    <IconBase {...p}>
-      <circle cx="18" cy="5" r="3" />
-      <circle cx="6" cy="12" r="3" />
-      <circle cx="18" cy="19" r="3" />
-      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-    </IconBase>
-  ),
-  Loader2: (p) => (
-    <IconBase {...p} className={`${p.className || ''} spinner`}> {/* Added spinner class */}
-      {/* Lucide Loader2 paths are complex, simpler spinner used in CSS, keeping svg structure valid though */}
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </IconBase>
-  ),
-  X: (p) => (
-    <IconBase {...p}>
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </IconBase>
-  ),
-  Pdf: (p) => (
-    <IconBase {...p}>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="9" y1="12" x2="15" y2="12" />
-      <line x1="9" y1="15" x2="15" y2="15" />
-      <line x1="9" y1="18" x2="13" y2="18" />
-    </IconBase>
-  ),
-  Menu: (p) => (
-    <IconBase {...p}>
-      <line x1="4" y1="12" x2="20" y2="12" />
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="4" y1="18" x2="20" y2="18" />
-    </IconBase>
-  ),
-  Verified: (p) => (
-    <IconBase {...p}>
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </IconBase>
-  ),
-  Clock: (p) => (
-    <IconBase {...p}>
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </IconBase>
-  )
-};
+// (Icons moved to src/components/ui/Icons.js)
 
 
 /* ------------------------------------------------ */
@@ -514,64 +145,9 @@ let dataCache = {
   rules: null
 };
 
-const isPointInPolygon = (point, feature) => {
-  if (!feature?.geometry?.type || !feature?.geometry?.coordinates) return false;
-  const x = point.lng; // GeoJSON: X = longitud
-  const y = point.lat; // GeoJSON: Y = latitud
+// (Moved to src/utils/geoUtils.js)
 
-  const { type, coordinates } = feature.geometry;
-
-  const pointInRing = (ring) => {
-    let inside = false;
-
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      const xi = ring[i][0]; // lng
-      const yi = ring[i][1]; // lat
-      const xj = ring[j][0]; // lng
-      const yj = ring[j][1]; // lat
-
-      const intersect =
-        yi > y !== yj > y &&
-        x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-
-      if (intersect) inside = !inside;
-    }
-
-    return inside;
-  };
-
-  if (type === 'Polygon') {
-    // 1) Debe estar dentro del anillo exterior
-    if (!pointInRing(coordinates[0])) return false;
-
-    // 2) Si cae dentro de un hueco, entonces NO está dentro
-    const holes = coordinates.slice(1);
-    if (holes.length && holes.some(h => pointInRing(h))) return false;
-
-    return true;
-  }
-
-  if (type === 'MultiPolygon') {
-    return coordinates.some(poly => {
-      if (!pointInRing(poly[0])) return false;
-      const holes = poly.slice(1);
-      if (holes.length && holes.some(h => pointInRing(h))) return false;
-      return true;
-    });
-  }
-
-  return false;
-};
-
-const findFeature = (p, c) => {
-  if (!c?.features) return null;
-  // ✅ Reverse loop: prioritize layers on top (last in array)
-  for (let i = c.features.length - 1; i >= 0; i--) {
-    const f = c.features[i];
-    if (isPointInPolygon(p, f)) return f;
-  }
-  return null;
-};
+// (Moved to src/utils/geoUtils.js)
 
 const loadCoreData = async () => {
   const fJ = async (u) => {
@@ -2019,16 +1595,14 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                   </div>
 
                   <div className="absolute bottom-0 left-0 h-[3px] w-full pointer-events-none">
-                    <div className="h-full flex">
-                      <div
-                        className="flex-1 transition-colors duration-300"
-                        style={{ backgroundColor: activeTab === 'prohibidas' ? '#b91c1c' : 'transparent' }}
-                      />
-                      <div
-                        className="flex-1 transition-colors duration-300"
-                        style={{ backgroundColor: activeTab === 'permitidas' ? '#15803d' : 'transparent' }}
-                      />
-                    </div>
+                    <div
+                      className="flex-1 transition-colors duration-300"
+                      style={{ backgroundColor: activeTab === 'prohibidas' ? '#b91c1c' : 'transparent' }}
+                    />
+                    <div
+                      className="flex-1 transition-colors duration-300"
+                      style={{ backgroundColor: activeTab === 'permitidas' ? '#15803d' : 'transparent' }}
+                    />
                   </div>
                 </div>
 
@@ -2074,7 +1648,7 @@ const PdfExportController = ({ analysis, onExportReady }) => {
   // =====================================================
   // ✅ Genera imagen del mapa con capas activas (Leaflet → PNG)
   // =====================================================
-  const buildExportMapImage = async ({ lat, lng, zoom = 14, analysisStatus }) => {
+  const buildExportMapImage = ({ lat, lng, zoom = 14, analysisStatus }) => {
     return new Promise((resolve) => {
       const L = window.L;
       const leafletImageFn =
@@ -2831,26 +2405,7 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
 /* ------------------------------------------------ */
 /* 7.X HEADER INSTITUCIONAL */
 /* ------------------------------------------------ */
-const InstitutionalHeader = () => (
-  <div className="w-full bg-white border-b border-gray-200 shadow-sm z-[1100] relative flex items-center justify-between px-4 md:px-8 h-16 md:h-20 shrink-0">
-    <div className="flex items-center gap-4">
-      {/* Logos CDMX / SEDEMA (Imagen Real) */}
-      <img
-        src="./assets/logo-sedema.png"
-        alt="Gobierno de la Ciudad de México - SEDEMA"
-        className="h-12 md:h-14 w-auto object-contain"
-      />
-    </div>
-
-    <div className="flex items-center gap-3">
-      {/* Decorativo: Franja colores */}
-      <div className="hidden md:flex h-full gap-1">
-        <div className="w-1.5 h-full bg-[#9d2148] rounded-b-sm"></div>
-        <div className="w-1.5 h-full bg-[#b28e5c] rounded-b-sm"></div>
-      </div>
-    </div>
-  </div>
-);
+// (Moved to src/components/layout/InstitutionalHeader.js)
 
 /* ------------------------------------------------ */
 /* 7.2 Sidebar Desktop */
