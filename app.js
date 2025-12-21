@@ -2871,7 +2871,9 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
       <button
         type="button"
         onClick={(e) => onExportPDF?.(e)}
-        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2148] text-gray-600 hover:text-[#9d2148]"
+        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2148] text-gray-600 hover:text-[#9d2148] active:scale-95 transition-transform"
+        title="Generar ficha en PDF"
+        aria-label="Exportar resultados a PDF"
       >
         <Icons.Pdf className="h-5 w-5 mb-1" />
         <span className="text-[9px] font-bold">Exportar PDF</span>
@@ -2885,7 +2887,7 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
 /* 7.X HEADER INSTITUCIONAL */
 /* ------------------------------------------------ */
 const InstitutionalHeader = () => (
-  <div className="w-full bg-white border-b border-gray-200 shadow-sm z-[4000] relative flex items-center justify-between px-4 md:px-8 h-16 md:h-20 shrink-0">
+  <div className="w-full bg-white border-b border-gray-200 shadow-sm z-[1100] relative flex items-center justify-between px-4 md:px-8 h-16 md:h-20 shrink-0">
     <div className="flex items-center gap-4">
       {/* Logos CDMX / SEDEMA (Simulados con texto/estilo) */}
       <div className="flex flex-col">
@@ -2927,7 +2929,7 @@ const SidebarDesktop = ({
   isLoading,
   onOpenHelp // ✅ Prop para abrir ayuda
 }) => (
-  <div className="hidden md:flex h-full z-[2000]">
+  <div className="hidden md:flex h-full z-[1020]">
     <div
       id="sidebar-desktop"
       className={`
@@ -2959,6 +2961,7 @@ const SidebarDesktop = ({
                 onClick={onOpenHelp}
                 className="p-2 text-gray-400 hover:text-[#9d2148] hover:bg-red-50 rounded-full transition-colors"
                 title="Ayuda y Soporte"
+                aria-label="Ayuda y Soporte"
               >
                 <span className="font-bold text-xl">?</span>
               </button>
@@ -3004,13 +3007,14 @@ const SidebarDesktop = ({
     <button
       onClick={onToggle}
       className="
-        absolute top-24 transform -translate-x-1/2 z-[5000]
+        absolute top-24 transform -translate-x-1/2 z-[1030]
         w-8 h-16 bg-[#9d2148] text-white shadow-lg rounded-r-full
         flex items-center justify-center cursor-pointer
         hover:bg-[#7d1d3a] active:scale-95 transition-all duration-200
       "
       style={{ left: isOpen ? 360 : 0 }}
       title={isOpen ? 'Ocultar panel' : 'Mostrar panel'}
+      aria-label={isOpen ? 'Ocultar panel' : 'Mostrar panel'}
     >
       <span className="text-base font-extrabold">{isOpen ? '«' : '»'}</span>
     </button>
@@ -3078,7 +3082,7 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
         bg-white
         rounded-t-2xl
         shadow-[0_-5px_20px_rgba(0,0,0,0.2)]
-        z-[3000]
+        z-[1050]
         flex flex-col
         transition-all duration-300 ease-out
       "
@@ -3113,6 +3117,7 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
                 onClose();
               }}
               className="p-1.5 rounded-full bg-[#9d2148] shadow-sm active:scale-95 transition"
+              aria-label="Cerrar resultados"
             >
               <Icons.X className="h-4 w-4 text-white" />
             </button>
@@ -4003,7 +4008,8 @@ const App = () => {
   }
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden bg-[#f3f4f6]">
+    <div className={`flex flex-col w-full h-full overflow-hidden bg-[#f3f4f6] ${loading || analyzing ? 'cursor-wait' : ''}`}>
+
 
       {/* ✅ HEADER INSTITUCIONAL (Desktop only, or responsive?) - User asked for "start of page" */}
       <InstitutionalHeader />
@@ -4012,7 +4018,7 @@ const App = () => {
       <div className="flex-1 relative flex flex-col md:flex-row overflow-hidden">
 
         {/* ✅ BARRA SUPERIOR MÓVIL (APP HEADER) */}
-        <div className="md:hidden absolute top-0 left-0 right-0 z-[1100] p-3 pointer-events-none">
+        <div className="md:hidden absolute top-0 left-0 right-0 z-[1045] p-3 pointer-events-none">
           <MobileSearchBar
             onLocationSelect={handleLocationSelect}
             onReset={handleReset}
@@ -4056,7 +4062,7 @@ const App = () => {
 
           {/* Loading Overlay - Only on initial data load, NOT analysis */}
           {loading && (
-            <div className="absolute inset-0 z-[3000] bg-white/60 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+            <div className="absolute inset-0 z-[2000] bg-white/60 backdrop-blur-sm flex items-center justify-center animate-fade-in">
               <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center">
                 <div className="w-10 h-10 border-4 border-gray-200 border-l-[#9d2148] rounded-full animate-spin mb-3"></div>
                 <span className="text-gray-800 font-bold text-sm">Cargando mapa base...</span>
@@ -4089,7 +4095,7 @@ const App = () => {
           )}
 
           {/* CONTROLES DE MAPA (NUEVA UI) */}
-          <div className="absolute inset-0 pointer-events-none z-[3000]">
+          <div className="absolute inset-0 pointer-events-none z-[1000]">
             {/* Top Right: Ayuda + Capas */}
             <div className="absolute top-24 right-4 flex flex-col items-end gap-3 pointer-events-auto">
               {/* Botón Ayuda */}
@@ -4098,6 +4104,7 @@ const App = () => {
                 onClick={() => setIsHelpOpen(true)}
                 className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
                 title="Ayuda"
+                aria-label="Ayuda"
               >
                 <span className="font-bold text-lg">?</span>
               </button>
@@ -4108,6 +4115,7 @@ const App = () => {
                 onClick={() => setIsLegendOpen(v => !v)}
                 className={`w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full shadow-lg border border-gray-200 hover:scale-105 active:scale-95 transition ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148]'}`}
                 title="Capas"
+                aria-label="Capas y simbología"
               >
                 <Icons.Layers className="h-5 w-5" />
               </button>
@@ -4122,6 +4130,7 @@ const App = () => {
                   onClick={() => resetMapViewRef.current?.()}
                   className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-[#9d2148] hover:scale-105 active:scale-95 transition"
                   title="Restablecer vista"
+                  aria-label="Restablecer vista"
                 >
                   <Icons.RotateCcw className="h-5 w-5" />
                 </button>
@@ -4133,6 +4142,7 @@ const App = () => {
                 onClick={handleUserLocation}
                 className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
                 title="Mi ubicación"
+                aria-label="Usar mi ubicación actual"
               >
                 <Icons.Navigation className="h-5 w-5" />
               </button>
