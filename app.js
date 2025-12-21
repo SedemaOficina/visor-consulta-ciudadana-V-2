@@ -2876,20 +2876,12 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
 const InstitutionalHeader = () => (
   <div className="w-full bg-white border-b border-gray-200 shadow-sm z-[1100] relative flex items-center justify-between px-4 md:px-8 h-16 md:h-20 shrink-0">
     <div className="flex items-center gap-4">
-      {/* Logos CDMX / SEDEMA (Simulados con texto/estilo) */}
-      <div className="flex flex-col">
-        <h1 className="text-[#9d2148] font-black text-lg md:text-2xl tracking-tight leading-none">
-          GOBIERNO DE LA
-        </h1>
-        <h1 className="text-[#9d2148] font-black text-lg md:text-2xl tracking-tight leading-none">
-          CIUDAD DE MÉXICO
-        </h1>
-      </div>
-      <div className="h-8 w-px bg-gray-300 mx-1 md:mx-4 hidden md:block"></div>
-      <div className="hidden md:flex flex-col justify-center">
-        <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Secretaría del Medio Ambiente</span>
-        <span className="text-[#b28e5c] text-sm font-bold tracking-wide">Dirección General de Ordenamiento Ecológico</span>
-      </div>
+      {/* Logos CDMX / SEDEMA (Imagen Real) */}
+      <img
+        src="./assets/logo-sedema.png"
+        alt="Gobierno de la Ciudad de México - SEDEMA"
+        className="h-12 md:h-14 w-auto object-contain"
+      />
     </div>
 
     <div className="flex items-center gap-3">
