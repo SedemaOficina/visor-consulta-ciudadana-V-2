@@ -30,7 +30,7 @@ const LAYER_STYLES = {
     fill: '#a855f7',
     label: 'Áreas Naturales Protegidas'
   },
-  alcaldias: { color: '#FFFFFF', border: '#555', label: 'Límite Alcaldías' },
+  alcaldias: { color: '#FFFFFF', border: '#555', label: 'Límite Alcaldías' }, // W: 2 (Hierarchy)
   edomex: { color: '#FFD86B', label: 'Estado de México' },
   morelos: { color: '#B8A1FF', label: 'Estado de Morelos' }
 };
@@ -173,10 +173,10 @@ const getZoningStyle = (f) => {
 
   return {
     color: c,
-    weight: 1, // Cleaner lines
+    weight: 1.5, // Standardized Line Weight
     dashArray: null,
     fillColor: c,
-    fillOpacity: 0.12, // Increased transparency for satellite view
+    fillOpacity: 0.2, // Standardized Fill Opacity
     opacity: 1,
     stroke: true,
     interactive: true
@@ -3359,10 +3359,10 @@ const MapViewer = ({
       sc,
       {
         color: LAYER_STYLES.sc.color,
-        weight: 2,
+        weight: 1.5,
         opacity: 1,
         fillColor: LAYER_STYLES.sc.fill,
-        fillOpacity: 0.35, // ✅ SC se nota pero deja ver satélite
+        fillOpacity: 0.2,
         interactive: false
       },
       null,
@@ -3375,7 +3375,7 @@ const MapViewer = ({
       alcaldias,
       {
         color: LAYER_STYLES.alcaldias.color,
-        weight: 3,
+        weight: 2, // Hierarchy: Thicker than zones, thinner than 3
         dashArray: '8,4',
         opacity: 0.9,
         fillOpacity: 0
@@ -3417,6 +3417,11 @@ const MapViewer = ({
         style,
         interactive,
         onEachFeature: (feature, layerInstance) => {
+          if (interactive) {
+            layerInstance.on('mouseover', () => layerInstance.setStyle({ weight: 3 }));
+            layerInstance.on('mouseout', () => layerInstance.setStyle({ weight: 1.5 }));
+          }
+
           if (tooltipField && feature.properties?.[tooltipField]) {
             layerInstance.bindTooltip(feature.properties[tooltipField], {
               sticky: true,
@@ -3436,7 +3441,7 @@ const MapViewer = ({
         edomex,
         {
           color: LAYER_STYLES.edomex.color,
-          weight: 2,
+          weight: 1.5, // Standardized
           dashArray: '4,4',
           opacity: 0.9,
           fillOpacity: 0.1
@@ -3453,7 +3458,7 @@ const MapViewer = ({
         morelos,
         {
           color: LAYER_STYLES.morelos.color,
-          weight: 2,
+          weight: 1.5, // Standardized
           dashArray: '4,4',
           opacity: 0.9,
           fillOpacity: 0.1
@@ -3473,7 +3478,7 @@ const MapViewer = ({
           weight: 1.5,
           opacity: 0.9,
           fillColor: LAYER_STYLES.anp.fill,
-          fillOpacity: 0.12   // ✅ Baja opacidad para ver satélite
+          fillOpacity: 0.2
         },
         'NOMBRE',
         'paneOverlay',
@@ -3503,8 +3508,8 @@ const MapViewer = ({
           style: (feature) => getZoningStyle(feature),
           interactive: true,
           onEachFeature: (feature, layerInstance) => {
-            layerInstance.on('mouseover', () => layerInstance.setStyle({ weight: 2.5 }));
-            layerInstance.on('mouseout', () => layerInstance.setStyle({ weight: 1.4 }));
+            layerInstance.on('mouseover', () => layerInstance.setStyle({ weight: 3 })); // Standard hover
+            layerInstance.on('mouseout', () => layerInstance.setStyle({ weight: 1.5 }));
 
             const label = feature.properties?.PGOEDF;
             if (label) layerInstance.bindTooltip(label, { sticky: true, className: 'custom-tooltip' });
