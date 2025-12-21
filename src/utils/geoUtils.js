@@ -75,16 +75,54 @@ window.App.Utils.getZoningColor = (key) => {
     return cat ? Constants.ZONING_CAT_INFO[cat].color : '#9ca3af';
 };
 
+// Helper para colores de Zonificación interna ANP
+window.App.Utils.getAnpZoningColor = (zoningName) => {
+    const name = (zoningName || '').toLowerCase();
+
+    // Paleta semántica
+    if (name.includes('protección') || name.includes('nucleo') || name.includes('núcleo')) return '#ef4444'; // Rojo (Protección estricta)
+    if (name.includes('restringid')) return '#f97316'; // Naranja (Uso restringido)
+    if (name.includes('aprovechamiento')) return '#84cc16'; // Lima (Sustentable)
+    if (name.includes('tradicional')) return '#eab308'; // Amarillo (Uso tradicional)
+    if (name.includes('publico') || name.includes('público')) return '#06b6d4'; // Cyan (Uso público)
+    if (name.includes('restauraci')) return '#10b981'; // Esmeralda (Restauración)
+    if (name.includes('recuperacion') || name.includes('recuperación')) return '#10b981'; // Esmeralda
+
+    // Fallback: Hash determinista para otros nombres
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // Paleta de respaldo (evitando el morado exacto del ANP general)
+    const fallbackPalette = ['#f472b6', '#22d3ee', '#fbbf24', '#a3e635', '#f87171', '#c084fc'];
+    return fallbackPalette[Math.abs(hash) % fallbackPalette.length];
+};
+
 window.App.Utils.getZoningStyle = (feature) => {
-    const k = (feature.properties?.CLAVE || '').toString().trim().toUpperCase();
-    const color = window.App.Utils.getZoningColor(k);
+    let color;
+    let fillOpacity = 0.2; // Opacidad base
+
+    // 1. Si tiene CLAVE (Zonificación PGOEDF)
+    if (feature.properties?.CLAVE) {
+        color = window.App.Utils.getZoningColor(feature.properties.CLAVE);
+    }
+    // 2. Si tiene ZONIFICACION (Zonificación Interna ANP)
+    else if (feature.properties?.ZONIFICACION) {
+        color = window.App.Utils.getAnpZoningColor(feature.properties.ZONIFICACION);
+        fillOpacity = 0.4; // Un poco más opaco para que destaque sobre el fondo
+    }
+    // 3. Fallback
+    else {
+        color = '#8b5cf6'; // Morado genérico
+    }
 
     return {
-        color: '#ffffff', // Borde blanco fino
-        weight: 1.5,      // Standardized
-        opacity: 0.8,
+        color: '#ffffff', // Borde blanco
+        weight: 1.5,
+        opacity: 0.9,
         fillColor: color,
-        fillOpacity: 0.2  // Unified opacity
+        fillOpacity: fillOpacity,
+        interactive: true
     };
 };
 
