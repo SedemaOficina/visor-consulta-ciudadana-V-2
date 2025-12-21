@@ -3699,6 +3699,35 @@ const Legend = ({
       {/* Content Scrollable - Single Block */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-white/80 space-y-6">
 
+        {/* 0. Mapa Base (Rediseño Horizontal Compacto) */}
+        <div className="mb-2">
+          <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Mapa Base</div>
+          <div className="flex bg-gray-100/80 p-1 rounded-lg gap-1 border border-gray-100">
+            {[
+              { id: 'STREETS', label: 'Calles' },
+              { id: 'SATELLITE', label: 'Satélite' },
+              { id: 'TOPO', label: 'Topográfico' }
+            ].map(opt => {
+              const isActive = activeBaseLayer === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => setActiveBaseLayer(opt.id)}
+                  className={`
+                    flex-1 py-1.5 px-2 rounded-md text-[10px] font-bold transition-all duration-200
+                    ${isActive
+                      ? 'bg-white text-[#9d2148] shadow-sm ring-1 ring-[#9d2148]/10'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                    }
+                  `}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* 1. Contexto */}
         <div>
           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Contexto y Límites</div>
@@ -3787,32 +3816,6 @@ const Legend = ({
                 </div>
               );
             })}
-          </div>
-        </div>
-
-        {/* 3. Mapa Base */}
-        <div>
-          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Mapa Base</div>
-          <div className="grid grid-cols-1 gap-2">
-            {[
-              { id: 'STREETS', label: 'Mapa Claro (Calles)' },
-              { id: 'SATELLITE', label: 'Satélite + Calles' },
-              { id: 'TOPO', label: 'Topográfico' }
-            ].map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => setActiveBaseLayer(opt.id)}
-                className={`
-                    w-full text-left px-3 py-2.5 rounded-lg border flex items-center justify-between transition-all
-                    ${activeBaseLayer === opt.id
-                    ? 'bg-[#9d2148]/5 border-[#9d2148] text-[#9d2148]'
-                    : 'bg-gray-50 border-transparent text-gray-600 hover:bg-white hover:border-gray-200 shadow-sm'}
-                 `}
-              >
-                <span className="text-[12px] font-bold">{opt.label}</span>
-                {activeBaseLayer === opt.id && <Icons.CheckCircle className="h-4 w-4" />}
-              </button>
-            ))}
           </div>
         </div>
 
