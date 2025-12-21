@@ -1979,16 +1979,140 @@ const PdfFicha = React.forwardRef(({ analysis, mapImage }, ref) => {
 /* ------------------------------------------------ */
 /* 6.5 CONTENIDO PRINCIPAL DEL PANEL */
 /* ------------------------------------------------ */
-const ResultsContent = ({ analysis, onExportReady }) => {
+const ResultsContent = ({ analysis, onExportPDF }) => {
   if (!analysis) return null; // 🛡️ CRASH FIX: Evita renderizar sin datos
 
   const [activeTab, setActiveTab] = useState('prohibidas');
   const [showDetails, setShowDetails] = useState(true);
+
+  // =====================================================
+  // ✅ LOGICA DE DISPLAY (BADGES, COLORES)
+  // =====================================================
+  const isANP = analysis.isANP;
+  const hasInternal = !!analysis.hasInternalAnpZoning;
+  const internalName = analysis.anpZoningData?.ZONIFICACION || analysis.anpZoningData?.ZONA || null;
+
+  const zoningColor =
+    isANP && hasInternal ? (ZONING_CAT_INFO.ANP_ZON?.color || '#8b5cf6')
+      : (analysis.zoningKey ? getZoningColor(analysis.zoningKey) : '#9ca3af');
+
+  return (
+    <div className="space-y-4 animate-in bg-white border border-gray-200 rounded-lg px-4 pt-2 pb-3">
+      {/* HEADER DECORATIVO (Icono mapa) */}
+      <div className="absolute top-0 right-0 p-3 opacity-20 pointer-events-none">
+        <Icons.MapIcon className="h-32 w-32" />
+      </div>
+
+
+
+      {/* RESUMEN + ESTADO */}
+      {analysis?.status !== 'OUTSIDE_CDMX' && <StatusMessage analysis={analysis} />}
+      <LocationSummary analysis={analysis} onExportPDF={onExportPDF} />
+
+
+      {analysis.zoningName === 'Cargando detalles...' && (
+        <div className="p-2 bg-yellow-50 text-yellow-800 text-[10px] rounded border border-yellow-200">
+          Cargando detalles de zonificación y actividades. La ficha se actualizará automáticamente.
+        </div>
+      )}
+
+      {analysis.status === 'CONSERVATION_SOIL' &&
+        !analysis.isPDU &&
+        !analysis.noActivitiesCatalog && (
+          <>
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-[11px] font-semibold text-gray-600">
+                Detalle de actividades según zonificación PGOEDF 2000
+              </div>
+
+              <button
+                onClick={() => setShowDetails(v => !v)}
+                className="text-[10px] text-[#9d2148] hover:underline"
+              >
+                {showDetails ? 'Ocultar detalle' : 'Ver detalle'}
+              </button>
+            </div>
+
+            {showDetails && (
+              <div className="mt-2">
+                <div className="relative w-full border-b border-gray-200 mb-4">
+                  <div className="flex gap-3 px-1">
+                    <button
+                      onClick={() => setActiveTab('prohibidas')}
+                      className={`px-4 py-2 rounded-t-lg text-[13px] font-extrabold transition
+                        ${activeTab === 'prohibidas'
+                          ? 'bg-[#b91c1c] text-white'
+                          : 'bg-transparent text-gray-500 hover:text-[#b91c1c]'}
+                      `}
+                    >
+                      PROHIBIDAS ({analysis.prohibitedActivities?.length || 0})
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab('permitidas')}
+                      className={`px-4 py-2 rounded-t-lg text-[13px] font-extrabold transition
+                        ${activeTab === 'permitidas'
+                          ? 'bg-[#15803d] text-white'
+                          : 'bg-transparent text-gray-500 hover:text-[#15803d]'}
+                      `}
+                    >
+                      PERMITIDAS ({analysis.allowedActivities?.length || 0})
+                    </button>
+                  </div>
+
+                  <div className="absolute bottom-0 left-0 h-[3px] w-full pointer-events-none">
+                    <div className="h-full flex">
+                      <div
+                        className="flex-1 transition-colors duration-300"
+                        style={{ backgroundColor: activeTab === 'prohibidas' ? '#b91c1c' : 'transparent' }}
+                      />
+                      <div
+                        className="flex-1 transition-colors duration-300"
+                        style={{ backgroundColor: activeTab === 'permitidas' ? '#15803d' : 'transparent' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {activeTab === 'prohibidas' && (
+                  <GroupedActivities
+                    title="ACTIVIDADES PROHIBIDAS"
+                    activities={analysis.prohibitedActivities}
+                    icon={<Icons.XCircle className="h-4 w-4" />}
+                    headerClass="text-red-900 bg-red-50"
+                    bgClass="bg-white"
+                    accentColor="#b91c1c"
+                  />
+                )}
+
+                {activeTab === 'permitidas' && (
+                  <GroupedActivities
+                    title="ACTIVIDADES PERMITIDAS"
+                    activities={analysis.allowedActivities}
+                    icon={<Icons.CheckCircle className="h-4 w-4" />}
+                    headerClass="text-green-900 bg-green-50"
+                    bgClass="bg-white"
+                    accentColor="#15803d"
+                  />
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+      <LegalDisclaimer />
+    </div>
+  );
+};
+
+// =====================================================
+// ✅ PDF EXPORT CONTROLLER (SINGLETON)
+// =====================================================
+const PdfExportController = ({ analysis, onExportReady }) => {
   const [mapImage, setMapImage] = useState(null);
   const pdfRef = useRef(null);
-
-  // ✅ Guard: solo exporta si viene de click de usuario
   const exportArmedRef = useRef(false);
+
   // =====================================================
   // ✅ Genera imagen del mapa con capas activas (Leaflet → PNG)
   // =====================================================
@@ -2087,7 +2211,7 @@ const ResultsContent = ({ analysis, onExportReady }) => {
             weight: 2.2,
             opacity: 0.95,
             fillColor: LAYER_STYLES.anp.fill,
-            fillOpacity: 0.12   // ✅ misma transparencia que zonificación
+            fillOpacity: 0.12
           },
           428
         );
@@ -2190,8 +2314,6 @@ const ResultsContent = ({ analysis, onExportReady }) => {
 
     // 1) ✅ Generar mapa exportable con capas activas (Leaflet → PNG)
     try {
-      // OJO: si quieres exactamente el mismo zoom del mapa actual, puedes calcularlo,
-      // pero por ahora dejamos 14 como en tu código.
       const img = await buildExportMapImage({
         lat: analysis.coordinate.lat,
         lng: analysis.coordinate.lng,
@@ -2199,7 +2321,7 @@ const ResultsContent = ({ analysis, onExportReady }) => {
         analysisStatus: analysis.status
       });
 
-      // Si leaflet-image falló, fallback al static map (solo como plan B)
+      // Si leaflet-image falló, fallback al static map
       if (img) {
         setMapImage(img);
       } else {
@@ -2212,7 +2334,6 @@ const ResultsContent = ({ analysis, onExportReady }) => {
         setMapImage(ok ? url : null);
       }
 
-      // deja que React pinte la imagen en PdfFicha
       await new Promise(r => setTimeout(r, 80));
     } catch (e) {
       console.warn('No se pudo generar/cargar mapa exportable:', e);
@@ -2231,11 +2352,8 @@ const ResultsContent = ({ analysis, onExportReady }) => {
       }
     }
 
-
-
-    // 2) Captura de la ficha completa (plantilla oculta)
+    // 2) Captura de la ficha completa
     const element = pdfRef.current;
-
     const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
     const scale = isMobile ? 1.4 : 2;
 
@@ -2271,13 +2389,10 @@ const ResultsContent = ({ analysis, onExportReady }) => {
     let totalPages = Math.max(1, Math.ceil(imgH / usableH));
     const remainder = imgH - usableH * (totalPages - 1);
 
-    // ✅ Si la última página trae poco contenido (<28% de alto útil),
-    // intenta encoger un poco para "caber" en una página menos.
     if (totalPages > 1 && remainder / usableH < 0.28) {
       const targetPages = totalPages - 1;
-      const scaleDown = (usableH * targetPages) / imgH; // < 1 si cabe al encoger
+      const scaleDown = (usableH * targetPages) / imgH;
 
-      // No exagerar: máximo 8% de reducción (se ve bien)
       if (scaleDown > 0.92) {
         imgW = imgW * scaleDown;
         imgH = (imgProps.height * imgW) / imgProps.width;
@@ -2288,7 +2403,6 @@ const ResultsContent = ({ analysis, onExportReady }) => {
     const drawPage = (pageIndex) => {
       const yOffset = -(pageIndex * usableH);
 
-      // ✅ HEADER MINI POR PÁGINA
       pdf.setFillColor(255, 255, 255);
       pdf.rect(0, 0, pdfWidth, M + 10, 'F');
 
@@ -2296,30 +2410,24 @@ const ResultsContent = ({ analysis, onExportReady }) => {
       pdf.setTextColor(17, 24, 39);
       pdf.text('Visor de Consulta Ciudadana — Ficha', M, 10);
 
-      // Folio/fecha (derecha)
       pdf.setFontSize(8);
       pdf.setTextColor(107, 114, 128);
       const headRight = `${(analysis?.alcaldia || 'CDMX')} · ${new Date().toISOString().slice(0, 10)}`;
       pdf.text(headRight, pdfWidth - M, 10, { align: 'right' });
 
-      // Cinta sobria
       pdf.setDrawColor(229, 231, 235);
       pdf.setLineWidth(0.2);
       pdf.line(M, 14, pdfWidth - M, 14);
 
-      // 1) Imagen (se pinta “grande”)
       pdf.addImage(imgData, 'PNG', M, (M + 6) + yOffset, imgW, imgH);
 
-      // 2) Borrar zona footer para evitar invasión visual
       pdf.setFillColor(255, 255, 255);
       pdf.rect(0, pdfHeight - (M + FOOTER), pdfWidth, (M + FOOTER), 'F');
 
-      // 3) Regla editorial del footer (sobria)
       pdf.setDrawColor(229, 231, 235);
       pdf.setLineWidth(0.2);
       pdf.line(M, pdfHeight - (M + FOOTER) + 4, pdfWidth - M, pdfHeight - (M + FOOTER) + 4);
 
-      // 4) Paginación centrada
       pdf.setFontSize(8);
       pdf.setTextColor(107, 114, 128);
       pdf.text(`Página ${pageIndex + 1} de ${totalPages}`, pdfWidth / 2, pdfHeight - 6, { align: 'center' });
@@ -2330,11 +2438,8 @@ const ResultsContent = ({ analysis, onExportReady }) => {
       drawPage(i);
     }
 
-
-
-    // ✅ Eliminar acentos y caracteres especiales del nombre de archivo
     const cleanAlcaldia = (analysis.alcaldia || 'CDMX')
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-zA-Z0-9]/g, "_")
       .toUpperCase();
 
@@ -2343,9 +2448,8 @@ const ResultsContent = ({ analysis, onExportReady }) => {
     pdf.save(nombreArchivo);
   }, [analysis]);
 
-  // ✅ Esta es la ÚNICA función que deben usar botones / App
+  // ✅ Callbacks para App (Single Source of Truth)
   const requestExportPDF = React.useCallback((e) => {
-    // 🛡️ GUARD: Solo permitir si el evento es confiable (usuario real)
     if (!e || !e.isTrusted) {
       console.warn("Intento de exportación bloqueado (sin interacción de usuario)");
       return;
@@ -2354,136 +2458,21 @@ const ResultsContent = ({ analysis, onExportReady }) => {
     handleExportPDF();
   }, [handleExportPDF]);
 
-
   useEffect(() => {
     if (!onExportReady) return;
     onExportReady(requestExportPDF);
     return () => onExportReady(null);
   }, [onExportReady, requestExportPDF]);
 
-
-  const isANP = analysis.isANP;
-  const hasInternal = !!analysis.hasInternalAnpZoning;
-  const internalName = analysis.anpZoningData?.ZONIFICACION || analysis.anpZoningData?.ZONA || null;
-
-  const zoningColor =
-    isANP && hasInternal ? (ZONING_CAT_INFO.ANP_ZON?.color || '#8b5cf6')
-      : (analysis.zoningKey ? getZoningColor(analysis.zoningKey) : '#9ca3af');
+  if (!analysis) return null;
 
   return (
-    <div className="space-y-4 animate-in bg-white border border-gray-200 rounded-lg px-4 pt-2 pb-3">
-      {/* PLANTILLA OCULTA PARA PDF */}
-      <div style={{ position: 'absolute', left: '-99999px', top: 0 }}>
-        <div
-          id="export-map"
-          style={{
-            width: '900px',
-            height: '520px',
-            background: '#fff'
-          }}
-        />
-        <PdfFicha analysis={analysis} mapImage={mapImage} ref={pdfRef} />
+    <>
+      <div id="export-map" style={{ width: '900px', height: '520px', position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}></div>
+      <div style={{ position: 'absolute', top: -9999, left: -9999, width: '794px', zIndex: -1 }}>
+        <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} />
       </div>
-
-
-
-      {/* RESUMEN + ESTADO */}
-      {analysis?.status !== 'OUTSIDE_CDMX' && <StatusMessage analysis={analysis} />}
-      <LocationSummary analysis={analysis} onExportPDF={requestExportPDF} />
-
-
-      {analysis.zoningName === 'Cargando detalles...' && (
-        <div className="p-2 bg-yellow-50 text-yellow-800 text-[10px] rounded border border-yellow-200">
-          Cargando detalles de zonificación y actividades. La ficha se actualizará automáticamente.
-        </div>
-      )}
-
-      {analysis.status === 'CONSERVATION_SOIL' &&
-        !analysis.isPDU &&
-        !analysis.noActivitiesCatalog && (
-          <>
-            <div className="flex items-center justify-between mt-2">
-              <div className="text-[11px] font-semibold text-gray-600">
-                Detalle de actividades según zonificación PGOEDF 2000
-              </div>
-
-              <button
-                onClick={() => setShowDetails(v => !v)}
-                className="text-[10px] text-[#9d2148] hover:underline"
-              >
-                {showDetails ? 'Ocultar detalle' : 'Ver detalle'}
-              </button>
-            </div>
-
-            {showDetails && (
-              <div className="mt-2">
-                <div className="relative w-full border-b border-gray-200 mb-4">
-                  <div className="flex gap-3 px-1">
-                    <button
-                      onClick={() => setActiveTab('prohibidas')}
-                      className={`px-4 py-2 rounded-t-lg text-[13px] font-extrabold transition
-                        ${activeTab === 'prohibidas'
-                          ? 'bg-[#b91c1c] text-white'
-                          : 'bg-transparent text-gray-500 hover:text-[#b91c1c]'}
-                      `}
-                    >
-                      PROHIBIDAS ({analysis.prohibitedActivities?.length || 0})
-                    </button>
-
-                    <button
-                      onClick={() => setActiveTab('permitidas')}
-                      className={`px-4 py-2 rounded-t-lg text-[13px] font-extrabold transition
-                        ${activeTab === 'permitidas'
-                          ? 'bg-[#15803d] text-white'
-                          : 'bg-transparent text-gray-500 hover:text-[#15803d]'}
-                      `}
-                    >
-                      PERMITIDAS ({analysis.allowedActivities?.length || 0})
-                    </button>
-                  </div>
-
-                  <div className="absolute bottom-0 left-0 h-[3px] w-full pointer-events-none">
-                    <div className="h-full flex">
-                      <div
-                        className="flex-1 transition-colors duration-300"
-                        style={{ backgroundColor: activeTab === 'prohibidas' ? '#b91c1c' : 'transparent' }}
-                      />
-                      <div
-                        className="flex-1 transition-colors duration-300"
-                        style={{ backgroundColor: activeTab === 'permitidas' ? '#15803d' : 'transparent' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {activeTab === 'prohibidas' && (
-                  <GroupedActivities
-                    title="ACTIVIDADES PROHIBIDAS"
-                    activities={analysis.prohibitedActivities}
-                    icon={<Icons.XCircle className="h-4 w-4" />}
-                    headerClass="text-red-900 bg-red-50"
-                    bgClass="bg-white"
-                    accentColor="#b91c1c"
-                  />
-                )}
-
-                {activeTab === 'permitidas' && (
-                  <GroupedActivities
-                    title="ACTIVIDADES PERMITIDAS"
-                    activities={analysis.allowedActivities}
-                    icon={<Icons.CheckCircle className="h-4 w-4" />}
-                    headerClass="text-green-900 bg-green-50"
-                    bgClass="bg-white"
-                    accentColor="#15803d"
-                  />
-                )}
-              </div>
-            )}
-          </>
-        )}
-
-      <LegalDisclaimer />
-    </div>
+    </>
   );
 };
 
@@ -2933,7 +2922,7 @@ const SidebarDesktop = ({
   onReset,
   isOpen,
   onToggle,
-  onExportReady,
+  onExportPDF,
   desktopSearchSetRef,
   isLoading,
   onOpenHelp // ✅ Prop para abrir ayuda
@@ -3006,7 +2995,7 @@ const SidebarDesktop = ({
             {/* ✅ Show Skeleton when loading */}
             {isLoading && <SkeletonAnalysis />}
 
-            {analysis && !isLoading && <ResultsContent analysis={analysis} onExportReady={onExportReady} />}
+            {analysis && !isLoading && <ResultsContent analysis={analysis} onExportPDF={onExportPDF} />}
           </div>
         </>
       )}
@@ -3031,7 +3020,7 @@ const SidebarDesktop = ({
 
 /* 7.3 Bottom Sheet Móvil */
 /* ------------------------------------------------ */
-const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onStateChange, onExportPDF, onExportReady }) => {
+const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onStateChange, onExportPDF }) => {
   const [sheetState, setSheetState] = useState('collapsed'); // 'collapsed' | 'mid' | 'full'
   const sheetRef = useRef(null);
   const startY = useRef(0);
@@ -3084,13 +3073,13 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
     <div
       ref={sheetRef}
       className="
-        md:hidden 
-        fixed bottom-0 left-0 w-full 
-        bg-white 
-        rounded-t-2xl 
-        shadow-[0_-5px_20px_rgba(0,0,0,0.2)] 
-        z-[3000] 
-        flex flex-col 
+        md:hidden
+        fixed bottom-0 left-0 w-full
+        bg-white
+        rounded-t-2xl
+        shadow-[0_-5px_20px_rgba(0,0,0,0.2)]
+        z-[3000]
+        flex flex-col
         transition-all duration-300 ease-out
       "
       style={{ height: getHeight() }}
@@ -3133,7 +3122,7 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
 
       {(sheetState === 'mid' || sheetState === 'full') && (
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-gray-50/50 mobile-upscale">
-          <ResultsContent analysis={analysis} onExportReady={onExportReady} />
+          <ResultsContent analysis={analysis} onExportPDF={onExportPDF} />
         </div>
       )}
 
@@ -4039,7 +4028,7 @@ const App = () => {
           onReset={handleReset}
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(v => !v)}
-          onExportReady={setExportHandler}
+          onExportPDF={handleExportClick}
           desktopSearchSetRef={desktopSearchInputRef}
           isLoading={analyzing}
           onOpenHelp={() => setIsHelpOpen(true)} // ✅ Pasar handler
@@ -4134,7 +4123,7 @@ const App = () => {
                   className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-[#9d2148] hover:scale-105 active:scale-95 transition"
                   title="Restablecer vista"
                 >
-                  <Icons.Maximize className="h-5 w-5" />
+                  <Icons.RotateCcw className="h-5 w-5" />
                 </button>
               )}
 
@@ -4162,7 +4151,6 @@ const App = () => {
             handleReset();
           }}
           onExportPDF={handleExportClick} // pass the handler that calls the state func
-          onExportReady={setExportHandler}
         />
 
         {/* ✅ MODAL DE AYUDA (Restaurado) */}
@@ -4170,6 +4158,9 @@ const App = () => {
           isOpen={isHelpOpen}
           onClose={() => setIsHelpOpen(false)}
         />
+
+        {/* ✅ PDF EXPORT CONTROLLER (Singleton) */}
+        <PdfExportController analysis={analysis} onExportReady={setExportHandler} />
       </div>
     </div>
   );
