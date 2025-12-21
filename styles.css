@@ -1,9 +1,9 @@
 :root {
-  /* --- PALETA INSTITUCIONAL PREMIUM --- */
+  /* --- PALETA INSTITUCIONAL PREMIUM (2024-2030) --- */
   /* Base */
-  --color-primary: #9d2449;       /* Guinda Oficial */
-  --color-primary-dark: #7e1c3a;
-  --color-accent: #BC955C;        /* Dorado Institucional */
+  --color-primary: #9d2148;       /* Guinda Oficial */
+  --color-primary-dark: #7d1d3a;
+  --color-accent: #b28e5c;        /* Dorado Institucional */
   
   /* Modern UI / Glassmorphism */
   --bg-app: #f0f2f5;              /* Fondo general suave */
@@ -13,7 +13,7 @@
   --glass-blur: blur(12px);
 
   /* Texto */
-  --font-main: 'Outfit', sans-serif; /* Más moderna que Roboto */
+  --font-main: 'Roboto', sans-serif; /* Tipografía Oficial */
   --text-main: #1e293b;
   --text-sub: #64748b;
   --text-light: #94a3b8;

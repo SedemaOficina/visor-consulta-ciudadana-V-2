@@ -17,8 +17,6 @@ const ZONING_CAT_INFO = {
   ANP_ZON: { color: '#8b5cf6', label: 'Zonificación ANP (interna)' }
 };
 
-
-
 const ZONING_ORDER = ['FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE'];
 
 const LAYER_STYLES = {
@@ -1022,7 +1020,7 @@ const HelpModal = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-gray-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#9d2449] flex items-center justify-center text-white shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-[#9d2148] flex items-center justify-center text-white shadow-sm">
               <span className="font-bold text-xl">?</span>
             </div>
             <div>
@@ -1043,25 +1041,25 @@ const HelpModal = ({ isOpen, onClose }) => {
           <div className="space-y-8">
             {/* Sección 1 */}
             <section>
-              <h3 className="flex items-center gap-2 text-lg font-bold text-[#9d2449] mb-3">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-[#9d2148] mb-3">
                 <Icons.MapPinned className="h-5 w-5" />
                 ¿Cómo realizar una consulta?
               </h3>
               <ul className="space-y-3 pl-2">
                 <li className="flex gap-3 text-sm text-gray-700">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2449] font-bold flex items-center justify-center text-xs border border-red-100">1</span>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2148] font-bold flex items-center justify-center text-xs border border-red-100">1</span>
                   <span>
                     <strong>Búsqueda por dirección:</strong> Escribe la calle y número en el buscador lateral (ej. "Av. Insurgentes Sur 100").
                   </span>
                 </li>
                 <li className="flex gap-3 text-sm text-gray-700">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2449] font-bold flex items-center justify-center text-xs border border-red-100">2</span>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2148] font-bold flex items-center justify-center text-xs border border-red-100">2</span>
                   <span>
                     <strong>Búsqueda por coordenadas:</strong> Ingresa latitud y longitud (ej. "19.4326, -99.1332").
                   </span>
                 </li>
                 <li className="flex gap-3 text-sm text-gray-700">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2449] font-bold flex items-center justify-center text-xs border border-red-100">3</span>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2148] font-bold flex items-center justify-center text-xs border border-red-100">3</span>
                   <span>
                     <strong>Navegación manual:</strong> Navega por el mapa y haz clic directamente sobre el predio de interés.
                   </span>
@@ -1073,7 +1071,7 @@ const HelpModal = ({ isOpen, onClose }) => {
 
             {/* Sección 2 */}
             <section>
-              <h3 className="flex items-center gap-2 text-lg font-bold text-[#9d2449] mb-3">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-[#9d2148] mb-3">
                 <Icons.Layers className="h-5 w-5" />
                 Capas Disponibles
               </h3>
@@ -1097,7 +1095,7 @@ const HelpModal = ({ isOpen, onClose }) => {
 
             {/* FAQ */}
             <section>
-              <h3 className="text-lg font-bold text-[#9d2449] mb-3">Preguntas Frecuentes</h3>
+              <h3 className="text-lg font-bold text-[#9d2148] mb-3">Preguntas Frecuentes</h3>
               <div className="space-y-3">
                 {FAQ_ITEMS.map((item, i) => (
                   <details key={i} className="group bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -1131,7 +1129,7 @@ const HelpModal = ({ isOpen, onClose }) => {
         <div className="p-4 border-t border-gray-200 bg-gray-50 text-center">
           <button
             onClick={onClose}
-            className="bg-[#9d2449] text-white px-8 py-2.5 rounded-full text-sm font-bold shadow-md hover:bg-[#7d1d3a] transition-all active:scale-95"
+            className="bg-[#9d2148] text-white px-8 py-2.5 rounded-full text-sm font-bold shadow-md hover:bg-[#7d1d3a] transition-all active:scale-95"
           >
             Entendido
           </button>
@@ -1404,7 +1402,7 @@ const PdfFicha = React.forwardRef(({ analysis, mapImage }, ref) => {
       mute: '#6b7280',
       hair: '#e5e7eb',
       panel: '#f9fafb',
-      guinda: '#9d2449',
+      guinda: '#9d2148',
       sc: '#3B7D23',
       su: '#3b82f6',
       anp: '#a855f7',
@@ -2120,7 +2118,7 @@ const ResultsContent = ({ analysis, onExportReady }) => {
       // Marcador del punto (para que salga en el PDF)
       const isSC = (analysisStatus === 'CONSERVATION_SOIL');
       const isSU = (analysisStatus === 'URBAN_SOIL');
-      const pinFill = isSC ? LAYER_STYLES.sc.color : isSU ? '#3b82f6' : '#9d2449';
+      const pinFill = isSC ? LAYER_STYLES.sc.color : isSU ? '#3b82f6' : '#9d2148';
 
       L.circleMarker([lat, lng], {
         radius: 8,
@@ -2402,7 +2400,7 @@ const ResultsContent = ({ analysis, onExportReady }) => {
 
               <button
                 onClick={() => setShowDetails(v => !v)}
-                className="text-[10px] text-[#9d2449] hover:underline"
+                className="text-[10px] text-[#9d2148] hover:underline"
               >
                 {showDetails ? 'Ocultar detalle' : 'Ver detalle'}
               </button>
@@ -2574,7 +2572,7 @@ const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef, initialValue 
         <form
           onSubmit={handleSubmit}
           className={`
-    ${flash ? 'ring-2 ring-[#9d2449]/50 shadow-[0_0_0_6px_rgba(157,36,73,0.12)]' : ''}
+    ${flash ? 'ring-2 ring-[#9d2148]/50 shadow-[0_0_0_6px_rgba(157,36,73,0.12)]' : ''}
     bg-white rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.18)]
     flex items-center px-2 py-1 border border-transparent
     focus-within:border-gray-300 transition-all duration-200 ease-out
@@ -2734,7 +2732,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
               type="text"
               ref={localInputRef}
               placeholder="Ej: Calle 5 de Mayo, Centro..."
-              className="w-full h-11 pl-10 pr-4 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#9d2449] focus:border-transparent transition-all"
+              className="w-full h-11 pl-10 pr-4 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#9d2148] focus:border-transparent transition-all"
               value={query}
               onChange={handleChange}
               onFocus={() => {
@@ -2749,7 +2747,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
 
             {isSearching && (
               <div className="absolute right-3 top-3">
-                <div className="h-5 w-5 border-2 border-gray-200 border-t-[#9d2449] rounded-full animate-spin"></div>
+                <div className="h-5 w-5 border-2 border-gray-200 border-t-[#9d2148] rounded-full animate-spin"></div>
               </div>
             )}
           </div>
@@ -2803,7 +2801,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
               )
             }
             className="
-      flex-1 h-11 bg-[#9d2449] text-white rounded-lg
+      flex-1 h-11 bg-[#9d2148] text-white rounded-lg
       text-[14px] font-semibold flex items-center justify-center gap-2
       shadow-sm hover:bg-[#7d1d3a]
     "
@@ -2855,7 +2853,7 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
         href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
         target="_blank"
         rel="noreferrer"
-        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2449] text-gray-600 hover:text-[#9d2449]"
+        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2148] text-gray-600 hover:text-[#9d2148]"
       >
         <Icons.MapIcon className="h-5 w-5 mb-1" />
         <span className="text-[9px] font-bold">Google Maps</span>
@@ -2865,7 +2863,7 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
       <button
         type="button"
         onClick={handleCopyLink}
-        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2449] text-gray-600 hover:text-[#9d2449]"
+        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2148] text-gray-600 hover:text-[#9d2148]"
       >
         <Icons.Share className="h-5 w-5 mb-1" />
         <span className="text-[9px] font-bold">Copiar enlace</span>
@@ -2875,7 +2873,7 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
       <button
         type="button"
         onClick={() => onExportPDF?.()}
-        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2449] text-gray-600 hover:text-[#9d2449]"
+        className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2148] text-gray-600 hover:text-[#9d2148]"
       >
         <Icons.Pdf className="h-5 w-5 mb-1" />
         <span className="text-[9px] font-bold">Exportar PDF</span>
@@ -2893,25 +2891,25 @@ const InstitutionalHeader = () => (
     <div className="flex items-center gap-4">
       {/* Logos CDMX / SEDEMA (Simulados con texto/estilo) */}
       <div className="flex flex-col">
-        <h1 className="text-[#9d2449] font-black text-lg md:text-2xl tracking-tight leading-none">
+        <h1 className="text-[#9d2148] font-black text-lg md:text-2xl tracking-tight leading-none">
           GOBIERNO DE LA
         </h1>
-        <h1 className="text-[#9d2449] font-black text-lg md:text-2xl tracking-tight leading-none">
+        <h1 className="text-[#9d2148] font-black text-lg md:text-2xl tracking-tight leading-none">
           CIUDAD DE MÉXICO
         </h1>
       </div>
       <div className="h-8 w-px bg-gray-300 mx-1 md:mx-4 hidden md:block"></div>
       <div className="hidden md:flex flex-col justify-center">
         <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Secretaría del Medio Ambiente</span>
-        <span className="text-[#bc955c] text-sm font-bold tracking-wide">Dirección General de Ordenamiento Ecológico</span>
+        <span className="text-[#b28e5c] text-sm font-bold tracking-wide">Dirección General de Ordenamiento Ecológico</span>
       </div>
     </div>
 
     <div className="flex items-center gap-3">
       {/* Decorativo: Franja colores */}
       <div className="hidden md:flex h-full gap-1">
-        <div className="w-1.5 h-full bg-[#9d2449] rounded-b-sm"></div>
-        <div className="w-1.5 h-full bg-[#bc955c] rounded-b-sm"></div>
+        <div className="w-1.5 h-full bg-[#9d2148] rounded-b-sm"></div>
+        <div className="w-1.5 h-full bg-[#b28e5c] rounded-b-sm"></div>
       </div>
     </div>
   </div>
@@ -2946,7 +2944,7 @@ const SidebarDesktop = ({
         <>
           <div className="p-4 bg-white border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#9d2449] text-white flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-[#9d2148] text-white flex items-center justify-center">
                 <Icons.MapIcon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
@@ -2961,7 +2959,7 @@ const SidebarDesktop = ({
               {/* ✅ Botón de Ayuda Restaurado */}
               <button
                 onClick={onOpenHelp}
-                className="p-2 text-gray-400 hover:text-[#9d2449] hover:bg-red-50 rounded-full transition-colors"
+                className="p-2 text-gray-400 hover:text-[#9d2148] hover:bg-red-50 rounded-full transition-colors"
                 title="Ayuda y Soporte"
               >
                 <span className="font-bold text-xl">?</span>
@@ -2980,9 +2978,9 @@ const SidebarDesktop = ({
             {!analysis && !isLoading && (
               <div className="flex flex-col items-center justify-center text-center py-20 px-6 animate-in fade-in zoom-in duration-500">
                 <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6 shadow-sm border border-gray-100 relative group cursor-default">
-                  <div className="absolute inset-0 rounded-full border border-[#9d2449]/10 scale-110 group-hover:scale-125 transition-transform duration-700"></div>
-                  <Icons.MapPinned className="h-10 w-10 text-[#9d2449] drop-shadow-sm" />
-                  <div className="absolute bottom-6 right-6 w-3 h-3 bg-[#bc955c] rounded-full border border-white"></div>
+                  <div className="absolute inset-0 rounded-full border border-[#9d2148]/10 scale-110 group-hover:scale-125 transition-transform duration-700"></div>
+                  <Icons.MapPinned className="h-10 w-10 text-[#9d2148] drop-shadow-sm" />
+                  <div className="absolute bottom-6 right-6 w-3 h-3 bg-[#b28e5c] rounded-full border border-white"></div>
                 </div>
 
                 <h3 className="text-[16px] font-bold text-gray-800 mb-2">
@@ -2991,7 +2989,7 @@ const SidebarDesktop = ({
                 <p className="text-[13px] text-gray-500 leading-relaxed max-w-[260px] mx-auto">
                   Explora la zonificación y normatividad ambiental de la CDMX.
                   <br className="mb-2" />
-                  <span className="text-[#9d2449] font-medium">Selecciona un punto en el mapa</span> o busca una dirección para comenzar.
+                  <span className="text-[#9d2148] font-medium">Selecciona un punto en el mapa</span> o busca una dirección para comenzar.
                 </p>
               </div>
             )}
@@ -3009,7 +3007,7 @@ const SidebarDesktop = ({
       onClick={onToggle}
       className="
         absolute top-24 transform -translate-x-1/2 z-[5000]
-        w-8 h-16 bg-[#9d2449] text-white shadow-lg rounded-r-full
+        w-8 h-16 bg-[#9d2148] text-white shadow-lg rounded-r-full
         flex items-center justify-center cursor-pointer
         hover:bg-[#7d1d3a] active:scale-95 transition-all duration-200
       "
@@ -3099,7 +3097,7 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {analysis ? (
-              <h3 className="font-bold text-sm text-[#9d2449] uppercase tracking-wide">
+              <h3 className="font-bold text-sm text-[#9d2148] uppercase tracking-wide">
                 RESULTADO DE CONSULTA
               </h3>
             ) : (
@@ -3116,7 +3114,7 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
                 e.stopPropagation();
                 onClose();
               }}
-              className="p-1.5 rounded-full bg-[#9d2449] shadow-sm active:scale-95 transition"
+              className="p-1.5 rounded-full bg-[#9d2148] shadow-sm active:scale-95 transition"
             >
               <Icons.X className="h-4 w-4 text-white" />
             </button>
@@ -3136,7 +3134,7 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
             href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
             target="_blank"
             rel="noreferrer"
-            className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-[#9d2449] text-white py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-[#7d1d3a] transition-colors"
+            className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-[#9d2148] text-white py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-[#7d1d3a] transition-colors"
           >
             <Icons.MapIcon className="h-4 w-4" /> Google Maps
           </a>
@@ -3187,7 +3185,7 @@ const ToggleSwitch = ({ checked, onChange, disabled }) => (
       e.stopPropagation();
       if (!disabled && onChange) onChange(!checked);
     }}
-    className={`w-7 h-4 flex items-center rounded-full p-[2px] duration-300 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${checked && !disabled ? 'bg-[#9d2449]' : 'bg-gray-300'
+    className={`w-7 h-4 flex items-center rounded-full p-[2px] duration-300 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${checked && !disabled ? 'bg-[#9d2148]' : 'bg-gray-300'
 
       }`}
   >
@@ -3630,7 +3628,7 @@ const MapViewer = ({
       {tilesLoading && (
         <div className="absolute inset-0 flex items-center justify-center z-[1200] bg-black/10 pointer-events-none">
           <div className="flex flex-col items-center gap-2 bg-white/90 px-4 py-3 rounded-lg shadow">
-            <Icons.Loader2 className="h-5 w-5 animate-spin text-[#9d2449]" />
+            <Icons.Loader2 className="h-5 w-5 animate-spin text-[#9d2148]" />
             <span className="text-[11px] text-gray-700 font-medium">Cargando información geográfica...</span>
           </div>
         </div>
@@ -3683,7 +3681,7 @@ const Legend = ({
         onClick={() => setIsOpen(true)}
         className="
           fixed bottom-8 right-4 z-[1000]
-          w-14 h-14 bg-[#9d2449] text-white rounded-full shadow-lg
+          w-14 h-14 bg-[#9d2148] text-white rounded-full shadow-lg
           flex items-center justify-center
           hover:bg-[#7d1d3a] hover:scale-110 active:scale-95 transition-all
         "
@@ -3699,7 +3697,7 @@ const Legend = ({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white/50 rounded-t-xl shrink-0">
         <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
-          <Icons.Layers className="h-4 w-4 text-[#9d2449]" />
+          <Icons.Layers className="h-4 w-4 text-[#9d2148]" />
           Capas y Simbología
         </h3>
         <button
@@ -3774,7 +3772,7 @@ const Legend = ({
         <div>
           <div className="flex items-center justify-between mb-3">
             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Zonificación PGOEDF 2000</div>
-            <button onClick={toggleZoningGroup} className="text-[10px] text-[#9d2449] font-bold hover:underline">
+            <button onClick={toggleZoningGroup} className="text-[10px] text-[#9d2148] font-bold hover:underline">
               {visibleMapLayers.zoning ? 'Ocultar todo' : 'Mostrar todo'}
             </button>
           </div>
@@ -3819,7 +3817,7 @@ const Legend = ({
                 className={`
                     w-full text-left px-3 py-2.5 rounded-lg border flex items-center justify-between transition-all
                     ${activeBaseLayer === opt.id
-                    ? 'bg-[#9d2449]/5 border-[#9d2449] text-[#9d2449]'
+                    ? 'bg-[#9d2148]/5 border-[#9d2148] text-[#9d2148]'
                     : 'bg-gray-50 border-transparent text-gray-600 hover:bg-white hover:border-gray-200 shadow-sm'}
                  `}
               >
@@ -4015,21 +4013,14 @@ const App = () => {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center text-[#9d2449]">
+      <div className="h-screen flex items-center justify-center text-[#9d2148]">
         <Icons.Loader2 className="animate-spin h-10 w-10" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col w-full h-[100dvh] overflow-hidden bg-[#f3f4f6]" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* ✅ Estilos Globales */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        html, body, #root { height: 100%; width: 100%; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; }
-        .glass-panel { backdrop-filter: blur(12px); background: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.5); }
-      `}</style>
+    <div className="flex flex-col w-full h-full overflow-hidden bg-[#f3f4f6]">
 
       {/* ✅ HEADER INSTITUCIONAL (Desktop only, or responsive?) - User asked for "start of page" */}
       <InstitutionalHeader />
@@ -4084,7 +4075,7 @@ const App = () => {
           {loading && (
             <div className="absolute inset-0 z-[3000] bg-white/60 backdrop-blur-sm flex items-center justify-center animate-fade-in">
               <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center">
-                <div className="w-10 h-10 border-4 border-gray-200 border-l-[#9d2449] rounded-full animate-spin mb-3"></div>
+                <div className="w-10 h-10 border-4 border-gray-200 border-l-[#9d2148] rounded-full animate-spin mb-3"></div>
                 <span className="text-gray-800 font-bold text-sm">Cargando mapa base...</span>
               </div>
             </div>
@@ -4119,7 +4110,7 @@ const App = () => {
             <button
               type="button"
               onClick={() => setIsHelpOpen(true)}
-              className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2449] active:scale-95 transition"
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] active:scale-95 transition"
               aria-label="Ayuda"
               title="Ayuda"
             >
@@ -4132,7 +4123,7 @@ const App = () => {
                 {/* <button
                 type="button"
                 onClick={() => setIsLegendOpen(o => !o)}
-                className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2449] active:scale-95 transition"
+                className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] active:scale-95 transition"
                 aria-label="Capas"
                 title="Capas"
               >
@@ -4142,7 +4133,7 @@ const App = () => {
                 <button
                   type="button"
                   onClick={handleUserLocation}
-                  className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2449] active:scale-95 transition"
+                  className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] active:scale-95 transition"
                   aria-label="Mi ubicación"
                   title="Mi ubicación"
                 >
