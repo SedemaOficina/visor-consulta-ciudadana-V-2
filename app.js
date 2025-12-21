@@ -3669,28 +3669,29 @@ const Legend = ({
   if (!isOpen) return null; // ✅ Legend logic moved to MapControls
 
   return (
-    <div className="fixed bottom-24 right-4 z-[5000] w-80 glass-panel rounded-xl shadow-soft animate-fade-in flex flex-col max-h-[75vh]">
+    <div className="fixed top-20 md:top-24 right-16 z-[2000] w-64 max-h-[60vh] md:max-h-[500px] glass-panel rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 flex flex-col border border-gray-100/50">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white/50 rounded-t-xl shrink-0">
-        <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
-          <Icons.Layers className="h-4 w-4 text-[#9d2148]" />
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100 bg-white/80 backdrop-blur-md rounded-t-xl shrink-0">
+        <h3 className="font-bold text-gray-800 text-xs flex items-center gap-2">
+          <Icons.Layers className="h-3.5 w-3.5 text-[#9d2148]" />
           Capas y Simbología
         </h3>
         <button
           onClick={() => setIsOpen(false)}
           className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          aria-label="Cerrar panel de capas"
         >
-          <Icons.X className="h-4 w-4 text-gray-500" />
+          <Icons.X className="h-3.5 w-3.5 text-gray-500" />
         </button>
       </div>
 
-      {/* Content Scrollable - Single Block */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-white/80 space-y-6">
+      {/* Content Scrollable - Compacto */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-3 bg-white/90 space-y-4">
 
-        {/* 0. Mapa Base (Rediseño Horizontal Compacto) */}
-        <div className="mb-2">
-          <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Mapa Base</div>
-          <div className="flex bg-gray-100/80 p-1 rounded-lg gap-1 border border-gray-100">
+        {/* 0. Mapa Base */}
+        <div>
+          <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 px-1">Mapa Base</div>
+          <div className="flex bg-gray-100 p-0.5 rounded-lg gap-0.5 border border-gray-100">
             {[
               { id: 'STREETS', label: 'Calles' },
               { id: 'SATELLITE', label: 'Satélite' },
@@ -3702,7 +3703,7 @@ const Legend = ({
                   key={opt.id}
                   onClick={() => setActiveBaseLayer(opt.id)}
                   className={`
-                    flex-1 py-1.5 px-2 rounded-md text-[10px] font-bold transition-all duration-200
+                    flex-1 py-1 px-1 rounded-md text-[9px] font-bold transition-all duration-200
                     ${isActive
                       ? 'bg-white text-[#9d2148] shadow-sm ring-1 ring-[#9d2148]/10'
                       : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
@@ -3716,46 +3717,59 @@ const Legend = ({
           </div>
         </div>
 
-        {/* 1. Contexto */}
+        {/* 1. Contexto - CON SIMBOLOGÍA */}
         <div>
-          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Contexto y Límites</div>
-          <div className="space-y-3">
-            <label className="flex items-center justify-between group cursor-pointer">
-              <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Alcaldías</span>
+          <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Contexto y Límites</div>
+          <div className="space-y-2">
+
+            <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
+              <div className="flex items-center gap-2">
+                {/* Swatch: Alcaldías (Borde blanco dashed sobre gris para visibilidad) */}
+                <div className="w-3.5 h-3.5 rounded bg-gray-300 border border-white border-dashed shadow-sm" title="Límite Alcaldías (Línea blanca)" />
+                <span className="text-[11px] text-gray-700 font-medium group-hover:text-gray-900">Alcaldías</span>
+              </div>
               <ToggleSwitch checked={visibleMapLayers.alcaldias} onChange={() => toggleLayer('alcaldias')} />
             </label>
-            <label className="flex items-center justify-between group cursor-pointer">
-              <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Suelo de Conservación</span>
+
+            <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
+              <div className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 rounded shadow-sm opacity-80" style={{ backgroundColor: LAYER_STYLES.sc.color }} />
+                <span className="text-[11px] text-gray-700 font-medium group-hover:text-gray-900">Suelo de Conservación</span>
+              </div>
               <ToggleSwitch checked={visibleMapLayers.sc} onChange={() => toggleLayer('sc')} />
             </label>
-            <label className="flex items-center justify-between group cursor-pointer">
-              <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Límite Edo. Méx</span>
+
+            <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
+              <div className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 rounded border border-gray-200 shadow-sm opacity-60" style={{ backgroundColor: LAYER_STYLES.edomex.color }} />
+                <span className="text-[11px] text-gray-700 font-medium group-hover:text-gray-900">Límite Edo. Méx</span>
+              </div>
               <ToggleSwitch checked={visibleMapLayers.edomex} onChange={() => toggleLayer('edomex')} />
             </label>
-            <label className="flex items-center justify-between group cursor-pointer">
-              <span className="text-[13px] text-gray-700 font-medium group-hover:text-gray-900 transition-colors">Límite Morelos</span>
+
+            <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
+              <div className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 rounded border border-gray-200 shadow-sm opacity-60" style={{ backgroundColor: LAYER_STYLES.morelos.color }} />
+                <span className="text-[11px] text-gray-700 font-medium group-hover:text-gray-900">Límite Morelos</span>
+              </div>
               <ToggleSwitch checked={visibleMapLayers.morelos} onChange={() => toggleLayer('morelos')} />
             </label>
 
-            {/* ANP Switch */}
             <div className="pt-2 border-t border-gray-100">
-              <label className="flex items-center justify-between group cursor-pointer">
+              <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#a855f7] border border-white shadow-sm" />
-                  <span className="text-[13px] text-gray-800 font-bold">Áreas Naturales Protegidas</span>
+                  <div className="w-3.5 h-3.5 rounded bg-[#a855f7] border border-white shadow-sm" />
+                  <span className="text-[11px] text-gray-800 font-bold">Áreas Naturales Protegidas</span>
                 </div>
                 <ToggleSwitch checked={visibleMapLayers.anp} onChange={() => toggleLayer('anp')} />
               </label>
             </div>
 
-            {/* ANP Zonificación (Dinámica) */}
-            <div
-              className={`transition-opacity ${!selectedAnpId ? 'opacity-50 pointer-events-none' : ''}`}
-            >
-              <label className="flex items-center justify-between group cursor-pointer">
+            <div className={`transition-opacity ${!selectedAnpId ? 'opacity-40 pointer-events-none' : ''}`}>
+              <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded border border-purple-500 bg-purple-100 shadow-sm" />
-                  <span className="text-[13px] text-purple-900 font-bold">Zonificación Interna ANP</span>
+                  <div className="w-3.5 h-3.5 rounded border border-purple-500 bg-purple-100 shadow-sm" />
+                  <span className="text-[11px] text-purple-900 font-bold">Zonificación Interna ANP</span>
                 </div>
                 <ToggleSwitch
                   checked={visibleMapLayers.selectedAnpZoning}
@@ -4085,59 +4099,55 @@ const App = () => {
             </div>
           )}
 
-          {/* CONTROLES DE MAPA (NUEVA UI) */}
-          <div className="absolute inset-0 pointer-events-none z-[1000]">
-            {/* Top Right: Ayuda + Capas */}
-            <div className="absolute top-24 right-4 flex flex-col items-end gap-3 pointer-events-auto">
-              {/* Botón Ayuda */}
+          {/* CONTROLES DE MAPA (NUEVA UI UNIFICADA) */}
+          <div className="absolute top-20 md:top-24 right-4 flex flex-col items-end gap-2.5 pointer-events-auto z-[1000]">
+
+            {/* 1. Ayuda */}
+            <button
+              type="button"
+              onClick={() => setIsHelpOpen(true)}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
+              title="Ayuda"
+              aria-label="Ayuda"
+            >
+              <span className="font-bold text-lg">?</span>
+            </button>
+
+            {/* 2. Capas */}
+            <button
+              type="button"
+              onClick={() => setIsLegendOpen(v => !v)}
+              className={`w-10 h-10 flex items-center justify-center rounded-full shadow-lg border border-gray-200 hover:scale-105 active:scale-95 transition ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148]'}`}
+              title="Capas y Simbología"
+              aria-label="Capas"
+            >
+              <Icons.Layers className="h-5 w-5" />
+            </button>
+
+            {/* 3. Reset View (Condicional) */}
+            {analysis && (
               <button
                 type="button"
-                onClick={() => setIsHelpOpen(true)}
-                className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
-                title="Ayuda"
-                aria-label="Ayuda"
+                onClick={() => resetMapViewRef.current?.()}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-[#9d2148] hover:scale-105 active:scale-95 transition"
+                title="Restablecer vista"
+                aria-label="Restablecer vista"
               >
-                <span className="font-bold text-lg">?</span>
+                <Icons.RotateCcw className="h-5 w-5" />
               </button>
+            )}
 
-              {/* Botón Capas (Legend toggle) */}
-              <button
-                type="button"
-                onClick={() => setIsLegendOpen(v => !v)}
-                className={`w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full shadow-lg border border-gray-200 hover:scale-105 active:scale-95 transition ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148]'}`}
-                title="Capas"
-                aria-label="Capas y simbología"
-              >
-                <Icons.Layers className="h-5 w-5" />
-              </button>
-            </div>
+            {/* 4. Mi Ubicación */}
+            <button
+              type="button"
+              onClick={handleUserLocation}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
+              title="Mi ubicación"
+              aria-label="Usar mi ubicación actual"
+            >
+              <Icons.Navigation className="h-5 w-5" />
+            </button>
 
-            {/* Bottom Right: Reset View + Location */}
-            <div className="absolute bottom-40 md:bottom-8 right-4 flex flex-col items-end gap-3 pointer-events-auto">
-              {/* Reset View */}
-              {analysis && (
-                <button
-                  type="button"
-                  onClick={() => resetMapViewRef.current?.()}
-                  className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-[#9d2148] hover:scale-105 active:scale-95 transition"
-                  title="Restablecer vista"
-                  aria-label="Restablecer vista"
-                >
-                  <Icons.RotateCcw className="h-5 w-5" />
-                </button>
-              )}
-
-              {/* My Location */}
-              <button
-                type="button"
-                onClick={handleUserLocation}
-                className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
-                title="Mi ubicación"
-                aria-label="Usar mi ubicación actual"
-              >
-                <Icons.Navigation className="h-5 w-5" />
-              </button>
-            </div>
           </div>
         </div>
 
