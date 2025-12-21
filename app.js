@@ -329,8 +329,14 @@ const analyzeLocation = async (c) => {
         }
       }
     } else {
-      r.zoningName = "Sin zonificación PGOEDF detectada";
-      r.zoningKey = "SC"; // Fallback
+      // ✅ Fallback: Si no hay polígono PGOEDF (porque se recortó), pero es ANP:
+      if (r.isANP) {
+        r.zoningName = r.anpNombre || "Área Natural Protegida";
+        r.zoningKey = "ANP";
+      } else {
+        r.zoningName = "Sin zonificación PGOEDF detectada";
+        r.zoningKey = "SC";
+      }
       r.noActivitiesCatalog = true;
     }
   } else if (r.status === 'URBAN_SOIL') {
