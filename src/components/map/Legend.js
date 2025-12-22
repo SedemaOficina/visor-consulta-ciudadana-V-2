@@ -78,18 +78,7 @@ const Legend = ({
                     <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Contexto y Límites</div>
                     <div className="space-y-2">
 
-                        <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
-                            <div className="flex items-center gap-2">
-                                {/* Swatch: Alcaldías (Borde blanco dashed sobre gris para visibilidad) */}
-                                <div className="w-3.5 h-3.5 rounded bg-gray-300 border border-white border-dashed shadow-sm" title="Límite Alcaldías (Línea blanca)" />
-                                <span className="text-[11px] text-gray-700 font-medium group-hover:text-gray-900">Alcaldías</span>
-                            </div>
-                            <ToggleSwitch
-                                checked={visibleMapLayers.alcaldias}
-                                onChange={() => toggleLayer('alcaldias')}
-                                activeColor="#9ca3af" // Gris
-                            />
-                        </label>
+                        {/* Capa Alcaldías, Edomex y Morelos visibles pero no toggleables a petición */}
 
                         <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
                             <div className="flex items-center gap-2">

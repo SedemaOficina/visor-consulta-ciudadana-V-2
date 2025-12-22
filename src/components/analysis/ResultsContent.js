@@ -343,7 +343,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
 
     // Calcular el display name unificado
     const zoningDisplay = getZoningDisplay(analysis);
-    const PROVISIONS_NOTES = (window.App && window.App.Constants && window.App.Constants.PROVISIONS_NOTES) ? window.App.Constants.PROVISIONS_NOTES : [];
+    const REGULATORY_NOTES = (window.App && window.App.Constants && window.App.Constants.REGULATORY_NOTES) ? window.App.Constants.REGULATORY_NOTES : [];
 
     return (
         <div className="space-y-4 animate-in bg-white border border-gray-200 rounded-lg px-4 pt-4 pb-4">
@@ -444,7 +444,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                     {showNotes && (
                                         <div className="p-4 bg-white border-t border-gray-200">
                                             <ul className="space-y-2 list-disc pl-4 marker:text-gray-400">
-                                                {PROVISIONS_NOTES.map((note, idx) => (
+                                                {REGULATORY_NOTES.map((note, idx) => (
                                                     <li key={idx} className="text-[10px] text-gray-600 leading-relaxed text-justify">
                                                         {note}
                                                     </li>
