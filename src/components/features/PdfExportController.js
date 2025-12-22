@@ -218,28 +218,31 @@
                 th: (bg = '#f3f4f6') => ({
                     border: S.hair,
                     background: bg,
-                    padding: '5px 8px',
+                    padding: '6px 8px',
                     textAlign: 'left',
                     verticalAlign: 'middle',
                     fontSize: `${T.small}px`,
                     fontWeight: 700,
+                    lineHeight: 1.25,
                     color: C.ink
                 }),
                 td: {
                     border: S.hair,
-                    padding: '5px 8px',
+                    padding: '6px 8px',
                     textAlign: 'left',
                     verticalAlign: 'middle',
                     fontSize: `${T.base}px`,
+                    lineHeight: 1.25,
                     color: C.ink
                 },
                 tdLabel: {
                     border: S.hair,
-                    padding: '5px 8px',
+                    padding: '6px 8px',
                     width: '34%',
                     background: C.panel,
                     fontSize: `${T.small}px`,
                     fontWeight: 700,
+                    lineHeight: 1.25,
                     color: C.sub,
                     verticalAlign: 'middle'
                 },
@@ -249,18 +252,18 @@
             const badge = (bg, fg = '#fff', border = 'transparent') => ({
                 display: 'inline-flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: '6px',
-                padding: '4px 10px',
+                padding: '3px 10px',
                 borderRadius: 999,
                 fontSize: `${T.small}px`,
                 fontWeight: 800,
                 letterSpacing: '0.02em',
-                lineHeight: 1.3, // Increased to prevent clipping
+                lineHeight: 1,
                 backgroundColor: bg,
                 color: fg,
                 border: border === 'transparent' ? '1px solid transparent' : `1px solid ${border}`,
-                whiteSpace: 'nowrap',
-                paddingTop: '5px' // Slight optical adjustment
+                whiteSpace: 'nowrap'
             });
 
             const h2 = (color = C.ink) => ({
@@ -536,14 +539,15 @@
                                             fontFamily: T.mono,
                                             fontSize: `${T.base}px`,
                                             color: C.ink,
-                                            lineHeight: 1.35,
+                                            lineHeight: 1,
                                             padding: '6px 10px',
                                             marginTop: '4px',
                                             borderRadius: '4px',
                                             border: '1px solid #d1d5db',
                                             backgroundColor: '#ffffff',
                                             display: 'inline-flex',
-                                            alignItems: 'center'
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}
                                     >
                                         {coordText}
