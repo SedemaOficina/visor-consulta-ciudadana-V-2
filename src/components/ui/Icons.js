@@ -132,6 +132,11 @@ window.App.Components.Icons = {
             <line x1="9" y1="18" x2="13" y2="18" />
         </IconBase>
     ),
+    Leaf: (p) => (
+        <IconBase {...p}>
+            <path d="M11 20A7 7 0 019.8 6.1C15.5 5 17 4.48 19 2c1 2 2 13-1.8 17.29A6.97 6.97 0 0111 20c-1 0-1.99-.2-2.8-.57" />
+        </IconBase>
+    ),
     Menu: (p) => (
         <IconBase {...p}>
             <line x1="4" y1="12" x2="20" y2="12" />
