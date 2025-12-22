@@ -35,7 +35,7 @@ const StatusMessage = ({ analysis }) => {
         );
     }
 
-    if (status === 'NO_DATA' || zoningKey === 'NODATA')
+    if ((status === 'NO_DATA' || zoningKey === 'NODATA') && status !== 'URBAN_SOIL')
         return (
             <div className="p-3 bg-yellow-50 text-yellow-800 text-xs border-l-4 border-yellow-400 rounded-r mb-3">
                 <strong>Aviso:</strong> No se encontró información disponible para esta zona.

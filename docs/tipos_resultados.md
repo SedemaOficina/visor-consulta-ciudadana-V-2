@@ -27,12 +27,12 @@ Se muestra cuando el punto cae en Estado de México o Morelos (si las capas de c
 ## 3. Suelo Urbano (Estándar)
 Punto dentro de CDMX pero fuera del Suelo de Conservación.
 
+## 3. Suelo Urbano (Estándar)
+Punto dentro de CDMX pero fuera del Suelo de Conservación.
+
 *   **Header:**
     *   Badge Azul: "SUELO URBANO"
 *   **Título Principal:** Alcaldía (ej. "Cuauhtémoc")
-*   **Zonificación:**
-    *   Etiqueta: "Zonificación PGOEDF"
-    *   Valor: "Suelo Urbano" (o "Información no disponible")
 *   **Aviso PDU:** Tarjeta Azul ("Consulta Específica Requerida")
     *   Texto: "Esta zona se rige por un Programa de Desarrollo Urbano específico..."
 *   **Botones:** Google Maps / Exportar PDF
