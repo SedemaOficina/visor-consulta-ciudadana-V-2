@@ -195,8 +195,8 @@
                 anp: COLORS.anp || '#7e22ce',
                 red: COLORS.error || '#b91c1c',
                 green: COLORS.success || '#15803d',
-                edomex: '#808080', // Keep consistent with layer style if needed, or use specific color
-                morelos: '#808080'
+                edomex: '#FFD86B',
+                morelos: '#B8A1FF'
             };
 
             const tbl = {
@@ -280,14 +280,14 @@
                     <header
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: '64px 1fr 170px',
+                            gridTemplateColumns: '120px 1fr 170px',
                             columnGap: '14px',
                             alignItems: 'center',
                             marginBottom: `${S.gap2}px`
                         }}
                     >
-                        <div style={{ width: '64px' }}>
-                            <img src="./assets/logo-sedema.png" alt="SEDEMA" style={{ height: '46px', display: 'block' }} />
+                        <div style={{ width: '120px', height: '56px', display: 'flex', alignItems: 'center' }}>
+                            <img src="./assets/logo-sedema.png" alt="SEDEMA" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
                         </div>
                         <div style={{ minWidth: 0 }}>
                             <div
@@ -419,7 +419,7 @@
                                             </div>
                                             {outsideContextName && (
                                                 <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small}px`, color: C.sub }}>
-                                                    <span style={{ width: '10px', height: '10px', borderRadius: 2, background: C.edomex, marginRight: '6px', border: '1px solid #9ca3af' }} />
+                                                    <span style={{ width: '10px', height: '10px', borderRadius: 2, background: outsideContextName.includes('Morelos') ? C.morelos : C.edomex, marginRight: '6px', border: '1px solid #9ca3af' }} />
                                                     Estado: <strong>{outsideContextName}</strong>
                                                 </div>
                                             )}
@@ -438,9 +438,11 @@
                                         </div>
                                     )}
                                 </div>
-                                <div style={{ marginBottom: '6px' }}>
-                                    <strong>{isANP ? 'Área Natural Protegida en el punto consultado' : 'Zonificación activa en el punto consultado'}</strong>
-                                </div>
+                                {!isOutside && !(isUrban && !analysis.zoningKey) && (
+                                    <div style={{ marginBottom: '6px' }}>
+                                        <strong>{isANP ? 'Área Natural Protegida en el punto consultado' : 'Zonificación activa en el punto consultado'}</strong>
+                                    </div>
+                                )}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                     {isANP ? (
                                         <>
@@ -449,7 +451,7 @@
                                                 <strong>ANP</strong> — {analysis.anpNombre || '—'}
                                             </span>
                                         </>
-                                    ) : analysis?.zoningKey ? (
+                                    ) : (!isOutside && !(isUrban && !analysis.zoningKey)) && (analysis?.zoningKey ? (
                                         <>
                                             <span style={{ width: '10px', height: '10px', borderRadius: 2, background: zoningColor, border: '1px solid #9ca3af' }} />
                                             <span style={{ fontSize: `${T.small}px` }}>
@@ -458,11 +460,13 @@
                                         </>
                                     ) : (
                                         <span style={{ fontSize: `${T.small}px`, color: C.mute }}>Sin zonificación disponible.</span>
-                                    )}
+                                    ))}
                                 </div>
-                                <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '6px' }}>
-                                    * Para categorías completas y simbología, consulte el visor.
-                                </div>
+                                {!isOutside && !(isUrban && !analysis.zoningKey) && (
+                                    <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '6px' }}>
+                                        * Para categorías completas y simbología, consulte el visor.
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div
