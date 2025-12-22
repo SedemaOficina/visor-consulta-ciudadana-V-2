@@ -646,7 +646,7 @@ const App = () => {
           )}
 
           {/* CONTROLES DE MAPA (NUEVA UI UNIFICADA) */}
-          <div className="absolute top-20 md:top-24 right-4 flex flex-col items-end gap-2.5 pointer-events-auto z-[1000]">
+          <div className="absolute top-20 md:top-24 right-4 flex flex-col items-end gap-2.5 pointer-events-auto z-[1100]">
 
             {/* 1. Ayuda */}
             <button

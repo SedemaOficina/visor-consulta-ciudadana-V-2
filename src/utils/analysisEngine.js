@@ -79,35 +79,38 @@
         // ---------------------------------------------------
         // 4. Zonificación PGOEDF (JERARQUÍA ESTRICTA)
         // ---------------------------------------------------
-        if (r.status === 'CONSERVATION_SOIL') {
-            const z = dataCache.zoning?.features?.length ? findFeature(c, dataCache.zoning) : null;
+        // ---------------------------------------------------
+        // 4. Zonificación PGOEDF (JERARQUÍA ESTRICTA)
+        // ---------------------------------------------------
+        // Modificación: Buscar ZONING siempre, independientemente de si es SC o Urbano
+        // Esto permite que si hay capas PDU cargadas en 'zoning', se muestren en Urbano.
 
-            // 4. Zonificación PGOEDF
-            // Ya no bloqueamos si es ANP. Buscamos la zonificación subyacente siempre.
-            if (z) {
-                // Usa el campo CLAVE para determinar la zonificación
-                let k = (z.properties.CLAVE || '').toString().trim().toUpperCase();
+        const z = dataCache.zoning?.features?.length ? findFeature(c, dataCache.zoning) : null;
 
-                // Lógica para separar subtipos de PDU (Programas, Poblados, Urbana)
-                if (k === 'PDU' || k === 'PROGRAMAS' || k === 'ZONA URBANA') {
-                    const desc = (z.properties.PGOEDF || '').toLowerCase();
-                    if (desc.includes('parcial')) {
-                        k = 'PDU_PP';
-                    } else if (desc.includes('poblad') || desc.includes('rural') || desc.includes('habitacional')) {
-                        k = 'PDU_PR';
-                    } else if (desc.includes('urbana') || desc.includes('urbano') || desc.includes('barrio')) {
-                        k = 'PDU_ZU';
-                    } else if (desc.includes('equipamiento')) {
-                        k = 'PDU_ER';
-                    }
-                    r.noActivitiesCatalog = true; // No hay catálogo para PDU en CSV
+        if (z) {
+            // Usa el campo CLAVE para determinar la zonificación
+            let k = (z.properties.CLAVE || '').toString().trim().toUpperCase();
+
+            // Lógica para separar subtipos de PDU (Programas, Poblados, Urbana)
+            if (k === 'PDU' || k === 'PROGRAMAS' || k === 'ZONA URBANA') {
+                const desc = (z.properties.PGOEDF || '').toLowerCase();
+                if (desc.includes('parcial')) {
+                    k = 'PDU_PP';
+                } else if (desc.includes('poblad') || desc.includes('rural') || desc.includes('habitacional')) {
+                    k = 'PDU_PR';
+                } else if (desc.includes('urbana') || desc.includes('urbano') || desc.includes('barrio')) {
+                    k = 'PDU_ZU';
+                } else if (desc.includes('equipamiento')) {
+                    k = 'PDU_ER';
                 }
-
-                r.zoningKey = k;
-                r.zoningName = z.properties.PGOEDF || r.zoningKey; // El nombre legible viene del campo PGOEDF
+                r.noActivitiesCatalog = true; // No hay catálogo para PDU en CSV
             }
-            // CASO B: Punto dentro de SC pero en "hueco" (NO intersecta polígono PGOEDF)
-            else {
+
+            r.zoningKey = k;
+            r.zoningName = z.properties.PGOEDF || r.zoningKey; // El nombre legible viene del campo PGOEDF
+        } else {
+            // Fallbacks si NO se encuentra polígono de zonificación
+            if (r.status === 'CONSERVATION_SOIL') {
                 // Si no encontramos PGOEDF pero estamos en ANP, usamos ANP como fallback para el nombre
                 if (r.isANP) {
                     r.zoningName = "ÁREA NATURAL PROTEGIDA";
@@ -116,51 +119,52 @@
                     r.zoningName = "Información no disponible";
                     r.zoningKey = "NODATA";
                 }
-            }
-
-            // ---------------------------------------------------
-            // 4.1 Cruzar con CSV de actividades
-            // ---------------------------------------------------
-            if (dataCache.rules?.length) {
-                const all = [];
-                const pro = [];
-                const zn = (r.zoningName || '').toString().toUpperCase();
-                r.isPDU = zn.includes('PDU') || zn.includes('POBLAD'); // Detección legacy por si acaso
-
-                // Si es NODATA o PDU, no mostrar catálogo. (ANP ya no bloquea si tiene zoningKey válido)
-                if (r.zoningKey === 'ANP' || r.zoningKey === 'NODATA' || r.isPDU) {
-                    r.noActivitiesCatalog = true;
+            } else if (r.status === 'URBAN_SOIL') {
+                r.noActivitiesCatalog = true;
+                if (r.isANP) {
+                    // CASO ESPECIAL: ANP en Suelo Urbano con "hueco" de zonificación
+                    // Si encontramos polígono PDU arriba, ya tendríamos zoningName. Si llegamos aquí es hueco.
+                    r.zoningName = "ÁREA NATURAL PROTEGIDA";
+                    r.zoningKey = "ANP";
                 } else {
-                    // Validar si la columna existe
-                    const hasColumn = Object.prototype.hasOwnProperty.call(dataCache.rules[0], r.zoningKey);
-
-                    if (!hasColumn) {
-                        r.noActivitiesCatalog = true;
-                    } else {
-                        dataCache.rules.forEach(row => {
-                            const val = (row[r.zoningKey] || '').trim().toUpperCase();
-                            if (!val) return;
-                            const act = {
-                                sector: (row['Sector'] || row['ector'] || '').trim(),
-                                general: (row['Actividad general'] || row['Act_general'] || '').trim(),
-                                specific: (row['Actividad específica'] || row['Actividad especifica'] || '').trim()
-                            };
-                            if (val === 'A') all.push(act);
-                            else if (val === 'P') pro.push(act);
-                        });
-                        r.allowedActivities = all;
-                        r.prohibitedActivities = pro;
-                    }
+                    r.zoningName = "Suelo Urbano"; // Valor por defecto
                 }
             }
-        } else if (r.status === 'URBAN_SOIL') {
-            r.noActivitiesCatalog = true;
-            if (r.isANP) {
-                // CASO ESPECIAL: ANP en Suelo Urbano (ej. Histórico Coyoacán)
-                r.zoningName = "ÁREA NATURAL PROTEGIDA";
-                r.zoningKey = "ANP";
+        }
+
+        // ---------------------------------------------------
+        // 4.1 Cruzar con CSV de actividades (Solo si tenemos zoningKey válido y no es PDU/NODATA/ANP-Fallback)
+        // ---------------------------------------------------
+        if (r.zoningKey && dataCache.rules?.length) {
+            const all = [];
+            const pro = [];
+            const zn = (r.zoningName || '').toString().toUpperCase();
+            r.isPDU = zn.includes('PDU') || zn.includes('POBLAD');
+
+            // Si es NODATA o PDU, no mostrar catálogo. (ANP ya no bloquea si tiene zoningKey válido)
+            if (r.zoningKey === 'ANP' || r.zoningKey === 'NODATA' || r.isPDU) {
+                r.noActivitiesCatalog = true;
             } else {
-                r.zoningName = "Suelo Urbano"; // Valor por defecto para SU
+                // Validar si la columna existe
+                const hasColumn = Object.prototype.hasOwnProperty.call(dataCache.rules[0], r.zoningKey);
+
+                if (!hasColumn) {
+                    r.noActivitiesCatalog = true;
+                } else {
+                    dataCache.rules.forEach(row => {
+                        const val = (row[r.zoningKey] || '').trim().toUpperCase();
+                        if (!val) return;
+                        const act = {
+                            sector: (row['Sector'] || row['ector'] || '').trim(),
+                            general: (row['Actividad general'] || row['Act_general'] || '').trim(),
+                            specific: (row['Actividad específica'] || row['Actividad especifica'] || '').trim()
+                        };
+                        if (val === 'A') all.push(act);
+                        else if (val === 'P') pro.push(act);
+                    });
+                    r.allowedActivities = all;
+                    r.prohibitedActivities = pro;
+                }
             }
         }
 
