@@ -1,6 +1,27 @@
 // Inicializar namespace
 window.App = window.App || {};
-window.App.Constants = {};
+
+window.App.Constants.COLORS = {
+    primary: '#9d2148',   // Institutional Guinda
+    secondary: '#BC955C', // Institutional Dorado
+    success: '#15803d',   // Green 700 (Accessible on light bg)
+    warning: '#b45309',   // Amber 700
+    error: '#b91c1c',     // Red 700
+    info: '#1d4ed8',      // Blue 700
+
+    // Domain colors
+    sc: '#3B7D23',     // Suelo Conservación Standard
+    su: '#2563EB',     // Suelo Urbano Blue
+    anp: '#9333ea',    // ANP Purple
+
+    // Neutrals
+    text: '#111827',      // Gray 900
+    subtext: '#4b5563',   // Gray 600
+    border: '#d1d5db',    // Gray 300
+    bg: '#f3f4f6',        // Gray 100
+    white: '#ffffff'
+};
+
 
 window.App.Constants.ZONING_CAT_INFO = {
     AEE: { color: '#FF5F5F', label: 'Agroecológico Especial (AEE)' },

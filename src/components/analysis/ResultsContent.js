@@ -1,5 +1,5 @@
 const { useState } = window.React;
-const { ZONING_CAT_INFO, CONTACT_INFO } = window.App.Constants;
+const { ZONING_CAT_INFO, CONTACT_INFO, COLORS } = window.App.Constants;
 const { getZoningColor, getSectorStyle, getAnpZoningColor } = window.App.Utils;
 const Icons = window.App.Components.Icons;
 
@@ -57,7 +57,7 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
                     const st = (isProhibidas || isPermitidas)
                         ? {
                             bg: isProhibidas ? '#FEF2F2' : '#F0FDF4',
-                            border: accentColor || (isProhibidas ? '#b91c1c' : '#15803d'),
+                            border: accentColor || (isProhibidas ? COLORS.error : COLORS.success),
                             text: isProhibidas ? '#7f1d1d' : '#14532d'
                         }
                         : getSectorStyle(sector);
@@ -84,7 +84,7 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
                                                     className="w-1.5 h-1.5 rounded-full"
                                                     style={{
                                                         backgroundColor: (isProhibidas || isPermitidas)
-                                                            ? (accentColor || (isProhibidas ? '#b91c1c' : '#15803d'))
+                                                            ? (accentColor || (isProhibidas ? COLORS.error : COLORS.success))
                                                             : st.border
                                                     }}
                                                 />
@@ -134,7 +134,7 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
                 href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2148] text-gray-600 hover:text-[#9d2148]"
+                className={`flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[${COLORS.primary}] text-gray-600 hover:text-[${COLORS.primary}]`}
                 title="Ver ubicación en Google Maps"
             >
                 <Icons.MapIcon className="h-5 w-5 mb-1" />
@@ -145,7 +145,7 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
             <button
                 type="button"
                 onClick={(e) => onExportPDF?.(e)}
-                className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2148] text-gray-600 hover:text-[#9d2148] active:scale-95 transition-transform"
+                className={`flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[${COLORS.primary}] text-gray-600 hover:text-[${COLORS.primary}] active:scale-95 transition-transform`}
                 title="Generar ficha en PDF"
                 aria-label="Exportar resultados a PDF"
             >
@@ -217,7 +217,7 @@ const LocationSummary = ({ analysis, onExportPDF }) => {
     // PERO, si zoningKey es "ANP" (Caso A), usamos un color fijo (ej. verde/morado) o el hash
     let zoningColor = '#9ca3af';
     if (analysis.zoningKey === 'ANP') {
-        zoningColor = '#9333ea'; // Purple para "ÁREA NATURAL PROTEGIDA"
+        zoningColor = COLORS.anp; // Purple para "ÁREA NATURAL PROTEGIDA"
     } else if (analysis.zoningKey === 'NODATA') {
         zoningColor = '#9ca3af';
     } else if (analysis.zoningKey) {
@@ -236,7 +236,7 @@ const LocationSummary = ({ analysis, onExportPDF }) => {
                         <span
                             className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase shadow-sm"
                             style={{
-                                backgroundColor: isSC ? '#3B7D23' : isUrban ? '#3b82f6' : '#6b7280',
+                                backgroundColor: isSC ? COLORS.sc : isUrban ? COLORS.su : '#6b7280',
                                 color: '#ffffff'
                             }}
                         >
@@ -340,7 +340,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
 
                             <button
                                 onClick={() => setShowDetails(v => !v)}
-                                className="text-[10px] text-[#9d2148] hover:underline"
+                                className={`text-[10px] text-[${COLORS.primary}] hover:underline`}
                             >
                                 {showDetails ? 'Ocultar detalle' : 'Ver detalle'}
                             </button>
@@ -354,8 +354,8 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                             onClick={() => setActiveTab('prohibidas')}
                                             className={`px-4 py-2 rounded-t-lg text-[13px] font-extrabold transition
                         ${activeTab === 'prohibidas'
-                                                    ? 'bg-[#b91c1c] text-white'
-                                                    : 'bg-transparent text-gray-500 hover:text-[#b91c1c]'}
+                                                    ? `bg-[${COLORS.error}] text-white`
+                                                    : `bg-transparent text-gray-500 hover:text-[${COLORS.error}]`}
                       `}
                                         >
                                             PROHIBIDAS ({analysis.prohibitedActivities?.length || 0})
@@ -365,8 +365,8 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                             onClick={() => setActiveTab('permitidas')}
                                             className={`px-4 py-2 rounded-t-lg text-[13px] font-extrabold transition
                         ${activeTab === 'permitidas'
-                                                    ? 'bg-[#15803d] text-white'
-                                                    : 'bg-transparent text-gray-500 hover:text-[#15803d]'}
+                                                    ? `bg-[${COLORS.success}] text-white`
+                                                    : `bg-transparent text-gray-500 hover:text-[${COLORS.success}]`}
                       `}
                                         >
                                             PERMITIDAS ({analysis.allowedActivities?.length || 0})
@@ -376,11 +376,11 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                     <div className="absolute bottom-0 left-0 h-[3px] w-full pointer-events-none">
                                         <div
                                             className="flex-1 transition-colors duration-300"
-                                            style={{ backgroundColor: activeTab === 'prohibidas' ? '#b91c1c' : 'transparent' }}
+                                            style={{ backgroundColor: activeTab === 'prohibidas' ? COLORS.error : 'transparent' }}
                                         />
                                         <div
                                             className="flex-1 transition-colors duration-300"
-                                            style={{ backgroundColor: activeTab === 'permitidas' ? '#15803d' : 'transparent' }}
+                                            style={{ backgroundColor: activeTab === 'permitidas' ? COLORS.success : 'transparent' }}
                                         />
                                     </div>
                                 </div>
@@ -392,7 +392,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                         icon={<Icons.XCircle className="h-4 w-4" />}
                                         headerClass="text-red-900 bg-red-50"
                                         bgClass="bg-white"
-                                        accentColor="#b91c1c"
+                                        accentColor={COLORS.error}
                                     />
                                 )}
 
@@ -403,7 +403,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                         icon={<Icons.CheckCircle className="h-4 w-4" />}
                                         headerClass="text-green-900 bg-green-50"
                                         bgClass="bg-white"
-                                        accentColor="#15803d"
+                                        accentColor={COLORS.success}
                                     />
                                 )}
 
