@@ -1,72 +1,76 @@
 # Escenarios posibles en la Tarjeta de Resultados (y PDF)
 
-Este documento describe las combinaciones posibles que arroja el motor de análisis (`analysisEngine.js`) y cómo se reflejan en la interfaz.
+Este documento describe las combinaciones posibles que arroja el motor de análisis (`analysisEngine.js`) y cómo se reflejan en la interfaz de usuario y en la exportación PDF.
 
 ## 1. Fuera de la CDMX
 Se detecta cuando la coordenada no intersecta con el polígono de la Ciudad de México.
 - **Estado (`status`):** `OUTSIDE_CDMX`
 - **Indicador:** Tarjeta roja de advertencia "Fuera de CDMX" + Aviso Legal.
 - **Mapa:** Marcador Rojo con "X".
-- **Acciones:** Muestra botones de exportación PDF, compartir y Google Maps (Barra inferior visible en móvil).
+- **Botones:** Muestra Google Maps y Exportar PDF (que generará una ficha de advertencia).
 
 ## 2. Suelo Urbano (SU)
-Ubicación dentro de CDMX pero fuera del polígono de Suelo de Conservación.
+
+### Caso 2.1: Suelo Urbano Estándar
+Ubicación dentro de CDMX pero fuera del polígono de Suelo de Conservación y fuera de ANP.
 - **Estado:** `URBAN_SOIL`
 - **Etiqueta:** "Suelo Urbano" (Color Azul).
-- **Zonificación:** Oculta (No aplica PGOEDF 2000).
+- **Zonificación PGOEDF:** Oculta o predeterminada a "Suelo Urbano".
 - **Mensaje:** "La regulación corresponde a SEDUVI..."
 - **Actividades:** No muestra tabla de actividades.
 
+### Caso 2.2: Suelo Urbano con ANP (Nuevo)
+Ubicación clasificada como Urbano pero que intersecta un polígono de Área Natural Protegida (ej. Histórico de Coyoacán, Bosque de Chapultepec).
+- **Estado:** `URBAN_SOIL` + `isANP: true`
+- **Etiqueta:** "ÁREA NATURAL PROTEGIDA" (Color Morado).
+- **Zonificación Key:** `ANP`.
+- **Comportamiento:** Se prioriza la visualización de ANP sobre la de Suelo Urbano. Muestra tarjeta de detalle ANP.
+
 ## 3. Suelo de Conservación (SC) - Jerarquía Estricta
 
-Para cualquier punto dentro de Suelo de Conservación (`CONSERVATION_SOIL`), se aplica la siguiente jerarquía para determinar el campo "Zonificación PGOEDF":
+Para cualquier punto dentro de Suelo de Conservación (`CONSERVATION_SOIL`), se aplica la siguiente jerarquía:
 
-### Caso A: SC + Área Natural Protegida
-Si el punto cae dentro de un ANP (independientemente de si hay polígono PGOEDF debajo).
-- **Zonificación PGOEDF:** Muestra texto fijo **"ÁREA NATURAL PROTEGIDA"**.
+### Caso 3.1: SC + Área Natural Protegida
+Si el punto cae dentro de un ANP (prioridad máxima).
+- **Zonificación Display:** **"ÁREA NATURAL PROTEGIDA"**.
 - **Color:** Morado (`#9333ea`).
-- **Actividades:** No muestra catálogo (remite al Programa de Manejo).
-
-### Caso B: SC + Hueco (Sin Datos)
-Si el punto está en SC pero no intersecta ningún polígono de la capa de Zonificación PGOEDF.
-- **Zonificación PGOEDF:** Muestra **"Información no disponible"**.
-- **Color:** Gris.
 - **Actividades:** No muestra catálogo.
+- **Detalle:** Si existe información interna, muestra tarjeta secundaria "Detalle Área Natural Protegida".
 
-### Caso C: SC + PGOEDF Válido
-Si el punto está en SC, NO es ANP, e intersecta un polígono PGOEDF válido.
-- **Zonificación PGOEDF:** Muestra el **NOMBRE** descriptivo del campo `PGOEDF` (ej. "Rescate Ecológico", "Producción Rural Agroindustrial").
-- **Color:** Determinado por la clave interna.
-- **Actividades:** Despliega tabla de Permitidas y Prohibidas.
+### Caso 3.2: SC + PGOEDF Válido (Tablas Activas)
+Si intersecta una zonificación estándar del PGOEDF (ej. Rescate Ecológico, Forestal, Agroforestal).
+- **Zonificación Display:** Nombre descriptivo (ej. "Agroforestal (AF)").
+- **Color:** Específico de la categoría (Ver `constants.js`).
+- **Actividades:** Despliega dos tablas interactivas: **Permitidas** (verde) y **Prohibidas** (rojo).
+- **Notas Normativas:** Aparece una sección colapsable al final con las notas legales generales.
 
-> **Nota sobre PDU:** Si la clave original es `PDU`, el sistema analiza el nombre para asignar colores distintivos:
-> *   **Programas Parciales:** Color Naranja.
-> *   **Poblados Rurales:** Color Café/Marrón.
-> *   **Zona Urbana:** Color Gris.
+### Caso 3.3: SC + Subcategorías PDU (PDU_*)
+Si intersecta áreas marcadas originalmente como "PDU" o "Programas Parciales". El sistema sub-clasifica automáticamente:
+- **Categorías:**
+  - **Programas Parciales (PP):** Color Naranja.
+  - **Poblados Rurales (PR):** Color Café.
+  - **Zona Urbana (ZU):** Color Gris.
+  - **Equipamiento Rural (ER):** Color Rojo.
+- **Actividades:** **NO muestra tabla**. En su lugar muestra una caja de advertencia naranja: *"Consulta Específica Requerida - Consulte el Instrumento de Planeación correspondiente"*.
+- **Mapa:** Los polígonos se dibujan con sus colores específicos (no gris genérico).
 
-## 4. Área Natural Protegida - Detalle Secundario
-
-### Zonificación Interna (Tarjeta Adicional)
-Si el punto cae dentro de una ANP que cuenta con capa de *zonificación interna*:
-1.  **Tarjeta Principal:** Muestra "Zonificación PGOEDF" = "ÁREA NATURAL PROTEGIDA" (Por Caso A).
-2.  **Tarjeta Secundaria:** Aparece un nuevo bloque debajo titulado **"Detalle Área Natural Protegida"**.
-    -   **Campos:** Nombre, Categoría, Tipo Decreto, Superficie, Fecha.
-    -   **PDF:** Se genera una sección adicional con esta misma tabla técnica.
-
-## 5. Sin Datos / Error
-- **Estado:** `NO_DATA`
-- Ocurre si las capas no cargan o hay un error de conexión crítico.
+### Caso 3.4: SC + Hueco (Sin Datos)
+Si está en SC pero no intersecta ningún polígono PGOEDF conocido.
+- **Zonificación Display:** "Información no disponible".
+- **Color:** Gris.
 
 ---
 
-### Resumen de Variables Clave (JSON de Análisis)
+## 4. Notas Adicionales del Sistema
 
-```json
-{
-  "status": "URBAN_SOIL | CONSERVATION_SOIL | OUTSIDE_CDMX",
-  "isANP": true/false,
-  "zoningKey": "ANP | NODATA | [CLAVE_INTERNA] (ej. RE, PDU_PR)",
-  "zoningName": "ÁREA NATURAL PROTEGIDA | Información no disponible | [NOMBRE DESCRIPTIVO]",
-  "hasInternalAnpZoning": true/false
-}
-```
+### PDF Export
+El PDF generado respeta fielmente el escenario activo:
+- **Si hay tablas:** Las imprime con paginación inteligente.
+- **Si es PDU:** Muestra el aviso de consulta requerida y no imprime tablas vacías.
+- **Si es ANP:** Incluye la ficha técnica del decreto/superficie.
+- **Notas Normativas:** Se incluyen como una sección "5. Notas Normativas..." antes de los enlaces.
+
+### Correcciones Recientes
+- **Equipamiento Rural:** Se corrigió la prioridad de filtrado para que no sea ocultado por "Rural" (Poblados).
+- **ANP en Urbano:** Se habilitó la detección de ANP incluso fuera de Suelo de Conservación.
+- **Crash Pantalla Blanca:** Se corrigió error de sintaxis en `PdfExportController.js`.

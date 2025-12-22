@@ -688,8 +688,7 @@
                         </>
                     )
                     }
-                    < section style={{ marginTop: `${S.gap2}px` }
-                    }>
+                    <section style={{ marginTop: `${S.gap2}px` }}>
                         <h2 style={h2()}>6. Enlaces de referencia</h2>
                         <div style={{ fontSize: `${T.small}px`, color: C.sub, marginBottom: `${S.gap2}px` }}>
                             <strong>Visor:</strong> {visorUrlShort}
