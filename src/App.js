@@ -5,47 +5,53 @@ const React = window.React;
 const { useState, useEffect, useRef } = React;
 const ReactDOM = window.ReactDOM;
 
+const AppGlobals = window.App || {};
+const Constants = AppGlobals.Constants || {};
+const Utils = AppGlobals.Utils || {};
+const Components = AppGlobals.Components || {};
+const Analysis = AppGlobals.Analysis || {};
+
 const {
   DATA_FILES,
   LAYER_STYLES,
   ZONING_CAT_INFO,
   ZONING_ORDER,
-  CONTACT_INFO,
-  FAQ_ITEMS,
-  MAPBOX_TOKEN,
+  //   CONTACT_INFO, // Unused
+  //   FAQ_ITEMS,    // Unused
+  //   MAPBOX_TOKEN, // Unused
   INITIAL_CENTER,
   INITIAL_ZOOM,
   FOCUS_ZOOM
-} = window.App.Constants;
+} = Constants;
 
 const {
-  isPointInPolygon,
-  findFeature,
-  getZoningColor,
+  // isPointInPolygon,
+  // findFeature,
+  // getZoningColor,
   getZoningStyle,
-  getSectorStyle,
-  isStrictNumber,
-  parseCoordinateInput,
-  searchMapboxPlaces,
+  // getSectorStyle,
+  // isStrictNumber,
+  // parseCoordinateInput,
+  // searchMapboxPlaces,
   getBaseLayerUrl
-} = window.App.Utils;
+} = Utils;
 
 // Componentes UI
-const Icons = window.App.Components.Icons;
-const InstitutionalHeader = window.App.Components.InstitutionalHeader;
-const ToggleSwitch = window.App.Components.ToggleSwitch;
-const Legend = window.App.Components.Legend;
-const HelpModal = window.App.Components.HelpModal;
-const MapViewer = window.App.Components.MapViewer;
-const MobileSearchBar = window.App.Components.MobileSearchBar;
-const SkeletonAnalysis = window.App.Components.SkeletonAnalysis;
-const ResultsContent = window.App.Components.ResultsContent;
-const SearchLogicDesktop = window.App.Components.SearchLogicDesktop;
-const SidebarDesktop = window.App.Components.SidebarDesktop;
+const Icons = Components.Icons || (() => null);
+const InstitutionalHeader = Components.InstitutionalHeader || (() => null);
+const ToggleSwitch = Components.ToggleSwitch || (() => null);
+const Legend = Components.Legend || (() => null);
+const HelpModal = Components.HelpModal || (() => null);
+const MapViewer = Components.MapViewer || (() => null);
+const MobileSearchBar = Components.MobileSearchBar || (() => null);
+const SkeletonAnalysis = Components.SkeletonAnalysis || (() => null);
+const ResultsContent = Components.ResultsContent || (() => null);
+const SearchLogicDesktop = Components.SearchLogicDesktop || (() => null);
+const SidebarDesktop = Components.SidebarDesktop || (() => null);
 
-const { analyzeLocation } = window.App.Analysis;
+const { analyzeLocation } = Analysis;
 
-const PdfExportController = window.App.Components.PdfExportController;
+const PdfExportController = Components.PdfExportController || (() => null);
 
 
 /* ------------------------------------------------ */

@@ -158,7 +158,8 @@ const MapViewer = ({
                 interactive,
                 onEachFeature: (feature, layerInstance) => {
                     // Hover effects
-                    if (interactive) {
+                    // ✅ Optimize: Disable on mobile
+                    if (interactive && !window.L.Browser.mobile) {
                         layerInstance.on('mouseover', () => {
                             layerInstance.setStyle({ weight: 3, fillOpacity: 0.3 });
                             layerInstance.bringToFront();
@@ -250,7 +251,7 @@ const MapViewer = ({
                 style,
                 interactive,
                 onEachFeature: (feature, layerInstance) => {
-                    if (interactive) {
+                    if (interactive && !window.L.Browser.mobile) {
                         layerInstance.on('mouseover', () => layerInstance.setStyle({ weight: 3, fillOpacity: 0.3 }));
                         layerInstance.on('mouseout', () => layerInstance.setStyle({ weight: 1.5, fillOpacity: 0.1 }));
                     }
@@ -372,12 +373,15 @@ const MapViewer = ({
                     interactive: true,
                     onEachFeature: (feature, layerInstance) => {
                         // Hover: aumentar grosor y opacidad, manteniendo el color fijo
-                        layerInstance.on('mouseover', () => {
-                            layerInstance.setStyle({ weight: 3, fillOpacity: 0.4 });
-                        });
-                        layerInstance.on('mouseout', () => {
-                            layerInstance.setStyle({ weight: 1.5, fillOpacity: 0.2 });
-                        });
+                        // ✅ Optimize: Disable hover effects on mobile to save memory/CPU
+                        if (interactive && !window.L.Browser.mobile) {
+                            layerInstance.on('mouseover', () => {
+                                layerInstance.setStyle({ weight: 3, fillOpacity: 0.4 });
+                            });
+                            layerInstance.on('mouseout', () => {
+                                layerInstance.setStyle({ weight: 1.5, fillOpacity: 0.2 });
+                            });
+                        }
 
                         const label = feature.properties?.PGOEDF;
                         if (label) {
