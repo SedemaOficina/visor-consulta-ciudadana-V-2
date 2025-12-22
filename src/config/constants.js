@@ -1,5 +1,6 @@
 // Inicializar namespace
 window.App = window.App || {};
+console.log("Inicializando Constantes...");
 window.App.Constants = {};
 
 window.App.Constants.COLORS = {

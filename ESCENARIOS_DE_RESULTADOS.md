@@ -1,76 +1,97 @@
-# Escenarios posibles en la Tarjeta de Resultados (y PDF)
+# Documentación del Visor de Consulta Ciudadana (V-2)
 
-Este documento describe las combinaciones posibles que arroja el motor de análisis (`analysisEngine.js`) y cómo se reflejan en la interfaz de usuario y en la exportación PDF.
+Este documento describe la arquitectura lógica, los escenarios de resultados posibles el sistema de diseño implementado en la aplicación.
 
-## 1. Fuera de la CDMX
-Se detecta cuando la coordenada no intersecta con el polígono de la Ciudad de México.
-- **Estado (`status`):** `OUTSIDE_CDMX`
-- **Indicador:** Tarjeta roja de advertencia "Fuera de CDMX" + Aviso Legal.
-- **Mapa:** Marcador Rojo con "X".
-- **Botones:** Muestra Google Maps y Exportar PDF (que generará una ficha de advertencia).
+## 1. Arquitectura y Componentes Clave
 
-## 2. Suelo Urbano (SU)
+### 1.1 Motor de Análisis (`analysisEngine.js`)
+Es el corazón de la aplicación. Recibe una coordenada (`lat, lng`) y la base de datos precargada (`dataCache`) para ejecutar la siguiente lógica secuencial:
+1.  **Detección Frontera CDMX:** Verifica si el punto está dentro del polígono geoespacial de la Ciudad de México.
+2.  **Suelo de Conservación (SC):** Determina si el punto cae dentro de la capa oficial de Suelo de Conservación.
+3.  **Áreas Naturales Protegidas (ANP):** Detecta intersecciones con polígonos ANP (federales o locales).
+    *   *Nota:* Las ANP tienen prioridad visual sobre cualquier otra zonificación.
+4.  **Zonificación PGOEDF:** Si está en SC, identifica la categoría específica (Forestal, Agroecológico, etc.) y recupera las reglas normativas asociadas (actividades permitidas/prohibidas).
 
-### Caso 2.1: Suelo Urbano Estándar
-Ubicación dentro de CDMX pero fuera del polígono de Suelo de Conservación y fuera de ANP.
-- **Estado:** `URBAN_SOIL`
-- **Etiqueta:** "Suelo Urbano" (Color Azul).
-- **Zonificación PGOEDF:** Oculta o predeterminada a "Suelo Urbano".
-- **Mensaje:** "La regulación corresponde a SEDUVI..."
-- **Actividades:** No muestra tabla de actividades.
-
-### Caso 2.2: Suelo Urbano con ANP (Nuevo)
-Ubicación clasificada como Urbano pero que intersecta un polígono de Área Natural Protegida (ej. Histórico de Coyoacán, Bosque de Chapultepec).
-- **Estado:** `URBAN_SOIL` + `isANP: true`
-- **Etiqueta:** "ÁREA NATURAL PROTEGIDA" (Color Morado).
-- **Zonificación Key:** `ANP`.
-- **Comportamiento:** Se prioriza la visualización de ANP sobre la de Suelo Urbano. Muestra tarjeta de detalle ANP.
-
-## 3. Suelo de Conservación (SC) - Jerarquía Estricta
-
-Para cualquier punto dentro de Suelo de Conservación (`CONSERVATION_SOIL`), se aplica la siguiente jerarquía:
-
-### Caso 3.1: SC + Área Natural Protegida
-Si el punto cae dentro de un ANP (prioridad máxima).
-- **Zonificación Display:** **"ÁREA NATURAL PROTEGIDA"**.
-- **Color:** Morado (`#9333ea`).
-- **Actividades:** No muestra catálogo.
-- **Detalle:** Si existe información interna, muestra tarjeta secundaria "Detalle Área Natural Protegida".
-
-### Caso 3.2: SC + PGOEDF Válido (Tablas Activas)
-Si intersecta una zonificación estándar del PGOEDF (ej. Rescate Ecológico, Forestal, Agroforestal).
-- **Zonificación Display:** Nombre descriptivo (ej. "Agroforestal (AF)").
-- **Color:** Específico de la categoría (Ver `constants.js`).
-- **Actividades:** Despliega dos tablas interactivas: **Permitidas** (verde) y **Prohibidas** (rojo).
-- **Notas Normativas:** Aparece una sección colapsable al final con las notas legales generales.
-
-### Caso 3.3: SC + Subcategorías PDU (PDU_*)
-Si intersecta áreas marcadas originalmente como "PDU" o "Programas Parciales". El sistema sub-clasifica automáticamente:
-- **Categorías:**
-  - **Programas Parciales (PP):** Color Naranja.
-  - **Poblados Rurales (PR):** Color Café.
-  - **Zona Urbana (ZU):** Color Gris.
-  - **Equipamiento Rural (ER):** Color Rojo.
-- **Actividades:** **NO muestra tabla**. En su lugar muestra una caja de advertencia naranja: *"Consulta Específica Requerida - Consulte el Instrumento de Planeación correspondiente"*.
-- **Mapa:** Los polígonos se dibujan con sus colores específicos (no gris genérico).
-
-### Caso 3.4: SC + Hueco (Sin Datos)
-Si está en SC pero no intersecta ningún polígono PGOEDF conocido.
-- **Zonificación Display:** "Información no disponible".
-- **Color:** Gris.
+### 1.2 Sistema de Constantes (`constants.js`)
+*Centralización de la Configuración*
+Se ha implementado un objeto global `window.App.Constants` que gestiona:
+*   **`COLORS`:** Paleta de colores institucional unificada.
+*   **`ZONING_CAT_INFO`:** Definiciones de etiquetas y colores por categoría.
+*   **`LAYER_STYLES`:** Estilos visuales para las capas del mapa (Leaflet).
+*   **`PROVISIONS_NOTES`:** Notas normativas legales que aparecen al pie de los resultados.
 
 ---
 
-## 4. Notas Adicionales del Sistema
+## 2. Escenarios de Resultados
 
-### PDF Export
-El PDF generado respeta fielmente el escenario activo:
-- **Si hay tablas:** Las imprime con paginación inteligente.
-- **Si es PDU:** Muestra el aviso de consulta requerida y no imprime tablas vacías.
-- **Si es ANP:** Incluye la ficha técnica del decreto/superficie.
-- **Notas Normativas:** Se incluyen como una sección "5. Notas Normativas..." antes de los enlaces.
+### Escenario A: Fuera de la CDMX
+*   **Condición:** Coordenada fuera del límite político-administrativo.
+*   **Resultado Visual:** Tarjeta de advertencia roja.
+*   **Acciones:** Bloqueo de análisis normativo. Solo permite ver ubicación en mapa.
 
-### Correcciones Recientes
-- **Equipamiento Rural:** Se corrigió la prioridad de filtrado para que no sea ocultado por "Rural" (Poblados).
-- **ANP en Urbano:** Se habilitó la detección de ANP incluso fuera de Suelo de Conservación.
-- **Crash Pantalla Blanca:** Se corrigió error de sintaxis en `PdfExportController.js`.
+### Escenario B: Suelo Urbano (Sin ANP)
+*   **Condición:** Dentro de CDMX pero fuera de Suelo de Conservación.
+*   **Resultado Visual:** Etiqueta azul "SUELO URBANO".
+*   **Mensaje:** Informa que la regulación corresponde a SEDUVI y no muestra tabla de actividades rurales.
+
+### Escenario C: Área Natural Protegida (ANP)
+*   **Condición:** Intersección con capa ANP (ya sea en Suelo Urbano o Conservación).
+*   **Prioridad:** ALTA. Sobrescribe la visualización de zonificación base.
+*   **Visualización:**
+    *   **Color:** Morado Institucional (`#9333ea`).
+    *   **Ficha Técnica:** Muestra tarjeta con Nombre, Categoría, Decreto y Superficie (si los datos internos existen).
+    *   **Actividades:** No muestra tablas de PGOEDF automáticamente.
+
+### Escenario D: Suelo de Conservación (Zonificado)
+*   **Condición:** Dentro de SC y con zonificación PGOEDF válida (ej. Forestal, Agroecológico).
+*   **Visualización:**
+    *   **Cabecera:** Muestra la categoría (ej. "Forestal de Conservación").
+    *   **Tablas:** Despliega pestañas interactivas de **"Actividades Prohibidas"** (Rojo) y **"Permitidas"** (Verde).
+    *   **Notas:** Sección colapsable con fundamentos legales.
+
+### Escenario E: Programas Parciales y Poblados (PDU)
+*   **Condición:** Zonificación marcada como "PDU", "Poblado Rural" o "Programa Parcial".
+*   **Visualización:**
+    *   **Alerta:** Muestra aviso de "Consulta Específica Requerida".
+    *   **Tablas:** Ocultas. Se debe consultar el instrumento específico del poblado.
+    *   **Colores:** Distintivos (Naranja PDU, Café Rural, Gris Urbano).
+
+---
+
+## 3. Paleta de Colores Institucional
+
+Se ha rediseñado la paleta para reducir el ruido visual y garantizar accesibilidad.
+
+### Colores Base
+*   **Primario (Guinda):** `#9d2148` (Botones, encabezados principales).
+*   **Secundario (Dorado):** `#BC955C` (Acentos institucionales).
+*   **Texto Principal:** `#111827` (Gris casi negro).
+*   **Fondos:** `#f3f4f6` (Gris claro para reducir fatiga visual).
+
+### Colores Semánticos (Zonificación)
+*   **Forestal (Naturaleza):** Gama de Verdes y Turquesas (`#15803d`, `#0e7490`).
+*   **Agroecológico (Producción):** Gama de Amarillos y Limas (`#fbbf24`, `#65a30d`).
+*   **Estructural (PDU/Urbano):** Gama de Morados, Azules y Grises (`#c084fc`, `#94a3b8`).
+*   **Alertas:**
+    *   **Error:** `#b91c1c` (Rojo oscuro).
+    *   **Éxito:** `#15803d` (Verde bosque).
+    *   **Info:** `#1d4ed8` (Azul rey).
+
+---
+
+## 4. Solución de Problemas (Troubleshooting)
+
+### Error: "Pantalla Blanca" o Crash al hacer clic
+**Causa:** El navegador tiene en caché una versión antigua de `app.js` o `constants.js`.
+**Solución:** Realizar una **Recarga Forzada** (Hard Reload):
+*   Windows/Linux: `Ctrl` + `F5` o `Ctrl` + `Shift` + `R`.
+*   Mac: `Cmd` + `Shift` + `R`.
+*   *Verificación:* Abrir consola (F12) y buscar el mensaje `APP VERSION: DEBUG 2.2`.
+
+### Error: "Cannot read properties of undefined (reading 'PROVISIONS_NOTES')"
+**Causa:** Inconsistencia en la carga de constantes (frecuente tras actualizaciones).
+**Estado:** **Corregido** en la versión 2.2 con validaciones de seguridad (null-checks) en `ResultsContent.js` y `analysisEngine.js`.
+
+### Error: Datos de PDF incompletos
+**Causa:** Anteriormente se limitaba a 25 actividades.
+**Estado:** **Corregido**. El sistema ahora exporta el catálogo completo de actividades sin truncamiento.
