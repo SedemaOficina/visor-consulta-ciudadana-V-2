@@ -176,7 +176,7 @@
                 h1: 13.5,
                 h2: 11.2,
                 lead: 10,
-                lh: 1.25
+                lh: 1.15
             };
 
             const S = {
@@ -223,7 +223,7 @@
                     verticalAlign: 'middle',
                     fontSize: `${T.small}px`,
                     fontWeight: 700,
-                    lineHeight: 1.25,
+                    lineHeight: 1.15,
                     color: C.ink
                 }),
                 td: {
@@ -232,7 +232,7 @@
                     textAlign: 'left',
                     verticalAlign: 'middle',
                     fontSize: `${T.base}px`,
-                    lineHeight: 1.25,
+                    lineHeight: 1.15,
                     color: C.ink
                 },
                 tdLabel: {
@@ -242,7 +242,7 @@
                     background: C.panel,
                     fontSize: `${T.small}px`,
                     fontWeight: 700,
-                    lineHeight: 1.25,
+                    lineHeight: 1.15,
                     color: C.sub,
                     verticalAlign: 'middle'
                 },
@@ -254,12 +254,12 @@
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                padding: '4px 10px',
+                padding: '3px 10px',
                 borderRadius: 999,
                 fontSize: `${T.small}px`,
                 fontWeight: 800,
                 letterSpacing: '0.02em',
-                lineHeight: 1.1,
+                lineHeight: 1,
                 backgroundColor: bg,
                 color: fg,
                 border: border === 'transparent' ? '1px solid transparent' : `1px solid ${border}`,
@@ -539,7 +539,7 @@
                                             fontSize: `${T.base}px`,
                                             color: C.ink,
                                             lineHeight: 1,
-                                            padding: '6px 10px',
+                                            padding: '8px 10px',
                                             marginTop: '4px',
                                             borderRadius: '4px',
                                             border: '1px solid #d1d5db',
