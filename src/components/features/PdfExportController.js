@@ -99,7 +99,7 @@
 
         const isUrban = analysis.status === 'URBAN_SOIL';
         const isSC = analysis.status === 'CONSERVATION_SOIL';
-        const isANP = analysis.isANP;
+        const isANP = analysis.isANP || analysis.zoningKey === 'ANP';
 
         const statusLabel =
             isSC ? 'Suelo de Conservación' :
@@ -134,9 +134,22 @@
         const soilBg = soilBadgeBg;
         const soilFg = soilBadgeColor;
 
-        const zoningColor = analysis.zoningKey
-            ? getZoningColor(analysis.zoningKey)
-            : '#6b7280';
+        // Logic Unification
+        let zoningColor = '#6b7280';
+        if (isANP) {
+            zoningColor = '#9d2148'; // Use primary or specific ANP color
+            if (window.App.Constants.COLORS && window.App.Constants.COLORS.anp) {
+                zoningColor = window.App.Constants.COLORS.anp;
+            }
+        } else if (analysis.zoningKey === 'NODATA') {
+            zoningColor = '#9ca3af';
+        } else if (analysis.zoningKey) {
+            zoningColor = getZoningColor(analysis.zoningKey);
+        }
+
+        const zoningDisplay = isANP ? 'ÁREA NATURAL PROTEGIDA' :
+            analysis.zoningKey === 'NODATA' ? 'Información no disponible' :
+                (analysis.zoningName || 'Sin información');
 
         let bandColor = '#e5e7eb';
         if (isANP) bandColor = '#e9d5ff';
@@ -166,19 +179,19 @@
                 hair: '1px solid #e5e7eb'
             };
 
-            const COLORS = window.App.Constants.COLORS;
+            const COLORS = (window.App.Constants && window.App.Constants.COLORS) ? window.App.Constants.COLORS : {};
             const C = {
-                ink: COLORS.text,
-                sub: COLORS.subtext,
-                mute: '#9ca3af', // Un poco más claro que subtext para notas (Gray 400)
-                hair: '#e5e7eb', // Gray 200 para bordes finos (más sutil que border)
-                panel: '#f9fafb', // Gray 50
-                guinda: COLORS.primary,
-                sc: COLORS.sc,
-                su: COLORS.su,
-                anp: COLORS.anp,
-                red: COLORS.error,
-                green: COLORS.success
+                ink: COLORS.text || '#111827',
+                sub: COLORS.subtext || '#4b5563',
+                mute: '#9ca3af',
+                hair: '#e5e7eb',
+                panel: '#f9fafb',
+                guinda: COLORS.primary || '#9d2148',
+                sc: COLORS.sc || '#3B7D23',
+                su: COLORS.su || '#3b82f6',
+                anp: COLORS.anp || '#7e22ce',
+                red: COLORS.error || '#b91c1c',
+                green: COLORS.success || '#15803d'
             };
 
             const tbl = {
@@ -248,11 +261,10 @@
                 <div
                     ref={ref}
                     style={{
-                        width: `${S.pageW
-                            }px`,
-                        padding: `${S.pagePad} px`,
+                        width: `${S.pageW}px`,
+                        padding: `${S.pagePad}px`,
                         fontFamily: T.font,
-                        fontSize: `${T.base} px`,
+                        fontSize: `${T.base}px`,
                         lineHeight: T.lh,
                         color: C.ink,
                         backgroundColor: '#ffffff',
@@ -265,7 +277,7 @@
                             gridTemplateColumns: '64px 1fr 170px',
                             columnGap: '14px',
                             alignItems: 'center',
-                            marginBottom: `${S.gap2} px`
+                            marginBottom: `${S.gap2}px`
                         }}
                     >
                         <div style={{ width: '64px' }}>
@@ -274,23 +286,24 @@
                         <div style={{ minWidth: 0 }}>
                             <div
                                 style={{
-                                    fontSize: `${T.h1} px`,
-                                    fontWeight: 900,
+                                    fontSize: `${T.h1}px`,
+                                    fontWeight: 800,
                                     letterSpacing: '0.02em',
-                                    color: C.ink,
-                                    lineHeight: 1.15
+                                    color: C.guinda,
+                                    lineHeight: 1.15,
+                                    textTransform: 'uppercase'
                                 }}
                             >
-                                VISOR DE CONSULTA CIUDADANA — FICHA DE RESULTADOS
+                                Visor de Consulta Ciudadana
                             </div>
-                            <div style={{ fontSize: `${T.lead} px`, color: C.sub, marginTop: '3px' }}>
-                                Consulta normativa de Suelo Urbano y Suelo de Conservación en la Ciudad de México (PGOEDF 2000)
+                            <div style={{ fontSize: `${T.lead}px`, color: C.sub, marginTop: '3px' }}>
+                                Consulta normativa de Suelo Urbano y Suelo de Conservación
                             </div>
                         </div>
                         <div
                             style={{
                                 textAlign: 'right',
-                                fontSize: `${T.small} px`,
+                                fontSize: `${T.small}px`,
                                 color: C.sub,
                                 lineHeight: 1.35
                             }}
@@ -298,7 +311,7 @@
                             <div style={{ fontWeight: 800, color: C.ink }}>Fecha de consulta</div>
                             <div>{fecha}</div>
                             <div style={{ marginTop: '6px', fontWeight: 800, color: C.ink }}>Folio orientativo</div>
-                            <div style={{ fontFamily: T.mono, fontSize: `${T.small} px` }}>{folio}</div>
+                            <div style={{ fontFamily: T.mono, fontSize: `${T.small}px` }}>{folio}</div>
                         </div>
                     </header>
                     <div
@@ -306,10 +319,10 @@
                             height: '4px',
                             borderRadius: '999px',
                             backgroundColor: bandColor,
-                            marginBottom: `${S.gap2} px`
+                            marginBottom: `${S.gap2}px`
                         }}
                     />
-                    <div style={{ borderTop: `1px solid ${C.hair} `, marginBottom: `${S.gap2} px` }} />
+                    <div style={{ borderTop: `1px solid ${C.hair}`, marginBottom: `${S.gap2}px` }} />
                     <section style={section(S.gap3)}>
                         <h2 style={h2()}>0. Mapa de referencia y simbología</h2>
                         <div style={{ display: 'flex', gap: '12px' }}>
@@ -317,17 +330,17 @@
                                 style={{
                                     flex: '0 0 65%',
                                     border: S.hair,
-                                    borderRadius: `${S.radius} px`,
+                                    borderRadius: `${S.radius}px`,
                                     padding: '8px',
                                     boxSizing: 'border-box'
                                 }}
                             >
-                                <div style={{ fontSize: `${T.small} px`, color: C.sub, marginBottom: '6px' }}>
+                                <div style={{ fontSize: `${T.small}px`, color: C.sub, marginBottom: '6px' }}>
                                     <strong>Mapa de referencia (no a escala)</strong>
                                 </div>
                                 <div
                                     style={{
-                                        border: `1px solid ${C.hair} `,
+                                        border: `1px solid ${C.hair}`,
                                         borderRadius: '4px',
                                         overflow: 'hidden',
                                         height: '208px',
@@ -365,7 +378,7 @@
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    fontSize: `${T.small} px`,
+                                                    fontSize: `${T.small}px`,
                                                     fontWeight: 900,
                                                     color: '#ffffff'
                                                 }}
@@ -375,7 +388,7 @@
                                         </div>
                                     )}
                                 </div>
-                                <div style={{ marginTop: '6px', fontSize: `${T.micro} px`, color: C.mute }}>
+                                <div style={{ marginTop: '6px', fontSize: `${T.micro}px`, color: C.mute }}>
                                     Para la vista interactiva del mapa, use el visor en línea.
                                 </div>
                             </div>
@@ -383,23 +396,23 @@
                                 style={{
                                     flex: '1 1 35%',
                                     border: S.hair,
-                                    borderRadius: `${S.radius} px`,
+                                    borderRadius: `${S.radius}px`,
                                     padding: '8px',
                                     boxSizing: 'border-box'
                                 }}
                             >
-                                <div style={{ fontSize: `${T.small} px`, fontWeight: 800, marginBottom: '6px', color: C.ink }}>
+                                <div style={{ fontSize: `${T.small}px`, fontWeight: 800, marginBottom: '6px', color: C.ink }}>
                                     Simbología de puntos y zonificación
                                 </div>
                                 <div style={{ display: 'grid', gap: '6px', marginBottom: '8px' }}>
                                     {isSC && (
-                                        <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small} px`, color: C.sub }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small}px`, color: C.sub }}>
                                             <span style={{ width: '10px', height: '10px', borderRadius: 999, background: C.sc, marginRight: '6px', border: '1px solid #fff', boxShadow: '0 0 1px rgba(0,0,0,0.25)' }} />
                                             Punto “SC”: Suelo de Conservación
                                         </div>
                                     )}
                                     {isUrban && (
-                                        <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small} px`, color: C.sub }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small}px`, color: C.sub }}>
                                             <span style={{ width: '10px', height: '10px', borderRadius: 999, background: C.su, marginRight: '6px', border: '1px solid #fff', boxShadow: '0 0 1px rgba(0,0,0,0.25)' }} />
                                             Punto “SU”: Suelo Urbano
                                         </div>
@@ -412,40 +425,40 @@
                                     {isANP ? (
                                         <>
                                             <span style={{ width: '10px', height: '10px', borderRadius: 2, background: C.anp, border: '1px solid #9ca3af' }} />
-                                            <span style={{ fontSize: `${T.small} px` }}>
-                                                <strong>{analysis.anpNombre || '—'}</strong>
+                                            <span style={{ fontSize: `${T.small}px` }}>
+                                                <strong>ANP</strong> — {analysis.anpNombre || '—'}
                                             </span>
                                         </>
                                     ) : analysis?.zoningKey ? (
                                         <>
                                             <span style={{ width: '10px', height: '10px', borderRadius: 2, background: zoningColor, border: '1px solid #9ca3af' }} />
-                                            <span style={{ fontSize: `${T.small} px` }}>
-                                                <strong>{analysis.zoningKey}</strong> — {analysis.zoningName || 'Sin descripción'}
+                                            <span style={{ fontSize: `${T.small}px` }}>
+                                                <strong>{analysis.zoningKey}</strong> — {analysis.zoningName || '—'}
                                             </span>
                                         </>
                                     ) : (
-                                        <span style={{ fontSize: `${T.small} px`, color: C.mute }}>Sin zonificación disponible.</span>
+                                        <span style={{ fontSize: `${T.small}px`, color: C.mute }}>Sin zonificación disponible.</span>
                                     )}
                                 </div>
-                                <div style={{ fontSize: `${T.micro} px`, color: C.mute, marginTop: '6px' }}>
+                                <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '6px' }}>
                                     * Para categorías completas y simbología, consulte el visor.
                                 </div>
                             </div>
                         </div>
                         <div
                             style={{
-                                marginTop: `${S.gap2} px`,
+                                marginTop: `${S.gap2}px`,
                                 padding: '10px 12px',
-                                borderRadius: `${S.radius} px`,
+                                borderRadius: `${S.radius}px`,
                                 border: S.hair,
                                 backgroundColor: '#fbfbfc'
                             }}
                         >
                             <div
                                 style={{
-                                    fontSize: `${T.small} px`,
+                                    fontSize: `${T.small}px`,
                                     fontWeight: 900,
-                                    marginBottom: `${S.gap1} px`,
+                                    marginBottom: `${S.gap1}px`,
                                     color: C.ink,
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.06em'
@@ -455,17 +468,17 @@
                             </div>
                             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                                 <div style={{ flex: '1 1 58%', minWidth: '240px' }}>
-                                    <div style={{ fontSize: `${T.small} px`, fontWeight: 800, color: C.sub }}>Dirección</div>
-                                    <div style={{ fontSize: `${T.base} px`, color: C.ink, marginTop: '2px' }}>
+                                    <div style={{ fontSize: `${T.small}px`, fontWeight: 800, color: C.sub }}>Dirección</div>
+                                    <div style={{ fontSize: `${T.base}px`, color: C.ink, marginTop: '2px' }}>
                                         {direccion}
                                     </div>
                                 </div>
                                 <div style={{ flex: '0 0 190px' }}>
-                                    <div style={{ fontSize: `${T.small} px`, fontWeight: 800, color: C.sub }}>Coordenadas (Lat, Lng)</div>
+                                    <div style={{ fontSize: `${T.small}px`, fontWeight: 800, color: C.sub }}>Coordenadas (Lat, Lng)</div>
                                     <div
                                         style={{
                                             fontFamily: T.mono,
-                                            fontSize: `${T.base} px`,
+                                            fontSize: `${T.base}px`,
                                             color: C.ink,
                                             lineHeight: 1.35,
                                             padding: '6px 10px',
@@ -495,7 +508,7 @@
                                     <td style={tbl.tdLabel}>Tipo de suelo</td>
                                     <td style={tbl.td}>
                                         <span style={badge(soilBg, soilFg)}>{statusLabel}</span>
-                                        <div style={{ fontSize: `${T.micro} px`, color: C.mute, marginTop: '3px' }}>
+                                        <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '3px' }}>
                                             {isSC ? 'Clasificación territorial: SC (PGOEDF 2000)' : isUrban ? 'Clasificación territorial: SU' : ''}
                                         </div>
                                     </td>
@@ -504,29 +517,25 @@
                                     <tr style={{ background: tbl.zebra(2) }}>
                                         <td style={tbl.tdLabel}>Zonificación PGOEDF</td>
                                         <td style={tbl.td}>
-                                            {analysis.zoningName ? (
-                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', maxWidth: '100%' }}>
-                                                    <span
-                                                        style={{
-                                                            ...badge(zoningColor, '#ffffff'),
-                                                            fontWeight: 800,
-                                                            maxWidth: '330px',
-                                                            overflow: 'hidden',
-                                                            textOverflow: 'ellipsis'
-                                                        }}
-                                                        title={analysis.zoningName}
-                                                    >
-                                                        {analysis.zoningName}
-                                                    </span>
-                                                    {analysis.zoningKey && analysis.zoningKey !== 'ANP' && analysis.zoningKey !== 'NODATA' && (
-                                                        <span style={badge('#ffffff', C.ink, zoningColor)}>
-                                                            {analysis.zoningKey}
-                                                        </span>
-                                                    )}
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', maxWidth: '100%' }}>
+                                                <span
+                                                    style={{
+                                                        ...badge(zoningColor, '#ffffff'),
+                                                        fontWeight: 800,
+                                                        maxWidth: '350px',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis'
+                                                    }}
+                                                    title={zoningDisplay}
+                                                >
+                                                    {zoningDisplay}
                                                 </span>
-                                            ) : (
-                                                'Sin información'
-                                            )}
+                                                {analysis.zoningKey && !['ANP', 'NODATA'].includes(analysis.zoningKey) && (
+                                                    <span style={badge('#ffffff', C.ink, zoningColor)}>
+                                                        {analysis.zoningKey}
+                                                    </span>
+                                                )}
+                                            </span>
                                         </td>
                                     </tr>
                                 )}
@@ -575,7 +584,7 @@
                     {isUrban && (
                         <section style={section(S.gap3)}>
                             <h2 style={h2()}>2. Referencia para Suelo Urbano</h2>
-                            <p style={{ fontSize: `${T.base} px`, color: C.sub, textAlign: 'justify', margin: 0 }}>
+                            <p style={{ fontSize: `${T.base}px`, color: C.sub, textAlign: 'justify', margin: 0 }}>
                                 La ubicación consultada se encuentra en Suelo Urbano. La regulación específica del uso del suelo corresponde a los Programas de Desarrollo Urbano aplicables, emitidos por la autoridad competente en materia de desarrollo urbano (SEDUVI). Esta ficha es de carácter orientativo y no sustituye los instrumentos oficiales.
                             </p>
                         </section>
@@ -586,12 +595,12 @@
                                 <h2 style={h2(C.red)}>3. Actividades prohibidas</h2>
 
                                 {detalleProhibidas.length === 0 ? (
-                                    <div style={{ fontSize: `${T.small} px`, color: C.sub }}>
+                                    <div style={{ fontSize: `${T.small}px`, color: C.sub }}>
                                         No se identificaron actividades clasificadas como prohibidas para esta zonificación en el catálogo cargado.
                                     </div>
                                 ) : (
                                     <>
-                                        <table style={{ ...tbl.table, fontSize: `${T.small} px`, tableLayout: 'fixed' }}>
+                                        <table style={{ ...tbl.table, fontSize: `${T.small}px`, tableLayout: 'fixed' }}>
                                             <colgroup>
                                                 <col style={{ width: '22%' }} />
                                                 <col style={{ width: '30%' }} />
@@ -607,9 +616,9 @@
                                             <tbody>
                                                 {detalleProhibidas.map((a, i) => (
                                                     <tr key={i} style={{ background: tbl.zebra(i) }}>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small} px`, verticalAlign: 'middle' }}>{a.sector || '-'}</td>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small} px`, verticalAlign: 'middle' }}>{a.general || '-'}</td>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small} px`, wordBreak: 'break-word' }}>
+                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px`, verticalAlign: 'middle' }}>{a.sector || '-'}</td>
+                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px`, verticalAlign: 'middle' }}>{a.general || '-'}</td>
+                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px`, wordBreak: 'break-word' }}>
                                                             {a.specific || '-'}
                                                         </td>
                                                     </tr>
@@ -623,12 +632,12 @@
                             <section style={section(S.gap2)}>
                                 <h2 style={h2(C.green)}>4. Actividades permitidas</h2>
                                 {detallePermitidas.length === 0 ? (
-                                    <div style={{ fontSize: `${T.small} px`, color: C.sub }}>
+                                    <div style={{ fontSize: `${T.small}px`, color: C.sub }}>
                                         No se identificaron actividades clasificadas como permitidas para esta zonificación en el catálogo cargado.
                                     </div>
                                 ) : (
                                     <>
-                                        <table style={{ ...tbl.table, fontSize: `${T.small} px`, tableLayout: 'fixed' }}>
+                                        <table style={{ ...tbl.table, fontSize: `${T.small}px`, tableLayout: 'fixed' }}>
                                             <colgroup>
                                                 <col style={{ width: '22%' }} />
                                                 <col style={{ width: '30%' }} />
@@ -644,9 +653,9 @@
                                             <tbody>
                                                 {detallePermitidas.map((a, i) => (
                                                     <tr key={i} style={{ background: tbl.zebra(i) }}>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small} px` }}>{a.sector || '-'}</td>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small} px` }}>{a.general || '-'}</td>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small} px`, wordBreak: 'break-word', verticalAlign: 'top' }}>
+                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px` }}>{a.sector || '-'}</td>
+                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px` }}>{a.general || '-'}</td>
+                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px`, wordBreak: 'break-word', verticalAlign: 'top' }}>
                                                             {a.specific || '-'}
                                                         </td>
                                                     </tr>
@@ -662,15 +671,15 @@
                             <section style={section(S.gap2)}>
                                 <h2 style={h2()}>5. Notas Normativas Generales y Complementarias</h2>
                                 <div style={{
-                                    border: `1px solid ${C.hair} `,
+                                    border: `1px solid ${C.hair}`,
                                     padding: '10px 12px',
-                                    borderRadius: `${S.radius} px`,
+                                    borderRadius: `${S.radius}px`,
                                     backgroundColor: '#fbfbfc'
                                 }}>
                                     <ul style={{ margin: 0, paddingLeft: '16px', listStyleType: 'disc' }}>
                                         {(window.App.Constants.PROVISIONS_NOTES || []).map((note, idx) => (
                                             <li key={idx} style={{
-                                                fontSize: `${T.base} px`,
+                                                fontSize: `${T.base}px`,
                                                 marginBottom: '6px',
                                                 textAlign: 'justify',
                                                 color: C.ink
@@ -684,17 +693,17 @@
                         </>
                     )
                     }
-                    <section style={{ marginTop: `${S.gap2} px` }}>
+                    <section style={{ marginTop: `${S.gap2}px` }}>
                         <h2 style={h2()}>6. Enlaces de referencia</h2>
-                        <div style={{ fontSize: `${T.small} px`, color: C.sub, marginBottom: `${S.gap2} px` }}>
+                        <div style={{ fontSize: `${T.small}px`, color: C.sub, marginBottom: `${S.gap2}px` }}>
                             <strong>Visor:</strong> {visorUrlShort}
                             <div style={{ marginTop: '8px' }}>
-                                <div style={{ fontSize: `${T.micro} px`, color: C.mute, marginBottom: '4px' }}>
+                                <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginBottom: '4px' }}>
                                     Escanea para abrir el visor en la ubicación consultada:
                                 </div>
                                 <QrCodeImg value={visorUrl} size={74} />
                             </div>
-                            <div style={{ fontSize: `${T.micro} px`, color: C.mute, marginTop: '2px' }}>
+                            <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '2px' }}>
                                 * Enlace profundo (lat/lng) vía QR.
                             </div>
                             <div style={{ marginTop: '4px' }}>
@@ -703,9 +712,9 @@
                         </div>
                         <div
                             style={{
-                                borderTop: `1px solid ${C.hair} `,
-                                paddingTop: `${S.gap2} px`,
-                                fontSize: `${T.micro} px`,
+                                borderTop: `1px solid ${C.hair}`,
+                                paddingTop: `${S.gap2}px`,
+                                fontSize: `${T.micro}px`,
                                 color: C.mute,
                                 textAlign: 'justify',
                                 lineHeight: 1.45
@@ -750,6 +759,10 @@
                     preferCanvas: true
                 }).setView([lat, lng], zoom);
 
+                // Wait for tile load manually or just increase timeout
+                let tileCount = 0;
+                m.on('layeradd', () => tileCount++);
+
                 const base = L.tileLayer(getBaseLayerUrl(activeBaseLayer || 'SATELLITE'), {
                     crossOrigin: 'anonymous',
                     maxZoom: 19
@@ -757,9 +770,10 @@
 
                 const addGeoJson = (fc, style, paneZ = 400) => {
                     if (!fc?.features?.length) return null;
-                    m.createPane(`p${paneZ} `);
-                    m.getPane(`p${paneZ} `).style.zIndex = paneZ;
-                    return L.geoJSON(fc, { pane: `p${paneZ} `, style, interactive: false }).addTo(m);
+                    const paneName = `p${paneZ}`;
+                    if (!m.getPane(paneName)) m.createPane(paneName);
+                    m.getPane(paneName).style.zIndex = paneZ;
+                    return L.geoJSON(fc, { pane: paneName, style, interactive: false }).addTo(m);
                 };
 
                 if (visibleMapLayers?.sc) {
@@ -804,7 +818,7 @@
                         addGeoJson({ type: 'FeatureCollection', features: feats }, {
                             color,
                             weight: 1.5,
-                            opacity: 0.9,
+                            opacity: 0.9, // Reduced slightly for PDF clarity
                             fillColor: color,
                             fillOpacity: 0.2,
                             interactive: false
@@ -831,16 +845,17 @@
                         if (err || !canvas) return done(null);
                         done(canvas.toDataURL('image/png'));
                     });
-                }, 2200);
+                }, 3000); // Increased timeout for safety
 
                 base.once('load', () => {
+                    // Extra wait after load to ensure rendering
                     setTimeout(() => {
                         clearTimeout(timeout);
                         leafletImageFn(m, (err, canvas) => {
                             if (err || !canvas) return done(null);
                             done(canvas.toDataURL('image/png'));
                         });
-                    }, 250);
+                    }, 500);
                 });
             });
         };
@@ -886,14 +901,14 @@
                     const ok = await preloadImage(url);
                     setMapImage(ok ? url : null);
                 }
-                await new Promise(r => setTimeout(r, 80));
+                await new Promise(r => setTimeout(r, 100)); // Render cycle wait
             } catch (e) {
                 console.warn('No se pudo generar/cargar mapa exportable:', e);
                 try {
                     const url = getStaticMapUrl({ lat: analysis.coordinate.lat, lng: analysis.coordinate.lng, zoom: 14 });
                     const ok = await preloadImage(url);
                     setMapImage(ok ? url : null);
-                    await new Promise(r => setTimeout(r, 80));
+                    await new Promise(r => setTimeout(r, 100));
                 } catch {
                     setMapImage(null);
                 }
@@ -901,7 +916,7 @@
 
             const element = pdfRef.current;
             const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-            const scale = isMobile ? 1.4 : 2;
+            const scale = isMobile ? 1.8 : 2.2; // Increased scale for better quality
 
             let canvas;
             try {
@@ -945,7 +960,9 @@
                 pdf.rect(0, 0, pdfWidth, M + 10, 'F');
                 pdf.setFontSize(9);
                 pdf.setTextColor(17, 24, 39);
-                pdf.text('Visor de Consulta Ciudadana — Ficha', M, 10);
+                pdf.setFont("helvetica", "bold");
+                pdf.text('Visor de Consulta Ciudadana', M, 10);
+                pdf.setFont("helvetica", "normal");
                 pdf.setFontSize(8);
                 pdf.setTextColor(107, 114, 128);
                 const headRight = `${(analysis?.alcaldia || 'CDMX')} · ${new Date().toISOString().slice(0, 10)} `;
@@ -970,7 +987,8 @@
             }
 
             const cleanAlcaldia = (analysis.alcaldia || 'CDMX').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-            const nombreArchivo = `ficha - ${cleanAlcaldia} -${new Date().toISOString().slice(0, 10)}.pdf`;
+            const fechaStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            const nombreArchivo = `ficha_${cleanAlcaldia}_${fechaStr}.pdf`;
             pdf.save(nombreArchivo);
         }, [analysis, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats]);
 
@@ -992,7 +1010,10 @@
             <>
                 <div id="export-map" style={{ width: '900px', height: '520px', position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}></div>
                 <div style={{ position: 'absolute', top: -9999, left: -9999, width: '794px', zIndex: -1 }}>
-                    <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} />
+                    {/* Aseguramos que PdfFicha tenga un fondo blanco opaco para captura */}
+                    <div style={{ background: '#ffffff' }}>
+                        <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} />
+                    </div>
                 </div>
             </>
         );

@@ -1,22 +1,36 @@
 const { useState } = window.React;
-const { ZONING_CAT_INFO, CONTACT_INFO, COLORS } = window.App.Constants;
+const { ZONING_CAT_INFO, CONTACT_INFO } = window.App.Constants || {};
+const COLORS = (window.App.Constants && window.App.Constants.COLORS) ? window.App.Constants.COLORS : {};
 const { getZoningColor, getSectorStyle, getAnpZoningColor } = window.App.Utils;
 const Icons = window.App.Components.Icons;
+
+/* Helpers */
+const getZoningDisplay = (analysis) => {
+    if (analysis.zoningKey === 'ANP' || analysis.isANP) return 'ÁREA NATURAL PROTEGIDA';
+    if (analysis.zoningKey === 'NODATA') return 'Información no disponible';
+    return analysis.zoningName || 'Sin información';
+};
 
 /* ------------------------------------------------ */
 /* SUB-COMPONENTES DE AYUDA */
 /* ------------------------------------------------ */
 
 const StatusMessage = ({ analysis }) => {
-    const { status, outsideContext, isANP } = analysis;
+    const { status, outsideContext, isANP, zoningKey } = analysis;
 
     if (status === 'OUTSIDE_CDMX') return null;
 
-
-
-    if (status === 'NO_DATA')
+    if (zoningKey === 'ANP' || isANP) {
         return (
-            <div className="p-3 bg-yellow-50 text-yellow-800 text-xs border-l-4 border-yellow-400 rounded-r">
+            <div className="p-3 bg-purple-50 text-purple-900 text-xs border-l-4 border-purple-400 rounded-r mb-3 animate-in fade-in">
+                <strong>Atención:</strong> Este punto se encuentra en un <strong>Área Natural Protegida</strong>. Aplica regulación específica (Programa de Manejo).
+            </div>
+        );
+    }
+
+    if (status === 'NO_DATA' || zoningKey === 'NODATA')
+        return (
+            <div className="p-3 bg-yellow-50 text-yellow-800 text-xs border-l-4 border-yellow-400 rounded-r mb-3">
                 <strong>Aviso:</strong> No se encontró información disponible para esta zona.
             </div>
         );
@@ -44,7 +58,7 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
                     {icon}
                     <span>
                         {title}{' '}
-                        <span className="text-[10px] font-normal">
+                        <span className="text-[10px] font-normal opacity-80">
                             ({activities.length})
                         </span>
                     </span>
@@ -52,24 +66,19 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
                 <Icons.ChevronDown className="h-4 w-4 group-open:rotate-180 transition-transform" />
             </summary>
 
-            <div className="px-3 py-2 bg-white border-t border-gray-100 space-y-3">
+            <div className="px-3 py-2 bg-white border-t border-gray-100 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {Object.entries(groups).map(([sector, generals], i) => {
-                    const st = (isProhibidas || isPermitidas)
-                        ? {
-                            bg: isProhibidas ? '#FEF2F2' : '#F0FDF4',
-                            border: accentColor || (isProhibidas ? COLORS.error : COLORS.success),
-                            text: isProhibidas ? '#7f1d1d' : '#14532d'
-                        }
-                        : getSectorStyle(sector);
+                    const st = getSectorStyle(sector);
+                    // Use sector style always for consistency, or override for prohibited/allowed context
+                    // User feedback: "GroupedActivities UX is fine". We just needed to close internal details.
 
                     return (
                         <div key={i} className="mb-3 rounded overflow-hidden border border-gray-100">
                             <div
-                                className="px-3 py-2 font-bold text-[11px] uppercase tracking-wide border-l-4"
+                                className="px-3 py-1.5 font-bold text-[10px] uppercase tracking-wide border-l-4 bg-gray-50"
                                 style={{
-                                    backgroundColor: st.bg,
                                     borderLeftColor: st.border,
-                                    color: st.text
+                                    color: '#374151'
                                 }}
                             >
                                 {sector}
@@ -78,15 +87,11 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
                             <div className="bg-white">
                                 {Object.entries(generals).map(([gen, specifics], j) => (
                                     <details key={j} className="group/inner border-b border-gray-50 last:border-0">
-                                        <summary className="px-3 py-2 text-[11px] font-medium text-gray-700 cursor-pointer hover:bg-gray-50 flex justify-between">
+                                        <summary className="px-3 py-2 text-[11px] font-medium text-gray-700 cursor-pointer hover:bg-gray-50 flex justify-between select-none">
                                             <div className="flex items-center gap-2">
                                                 <span
                                                     className="w-1.5 h-1.5 rounded-full"
-                                                    style={{
-                                                        backgroundColor: (isProhibidas || isPermitidas)
-                                                            ? (accentColor || (isProhibidas ? COLORS.error : COLORS.success))
-                                                            : st.border
-                                                    }}
+                                                    style={{ backgroundColor: accentColor || st.border }}
                                                 />
                                                 <span>{gen}</span>
                                             </div>
@@ -102,9 +107,8 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
                                             {specifics.map((spec, k) => (
                                                 <li
                                                     key={k}
-                                                    className="text-[10px] text-gray-600 pl-4 relative"
+                                                    className="text-[10px] text-gray-600 pl-3 relative border-l-2 border-gray-200"
                                                 >
-                                                    <span className="absolute left-0 top-1.5 w-1 h-1 bg-gray-300 rounded-full"></span>
                                                     {spec}
                                                 </li>
                                             ))}
@@ -121,12 +125,15 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
 };
 
 const LegalDisclaimer = () => (
-    <div className="mt-6 p-3 bg-gray-50 border-t border-gray-200 text-[10px] text-gray-500 text-justify">
-        <strong>Aviso Legal:</strong> La información mostrada es orientativa y no sustituye la interpretación oficial.
+    <div className="mt-4 p-3 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 text-justify">
+        <strong>Aviso Legal:</strong> La información mostrada tiene carácter orientativo y no sustituye la interpretación oficial ni los documentos normativos vigentes.
     </div>
 );
 
 const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
+    // Definimos estilo base y estados hover usando style para evitar problemas de purga
+    const btnClass = "flex flex-col items-center justify-center p-2 bg-white border border-gray-200 rounded text-gray-600 transition-all hover:shadow-sm";
+
     return (
         <div className="hidden md:grid grid-cols-2 gap-2 w-full">
             {/* Google Maps */}
@@ -134,7 +141,10 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
                 href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
                 target="_blank"
                 rel="noreferrer"
-                className={`flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[${COLORS.primary}] text-gray-600 hover:text-[${COLORS.primary}]`}
+                className={btnClass}
+                style={{ '--hover-color': COLORS.primary }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = COLORS.primary; e.currentTarget.style.color = COLORS.primary; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#4b5563'; }}
                 title="Ver ubicación en Google Maps"
             >
                 <Icons.MapIcon className="h-5 w-5 mb-1" />
@@ -145,7 +155,9 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
             <button
                 type="button"
                 onClick={(e) => onExportPDF?.(e)}
-                className={`flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[${COLORS.primary}] text-gray-600 hover:text-[${COLORS.primary}] active:scale-95 transition-transform`}
+                className={btnClass}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = COLORS.primary; e.currentTarget.style.color = COLORS.primary; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#4b5563'; }}
                 title="Generar ficha en PDF"
                 aria-label="Exportar resultados a PDF"
             >
@@ -163,15 +175,11 @@ const AnpInternalCard = ({ analysis }) => {
     if (!analysis.hasInternalAnpZoning || !analysis.anpInternalFeature) return null;
 
     const data = analysis.anpInternalFeature.properties || {};
-    // Campos solicitados: Nombre, Categoría, Decreto, Superficie, Fecha
     const nombre = data.NOMBRE || analysis.anpNombre || 'Desconocido';
     const categoria = data.CATEGORIA_PROTECCION || analysis.anpCategoria || 'N/A';
-    const tipoDecreto = data.TIPO_DECRETO || analysis.anpTipoDecreto || 'N/A';
-    const superficie = data.SUP_DECRETADA || analysis.anpSupDecretada || 'N/A';
-    const fecha = data.FECHA_DECRETO ? new Date(data.FECHA_DECRETO).toLocaleDateString() : (analysis.anpFechaDecreto ? new Date(analysis.anpFechaDecreto).toLocaleDateString() : 'N/A');
 
     return (
-        <div className="glass-panel rounded-xl p-4 mb-4 animate-slide-up border border-purple-100 bg-purple-50/30">
+        <div className="bg-purple-50 rounded-xl p-4 mb-4 animate-slide-up border border-purple-100">
             <div className="flex items-center gap-2 text-purple-800 font-bold text-sm mb-3 border-b border-purple-100 pb-2">
                 <Icons.Verified className="h-4 w-4" />
                 <span>Detalle Área Natural Protegida</span>
@@ -179,118 +187,113 @@ const AnpInternalCard = ({ analysis }) => {
 
             <div className="space-y-2 text-xs text-gray-700">
                 <div className="grid grid-cols-1 gap-1">
-                    <span className="text-[10px] uppercase font-bold text-gray-500">Nombre del ANP</span>
+                    <span className="text-[10px] uppercase font-bold text-gray-500">Nombre</span>
                     <span className="font-medium text-gray-900">{nombre}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                    <div>
-                        <span className="text-[10px] uppercase font-bold text-gray-500">Categoría</span>
-                        <div className="font-medium text-gray-900">{categoria}</div>
-                    </div>
-                    <div>
-                        <span className="text-[10px] uppercase font-bold text-gray-500">Tipo Decreto</span>
-                        <div className="font-medium text-gray-900">{tipoDecreto}</div>
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                    <div>
-                        <span className="text-[10px] uppercase font-bold text-gray-500">Superficie</span>
-                        <div className="font-medium text-gray-900">{superficie}</div>
-                    </div>
-                    <div>
-                        <span className="text-[10px] uppercase font-bold text-gray-500">Fecha Decreto</span>
-                        <div className="font-medium text-gray-900">{fecha}</div>
-                    </div>
+                <div className="grid grid-cols-1 gap-1">
+                    <span className="text-[10px] uppercase font-bold text-gray-500">Categoría</span>
+                    <div className="font-medium text-gray-900">{categoria}</div>
                 </div>
             </div>
         </div>
     );
 };
 
-const LocationSummary = ({ analysis, onExportPDF }) => {
+const LocationSummary = ({ analysis, zoningDisplay }) => {
     const { status } = analysis;
     const isOutside = status === 'OUTSIDE_CDMX';
     const isSC = status === 'CONSERVATION_SOIL';
     const isUrban = status === 'URBAN_SOIL';
 
-    // El color de zonificación depende si es ANP interna o PGOEDF normal
-    // PERO, si zoningKey es "ANP" (Caso A), usamos un color fijo (ej. verde/morado) o el hash
     let zoningColor = '#9ca3af';
-    if (analysis.zoningKey === 'ANP') {
-        zoningColor = COLORS.anp; // Purple para "ÁREA NATURAL PROTEGIDA"
+    if (analysis.zoningKey === 'ANP' || analysis.isANP) {
+        zoningColor = COLORS.anp;
     } else if (analysis.zoningKey === 'NODATA') {
         zoningColor = '#9ca3af';
     } else if (analysis.zoningKey) {
         zoningColor = getZoningColor(analysis.zoningKey);
     }
 
-    // Mostrar bloque de zonificación si NO es urbano y NO está fuera
     const showZoningBlock = !isOutside && !isUrban;
 
     return (
-        <>
-            <div className="glass-panel rounded-xl p-4 mb-4 animate-slide-up">
-                {/* Header con Badge */}
-                <div className="flex items-center justify-between mb-3">
-                    {!isOutside && (
-                        <span
-                            className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase shadow-sm"
-                            style={{
-                                backgroundColor: isSC ? COLORS.sc : isUrban ? COLORS.su : '#6b7280',
-                                color: '#ffffff'
-                            }}
-                        >
-                            {isSC ? 'Suelo de Conservación' : 'Suelo Urbano'}
-                        </span>
-                    )}
-                </div>
-
-                {/* Status Message (ANP / No Data) moved here to be BELOW badge */}
-                {analysis?.status !== 'OUTSIDE_CDMX' && <StatusMessage analysis={analysis} />}
-
-                {/* Warning Outside */}
-                {isOutside ? (
-                    <div className="bg-red-50 border border-red-100 rounded-lg p-3 mb-2 animate-pulse-subtle">
-                        <div className="flex items-center gap-2 text-red-700 font-bold text-sm mb-1">
-                            <Icons.XCircle className="h-4 w-4" />
-                            <span>Fuera de CDMX</span>
-                        </div>
-                        <p className="text-xs text-red-600 leading-snug">
-                            Este punto se encuentra en <strong>{analysis.outsideContext || 'otro estado'}</strong>.
-                        </p>
-                    </div>
-                ) : (
-                    <div className="mb-3">
-                        <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-0.5">Alcaldía</div>
-                        <div className="text-lg font-bold text-gray-800 leading-tight">
-                            {analysis.alcaldia || 'Ciudad de México'}
-                        </div>
-                    </div>
+        <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 mb-4 animate-slide-up">
+            {/* Header con Badge */}
+            <div className="flex items-center justify-between mb-3">
+                {!isOutside && (
+                    <span
+                        className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm"
+                        style={{
+                            backgroundColor: isSC ? COLORS.sc : isUrban ? COLORS.su : '#6b7280',
+                            color: '#ffffff'
+                        }}
+                    >
+                        {isSC ? 'Suelo de Conservación' : 'Suelo Urbano'}
+                    </span>
                 )}
 
-                {/* Zonificación Badge (PGOEDF o ANP Jerárquico) */}
-                {showZoningBlock && (
-                    <div className="mb-4">
-                        <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-1">
-                            Zonificación PGOEDF
-                        </div>
-                        <div className="flex items-start gap-2">
-                            <div
-                                className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                                style={{ backgroundColor: zoningColor }}
-                            />
-                            <div className="text-sm font-semibold text-gray-700 leading-snug">
-                                {analysis.zoningName}
-                                {analysis.zoningKey && analysis.zoningKey !== 'ANP' && analysis.zoningKey !== 'NODATA' && (
-                                    <span className="text-gray-400 font-normal ml-1">({analysis.zoningKey})</span>
-                                )}
-                            </div>
-                        </div>
+                {/* Mini KPIs visuales */}
+                {!isOutside && !isUrban && (
+                    <div className="flex gap-2">
+                        {analysis.allowedActivities?.length > 0 && (
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-100">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                                {analysis.allowedActivities.length}
+                            </span>
+                        )}
+                        {analysis.prohibitedActivities?.length > 0 && (
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                                {analysis.prohibitedActivities.length}
+                            </span>
+                        )}
                     </div>
                 )}
-
             </div>
-        </>
+
+            <StatusMessage analysis={analysis} />
+
+            {/* Warning Outside */}
+            {isOutside ? (
+                <div className="bg-red-50 border border-red-100 rounded-lg p-3 mb-2 animate-pulse-subtle">
+                    <div className="flex items-center gap-2 text-red-700 font-bold text-sm mb-1">
+                        <Icons.XCircle className="h-4 w-4" />
+                        <span>Fuera de CDMX</span>
+                    </div>
+                    <p className="text-xs text-red-600 leading-snug">
+                        Este punto se encuentra en <strong>{analysis.outsideContext || 'otro estado'}</strong>.
+                    </p>
+                </div>
+            ) : (
+                <div className="mb-4">
+                    <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-0.5">Alcaldía</div>
+                    <div className="text-lg font-bold text-gray-800 leading-tight">
+                        {analysis.alcaldia || 'Ciudad de México'}
+                    </div>
+                </div>
+            )}
+
+            {/* Badge Zonificación */}
+            {showZoningBlock && (
+                <div className="mb-2">
+                    <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-1">
+                        Zonificación PGOEDF
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <div
+                            className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                            style={{ backgroundColor: zoningColor }}
+                        />
+                        <div className="text-sm font-semibold text-gray-700 leading-snug break-words">
+                            {zoningDisplay}
+                            {analysis.zoningKey && !['ANP', 'NODATA'].includes(analysis.zoningKey) && (
+                                <span className="text-gray-400 font-normal ml-1">({analysis.zoningKey})</span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
@@ -304,18 +307,19 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
     const [activeTab, setActiveTab] = useState('prohibidas');
     const [showDetails, setShowDetails] = useState(true);
     const [showNotes, setShowNotes] = useState(false);
+
+    // Calcular el display name unificado
+    const zoningDisplay = getZoningDisplay(analysis);
     const PROVISIONS_NOTES = (window.App && window.App.Constants && window.App.Constants.PROVISIONS_NOTES) ? window.App.Constants.PROVISIONS_NOTES : [];
 
     return (
-        <div className="space-y-4 animate-in bg-white border border-gray-200 rounded-lg px-4 pt-2 pb-3">
+        <div className="space-y-4 animate-in bg-white border border-gray-200 rounded-lg px-4 pt-4 pb-4">
 
-            <LocationSummary analysis={analysis} onExportPDF={onExportPDF} />
+            <LocationSummary analysis={analysis} zoningDisplay={zoningDisplay} />
 
-            {/* Tarjeta Secundaria: Detalle ANP (Si existe zonificación interna) */}
             <AnpInternalCard analysis={analysis} />
 
-            {/* Action Buttons: Google Maps & PDF Export (Always Visible) */}
-            <div className="glass-panel p-3 rounded-xl mb-4">
+            <div className="bg-gray-50 border border-gray-100 p-3 rounded-xl mb-4">
                 <ActionButtonsDesktop analysis={analysis} onExportPDF={onExportPDF} />
             </div>
 
@@ -323,9 +327,9 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                 <div className="p-3 bg-blue-50 text-blue-800 text-xs border-l-4 border-blue-400 rounded-r mb-3">
                     <strong>Consulta Específica Requerida:</strong>
                     <br />
-                    Esta zona se rige por un <strong>Programa de Desarrollo Urbano</strong> específico (Parcial, Poblado Rural o Centro de Barrio).
+                    Esta zona se rige por un <strong>Programa de Desarrollo Urbano</strong> específico.
                     <br />
-                    Consulte el documento oficial correspondiente para ver la tabla de usos de suelo detallada.
+                    Consulte el documento oficial de SEDUVI para detalle de usos.
                 </div>
             )}
 
@@ -333,56 +337,40 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                 !analysis.isPDU &&
                 !analysis.noActivitiesCatalog && (
                     <>
-                        <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center justify-between mt-2 mb-2">
                             <div className="text-[11px] font-semibold text-gray-600">
-                                Detalle de actividades según zonificación PGOEDF 2000
+                                Catálogo de Actividades (PGOEDF)
                             </div>
-
                             <button
                                 onClick={() => setShowDetails(v => !v)}
-                                className={`text-[10px] text-[${COLORS.primary}] hover:underline`}
+                                className="text-[10px] text-blue-600 hover:underline font-medium"
                             >
                                 {showDetails ? 'Ocultar detalle' : 'Ver detalle'}
                             </button>
                         </div>
 
                         {showDetails && (
-                            <div className="mt-2">
-                                <div className="relative w-full border-b border-gray-200 mb-4">
-                                    <div className="flex gap-3 px-1">
-                                        <button
-                                            onClick={() => setActiveTab('prohibidas')}
-                                            className={`px-4 py-2 rounded-t-lg text-[13px] font-extrabold transition
-                        ${activeTab === 'prohibidas'
-                                                    ? `bg-[${COLORS.error}] text-white`
-                                                    : `bg-transparent text-gray-500 hover:text-[${COLORS.error}]`}
-                      `}
-                                        >
-                                            PROHIBIDAS ({analysis.prohibitedActivities?.length || 0})
-                                        </button>
-
-                                        <button
-                                            onClick={() => setActiveTab('permitidas')}
-                                            className={`px-4 py-2 rounded-t-lg text-[13px] font-extrabold transition
-                        ${activeTab === 'permitidas'
-                                                    ? `bg-[${COLORS.success}] text-white`
-                                                    : `bg-transparent text-gray-500 hover:text-[${COLORS.success}]`}
-                      `}
-                                        >
-                                            PERMITIDAS ({analysis.allowedActivities?.length || 0})
-                                        </button>
-                                    </div>
-
-                                    <div className="absolute bottom-0 left-0 h-[3px] w-full pointer-events-none">
-                                        <div
-                                            className="flex-1 transition-colors duration-300"
-                                            style={{ backgroundColor: activeTab === 'prohibidas' ? COLORS.error : 'transparent' }}
-                                        />
-                                        <div
-                                            className="flex-1 transition-colors duration-300"
-                                            style={{ backgroundColor: activeTab === 'permitidas' ? COLORS.success : 'transparent' }}
-                                        />
-                                    </div>
+                            <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+                                <div className="border-b border-gray-200 mb-4 flex gap-4">
+                                    {/* TABS SIMPLIFICADOS */}
+                                    <button
+                                        onClick={() => setActiveTab('prohibidas')}
+                                        className={`pb-2 text-[11px] font-bold uppercase tracking-wide border-b-2 transition-colors ${activeTab === 'prohibidas'
+                                                ? 'border-red-500 text-red-700'
+                                                : 'border-transparent text-gray-400 hover:text-gray-600'
+                                            }`}
+                                    >
+                                        Prohibidas ({analysis.prohibitedActivities?.length || 0})
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('permitidas')}
+                                        className={`pb-2 text-[11px] font-bold uppercase tracking-wide border-b-2 transition-colors ${activeTab === 'permitidas'
+                                                ? 'border-green-500 text-green-700'
+                                                : 'border-transparent text-gray-400 hover:text-gray-600'
+                                            }`}
+                                    >
+                                        Permitidas ({analysis.allowedActivities?.length || 0})
+                                    </button>
                                 </div>
 
                                 {activeTab === 'prohibidas' && (
@@ -407,7 +395,6 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                     />
                                 )}
 
-                                {/* NOTAS NORMATIVAS (COLLAPSIBLE) */}
                                 <div className="mt-4 border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
                                     <button
                                         onClick={() => setShowNotes(!showNotes)}
@@ -415,7 +402,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                     >
                                         <span className="text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center gap-2">
                                             <Icons.Info className="h-4 w-4 text-gray-500" />
-                                            Notas Normativas Generales
+                                            Notas Normativas
                                         </span>
                                         {showNotes ? <Icons.ChevronUp className="h-4 w-4 text-gray-400" /> : <Icons.ChevronDown className="h-4 w-4 text-gray-400" />}
                                     </button>
@@ -424,7 +411,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                         <div className="p-4 bg-white border-t border-gray-200">
                                             <ul className="space-y-2 list-disc pl-4 marker:text-gray-400">
                                                 {PROVISIONS_NOTES.map((note, idx) => (
-                                                    <li key={idx} className="text-[11px] text-gray-600 leading-relaxed text-justify">
+                                                    <li key={idx} className="text-[10px] text-gray-600 leading-relaxed text-justify">
                                                         {note}
                                                     </li>
                                                 ))}
