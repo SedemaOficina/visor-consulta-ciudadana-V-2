@@ -18,8 +18,6 @@ const Legend = ({
 
     activeBaseLayer,
     setActiveBaseLayer,
-    activeBaseLayer,
-    setActiveBaseLayer,
     selectedAnpId,
     anpName,
     anpGeneralVisible
