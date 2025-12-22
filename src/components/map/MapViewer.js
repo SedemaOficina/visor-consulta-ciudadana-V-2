@@ -374,7 +374,7 @@ const MapViewer = ({
                     onEachFeature: (feature, layerInstance) => {
                         // Hover: aumentar grosor y opacidad, manteniendo el color fijo
                         // ✅ Optimize: Disable hover effects on mobile to save memory/CPU
-                        if (interactive && !window.L.Browser.mobile) {
+                        if (!window.L.Browser.mobile) {
                             layerInstance.on('mouseover', () => {
                                 layerInstance.setStyle({ weight: 3, fillOpacity: 0.4 });
                             });
