@@ -6,7 +6,8 @@ const Icons = window.App.Components.Icons;
 
 /* Helpers */
 const getZoningDisplay = (analysis) => {
-    if (analysis.zoningKey === 'ANP' || analysis.isANP) return 'ÁREA NATURAL PROTEGIDA';
+    // Si la clave es explicitamente ANP (fallback) mostramos eso, si no, mostramos el nombre real (ej. Forestal)
+    if (analysis.zoningKey === 'ANP') return 'ÁREA NATURAL PROTEGIDA';
     if (analysis.zoningKey === 'NODATA') return 'Información no disponible';
     return analysis.zoningName || 'Sin información';
 };
@@ -253,7 +254,7 @@ const LocationSummary = ({ analysis, zoningDisplay }) => {
     const isUrban = status === 'URBAN_SOIL';
 
     let zoningColor = '#9ca3af';
-    if (analysis.zoningKey === 'ANP' || analysis.isANP) {
+    if (analysis.zoningKey === 'ANP') {
         zoningColor = COLORS.anp;
     } else if (analysis.zoningKey === 'NODATA') {
         zoningColor = '#9ca3af';

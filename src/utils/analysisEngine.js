@@ -82,13 +82,9 @@
         if (r.status === 'CONSERVATION_SOIL') {
             const z = dataCache.zoning?.features?.length ? findFeature(c, dataCache.zoning) : null;
 
-            // CASO A: Punto dentro de Suelo de Conservación y con ANP encima
-            if (r.isANP) {
-                r.zoningName = "ÁREA NATURAL PROTEGIDA";
-                r.zoningKey = "ANP"; // Clave especial para manejo de actividades
-            }
-            // CASO C: Punto intersecta un polígono PGOEDF válido
-            else if (z) {
+            // 4. Zonificación PGOEDF
+            // Ya no bloqueamos si es ANP. Buscamos la zonificación subyacente siempre.
+            if (z) {
                 // Usa el campo CLAVE para determinar la zonificación
                 let k = (z.properties.CLAVE || '').toString().trim().toUpperCase();
 
@@ -112,8 +108,14 @@
             }
             // CASO B: Punto dentro de SC pero en "hueco" (NO intersecta polígono PGOEDF)
             else {
-                r.zoningName = "Información no disponible";
-                r.zoningKey = "NODATA";
+                // Si no encontramos PGOEDF pero estamos en ANP, usamos ANP como fallback para el nombre
+                if (r.isANP) {
+                    r.zoningName = "ÁREA NATURAL PROTEGIDA";
+                    r.zoningKey = "ANP";
+                } else {
+                    r.zoningName = "Información no disponible";
+                    r.zoningKey = "NODATA";
+                }
             }
 
             // ---------------------------------------------------
@@ -125,7 +127,7 @@
                 const zn = (r.zoningName || '').toString().toUpperCase();
                 r.isPDU = zn.includes('PDU') || zn.includes('POBLAD'); // Detección legacy por si acaso
 
-                // Si es ANP o NODATA o PDU, no mostrar catálogo
+                // Si es NODATA o PDU, no mostrar catálogo. (ANP ya no bloquea si tiene zoningKey válido)
                 if (r.zoningKey === 'ANP' || r.zoningKey === 'NODATA' || r.isPDU) {
                     r.noActivitiesCatalog = true;
                 } else {
