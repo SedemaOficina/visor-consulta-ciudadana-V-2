@@ -423,6 +423,11 @@
                                                     Estado: <strong>{outsideContextName}</strong>
                                                 </div>
                                             )}
+                                            <div style={{ marginTop: '8px', fontSize: `${T.micro}px`, color: C.sub, textAlign: 'justify', lineHeight: 1.35 }}>
+                                                <p style={{ margin: '0 0 6px 0' }}>La ubicación consultada se encuentra fuera del ámbito territorial de la Ciudad de México.</p>
+                                                <p style={{ margin: '0 0 6px 0' }}>En consecuencia, el presente visor no puede emitir información normativa aplicable, ya que su alcance se limita a los instrumentos de planeación y regulación ambiental vigentes en la Ciudad de México.</p>
+                                                <p style={{ margin: 0 }}>Para información correspondiente a esta ubicación, se recomienda consultar a la autoridad ambiental o de ordenamiento territorial competente.</p>
+                                            </div>
                                         </div>
                                     )}
                                     {isSC && (
@@ -983,20 +988,13 @@
             const drawPage = (pageIndex) => {
                 const yOffset = -(pageIndex * usableH);
                 pdf.setFillColor(255, 255, 255);
-                pdf.rect(0, 0, pdfWidth, M + 10, 'F');
-                pdf.setFontSize(9);
-                pdf.setTextColor(17, 24, 39);
-                pdf.setFont("helvetica", "bold");
-                pdf.text('Visor de Consulta Ciudadana', M, 10);
-                pdf.setFont("helvetica", "normal");
-                pdf.setFontSize(8);
-                pdf.setTextColor(107, 114, 128);
-                const headRight = `${(analysis?.alcaldia || 'CDMX')} · ${new Date().toISOString().slice(0, 10)} `;
-                pdf.text(headRight, pdfWidth - M, 10, { align: 'right' });
-                pdf.setDrawColor(229, 231, 235);
-                pdf.setLineWidth(0.2);
-                pdf.line(M, 14, pdfWidth - M, 14);
-                pdf.addImage(imgData, 'PNG', M, (M + 6) + yOffset, imgW, imgH);
+                // Mask only if needed, but primarily we just draw the image now without the text header
+                pdf.rect(0, 0, pdfWidth, M, 'F');
+
+                // Image drawing
+                pdf.addImage(imgData, 'PNG', M, M + yOffset, imgW, imgH);
+
+                // Footer (White background + Line + Page Number)
                 pdf.setFillColor(255, 255, 255);
                 pdf.rect(0, pdfHeight - (M + FOOTER), pdfWidth, (M + FOOTER), 'F');
                 pdf.setDrawColor(229, 231, 235);
