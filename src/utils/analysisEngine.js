@@ -16,12 +16,14 @@
             allowedActivities: [],
             prohibitedActivities: [],
             timestamp: new Date().toLocaleString(),
-            coordinate: c
         };
+        const r = { ...defaultResult, coordinate: c };
 
         // ---------------------------------------------------
         // 1. Validar si está fuera de CDMX
         // ---------------------------------------------------
+        // Safety check for empty/missing cache
+        if (!dataCache) return r;
         if (!dataCache.cdmx) return r;
 
         if (dataCache.cdmx?.features.length && !findFeature(c, dataCache.cdmx)) {

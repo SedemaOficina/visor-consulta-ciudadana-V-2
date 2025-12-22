@@ -1,5 +1,6 @@
 // Inicializar namespace
 window.App = window.App || {};
+window.App.Constants = {};
 
 window.App.Constants.COLORS = {
     primary: '#9d2148',   // Institutional Guinda

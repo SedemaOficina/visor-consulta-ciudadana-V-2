@@ -512,6 +512,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    console.log("APP VERSION: DEBUG 2.2 - Cache Safety & Color Fixes");
     loadCoreData()
       .then(() => {
         setLoading(false);
