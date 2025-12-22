@@ -100,6 +100,7 @@
         const isUrban = analysis.status === 'URBAN_SOIL';
         const isSC = analysis.status === 'CONSERVATION_SOIL';
         const isOutside = analysis.status === 'OUTSIDE_CDMX';
+        const outsideContextName = analysis.outsideContext || null;
         const isANP = analysis.isANP || analysis.zoningKey === 'ANP';
 
         const statusLabel =
@@ -191,8 +192,11 @@
                 sc: COLORS.sc || '#3B7D23',
                 su: COLORS.su || '#3b82f6',
                 anp: COLORS.anp || '#7e22ce',
+                anp: COLORS.anp || '#7e22ce',
                 red: COLORS.error || '#b91c1c',
-                green: COLORS.success || '#15803d'
+                green: COLORS.success || '#15803d',
+                edomex: '#808080', // Keep consistent with layer style if needed, or use specific color
+                morelos: '#808080'
             };
 
             const tbl = {
@@ -408,9 +412,17 @@
                                 </div>
                                 <div style={{ display: 'grid', gap: '6px', marginBottom: '8px' }}>
                                     {isOutside && (
-                                        <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small}px`, color: C.sub }}>
-                                            <span style={{ width: '10px', height: '10px', borderRadius: 999, background: C.red, marginRight: '6px', border: '1px solid #fff', boxShadow: '0 0 1px rgba(0,0,0,0.25)' }} />
-                                            Punto fuera de CDMX
+                                        <div style={{ display: 'grid', gap: '4px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small}px`, color: C.sub }}>
+                                                <span style={{ width: '10px', height: '10px', borderRadius: 999, background: C.red, marginRight: '6px', border: '1px solid #fff', boxShadow: '0 0 1px rgba(0,0,0,0.25)' }} />
+                                                Punto fuera de CDMX
+                                            </div>
+                                            {outsideContextName && (
+                                                <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small}px`, color: C.sub }}>
+                                                    <span style={{ width: '10px', height: '10px', borderRadius: 2, background: C.edomex, marginRight: '6px', border: '1px solid #9ca3af' }} />
+                                                    Estado: <strong>{outsideContextName}</strong>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                     {isSC && (
