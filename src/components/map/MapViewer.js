@@ -124,7 +124,24 @@ const MapViewer = ({
                 style,
                 interactive,
                 onEachFeature: (feature, layerInstance) => {
-                    if (tooltipField && feature.properties?.[tooltipField]) {
+                    // Hover effects
+                    if (interactive) {
+                        layerInstance.on('mouseover', () => {
+                            layerInstance.setStyle({ weight: 3, fillOpacity: 0.3 });
+                            layerInstance.bringToFront();
+                        });
+                        layerInstance.on('mouseout', () => {
+                            layerInstance.setStyle(style); // Reset to original style
+                        });
+                    }
+
+                    // Tooltip Logic
+                    if (name === 'sc') {
+                        layerInstance.bindTooltip("Suelo de Conservación", {
+                            sticky: true,
+                            className: 'custom-tooltip'
+                        });
+                    } else if (tooltipField && feature.properties?.[tooltipField]) {
                         layerInstance.bindTooltip(feature.properties[tooltipField], {
                             sticky: true,
                             className: 'custom-tooltip'
@@ -146,11 +163,11 @@ const MapViewer = ({
                 opacity: 1,
                 fillColor: LAYER_STYLES.sc.fill,
                 fillOpacity: 0.2,
-                interactive: false
+                interactive: true
             },
             null,
             'paneBase',
-            false
+            true // Make Interactive
         );
 
         addCoreLayer(

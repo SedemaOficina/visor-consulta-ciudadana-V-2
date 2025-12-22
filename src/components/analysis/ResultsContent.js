@@ -289,10 +289,6 @@ const LocationSummary = ({ analysis, onExportPDF }) => {
                     </div>
                 )}
 
-                <div className="mt-4 pt-3 border-t border-gray-100 flex gap-2">
-                    <ActionButtonsDesktop analysis={analysis} onExportPDF={onExportPDF} />
-                </div>
-
             </div>
         </>
     );
@@ -315,6 +311,11 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
 
             {/* Tarjeta Secundaria: Detalle ANP (Si existe zonificación interna) */}
             <AnpInternalCard analysis={analysis} />
+
+            {/* Action Buttons: Google Maps & PDF Export (Always Visible) */}
+            <div className="glass-panel p-3 rounded-xl mb-4">
+                <ActionButtonsDesktop analysis={analysis} onExportPDF={onExportPDF} />
+            </div>
 
             {analysis.zoningName === 'Cargando detalles...' && (
                 <div className="p-2 bg-yellow-50 text-yellow-800 text-[10px] rounded border border-yellow-200">

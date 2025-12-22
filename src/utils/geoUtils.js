@@ -117,7 +117,7 @@
         }
 
         return {
-            color: '#ffffff', // Borde blanco
+            color: color, // Borde del mismo color que el relleno
             weight: 1.5,
             opacity: 0.9,
             fillColor: color,
