@@ -441,11 +441,7 @@
                                                     <span style={{ lineHeight: 1.3 }}><strong>{outsideContextName}</strong></span>
                                                 </div>
                                             )}
-                                            {outsideContextName && (
-                                                <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '2px', marginLeft: '16px' }}>
-                                                    Referencia territorial: {outsideContextName}
-                                                </div>
-                                            )}
+
                                             <div style={{ marginTop: '10px', fontSize: `${T.micro}px`, color: C.sub, textAlign: 'justify', lineHeight: 1.4 }}>
                                                 <p style={{ margin: '0 0 8px 0', fontSize: `${T.small}px`, fontWeight: 700, color: C.ink }}>
                                                     La ubicación consultada se encuentra fuera del ámbito territorial de la Ciudad de México.
