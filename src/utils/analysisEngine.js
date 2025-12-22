@@ -102,6 +102,7 @@
                     } else if (desc.includes('equipamiento')) {
                         k = 'PDU_ER';
                     }
+                    r.noActivitiesCatalog = true; // No hay catálogo para PDU en CSV
                 }
 
                 r.zoningKey = k;

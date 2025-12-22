@@ -317,9 +317,13 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                 <ActionButtonsDesktop analysis={analysis} onExportPDF={onExportPDF} />
             </div>
 
-            {analysis.zoningName === 'Cargando detalles...' && (
-                <div className="p-2 bg-yellow-50 text-yellow-800 text-[10px] rounded border border-yellow-200">
-                    Cargando detalles de zonificación y actividades. La ficha se actualizará automáticamente.
+            {analysis.zoningKey && analysis.zoningKey.startsWith('PDU_') && (
+                <div className="p-3 bg-blue-50 text-blue-800 text-xs border-l-4 border-blue-400 rounded-r mb-3">
+                    <strong>Consulta Específica Requerida:</strong>
+                    <br />
+                    Esta zona se rige por un <strong>Programa de Desarrollo Urbano</strong> específico (Parcial, Poblado Rural o Centro de Barrio).
+                    <br />
+                    Consulte el documento oficial correspondiente para ver la tabla de usos de suelo detallada.
                 </div>
             )}
 
