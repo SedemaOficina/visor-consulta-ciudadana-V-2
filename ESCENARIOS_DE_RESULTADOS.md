@@ -7,7 +7,7 @@ Se detecta cuando la coordenada no intersecta con el polígono de la Ciudad de M
 - **Estado (`status`):** `OUTSIDE_CDMX`
 - **Indicador:** Mensaje de error o advertencia "Ubicación fuera de la CDMX".
 - **Contexto extra:** Puede indicar si cae en "Edo. Méx" o "Morelos" si las capas están disponibles.
-- **Acciones:** No muestra zonificación ni actividades. Oculta el botón de exportación PDF.
+- **Acciones:** No muestra zonificación ni actividades. Oculta el botón de exportación PDF y Google Maps.
 
 ## 2. Suelo Urbano (SU)
 Ubicación dentro de CDMX pero fuera del polígono de Suelo de Conservación.

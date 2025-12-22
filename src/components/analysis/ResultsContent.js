@@ -134,17 +134,19 @@ const LegalDisclaimer = () => (
 const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
     return (
         <div className="hidden md:grid grid-cols-2 gap-2 w-full">
-            {/* Google Maps */}
-            <a
-                href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2148] text-gray-600 hover:text-[#9d2148]"
-                title="Ver ubicación en Google Maps"
-            >
-                <Icons.MapIcon className="h-5 w-5 mb-1" />
-                <span className="text-[9px] font-bold">Google Maps</span>
-            </a>
+            {/* Google Maps (solo si está dentro de CDMX) */}
+            {analysis.status !== 'OUTSIDE_CDMX' && (
+                <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex flex-col items-center justify-center p-2 bg-white border rounded hover:border-[#9d2148] text-gray-600 hover:text-[#9d2148]"
+                    title="Ver ubicación en Google Maps"
+                >
+                    <Icons.MapIcon className="h-5 w-5 mb-1" />
+                    <span className="text-[9px] font-bold">Google Maps</span>
+                </a>
+            )}
 
             {/* Exportar PDF (solo si está dentro de CDMX) */}
             {analysis.status !== 'OUTSIDE_CDMX' && (
@@ -198,6 +200,9 @@ const LocationSummary = ({ analysis, onExportPDF }) => {
 
 
                 </div>
+
+                {/* Status Message (ANP / No Data) moved here to be BELOW badge */}
+                {analysis?.status !== 'OUTSIDE_CDMX' && <StatusMessage analysis={analysis} />}
 
                 {/* Warning Outside */}
                 {isOutside ? (
@@ -277,13 +282,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
 
     return (
         <div className="space-y-4 animate-in bg-white border border-gray-200 rounded-lg px-4 pt-2 pb-3">
-            {/* HEADER DECORATIVO (Icono mapa) */}
-            <div className="absolute top-0 right-0 p-3 opacity-20 pointer-events-none">
-                <Icons.MapIcon className="h-32 w-32" />
-            </div>
 
-            {/* RESUMEN + ESTADO */}
-            {analysis?.status !== 'OUTSIDE_CDMX' && <StatusMessage analysis={analysis} />}
             <LocationSummary analysis={analysis} onExportPDF={onExportPDF} />
 
 

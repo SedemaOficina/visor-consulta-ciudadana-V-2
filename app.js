@@ -363,15 +363,17 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
 
       {analysis && (
         <div className="flex-shrink-0 p-3 bg-white border-t border-gray-200 safe-area-bottom flex gap-3 overflow-x-auto">
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-[#9d2148] text-white py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-[#7d1d3a] transition-colors"
-            title="Ver ubicación en Google Maps"
-          >
-            <Icons.MapIcon className="h-4 w-4" /> Google Maps
-          </a>
+          {analysis.status !== 'OUTSIDE_CDMX' && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-[#9d2148] text-white py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-[#7d1d3a] transition-colors"
+              title="Ver ubicación en Google Maps"
+            >
+              <Icons.MapIcon className="h-4 w-4" /> Google Maps
+            </a>
+          )}
 
           <button
             onClick={async () => {
