@@ -37,6 +37,8 @@ Punto dentro de CDMX pero fuera del Suelo de Conservación.
 *   **Zonificación:**
     *   Etiqueta: "Zonificación PGOEDF"
     *   Valor: "Suelo Urbano" (o "Información no disponible")
+*   **Aviso PDU:** Tarjeta Azul ("Consulta Específica Requerida")
+    *   Texto: "Esta zona se rige por un Programa de Desarrollo Urbano específico..."
 *   **Botones:** Google Maps / Exportar PDF
 *   **Aviso Legal**
 
@@ -49,9 +51,9 @@ Punto en Suelo Urbano que cae dentro de un Programa Parcial (ej. Polanco, Santa 
 *   **Zonificación:**
     *   Color: Variable (Rose/Amber/etc)
     *   Valor: Nombre del Programa (ej. "Programas Parciales")
-*   **Botones:** Google Maps / Exportar PDF
 *   **Aviso PDU:** Tarjeta Azul ("Consulta Específica Requerida")
     *   Texto: "Esta zona se rige por un Programa de Desarrollo Urbano específico..."
+*   **Botones:** Google Maps / Exportar PDF
 *   **Aviso Legal**
 
 ---

@@ -359,11 +359,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
             <AnpGeneralCard analysis={analysis} />
             <AnpInternalCard analysis={analysis} />
 
-            <div className="bg-gray-50 border border-gray-100 p-3 rounded-xl mb-4">
-                <ActionButtonsDesktop analysis={analysis} onExportPDF={onExportPDF} />
-            </div>
-
-            {analysis.zoningKey && analysis.zoningKey.startsWith('PDU_') && (
+            {((analysis.zoningKey && analysis.zoningKey.startsWith('PDU_')) || analysis.status === 'URBAN_SOIL') && (
                 <div className="p-3 bg-blue-50 text-blue-800 text-xs border-l-4 border-blue-400 rounded-r mb-3">
                     <strong>Consulta Específica Requerida:</strong>
                     <br />
@@ -372,6 +368,8 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                     Consulte el documento oficial de SEDUVI para detalle de usos.
                 </div>
             )}
+
+
 
             {analysis.status === 'CONSERVATION_SOIL' &&
                 !analysis.isPDU &&
@@ -463,6 +461,10 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                         )}
                     </>
                 )}
+
+            <div className="bg-gray-50 border border-gray-100 p-3 rounded-xl mb-4">
+                <ActionButtonsDesktop analysis={analysis} onExportPDF={onExportPDF} />
+            </div>
 
             <LegalDisclaimer />
         </div>
