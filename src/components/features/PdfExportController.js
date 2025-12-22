@@ -138,7 +138,7 @@
         let zoningColor = '#6b7280';
         if (isANP) {
             zoningColor = '#9d2148'; // Use primary or specific ANP color
-            if (window.App.Constants.COLORS && window.App.Constants.COLORS.anp) {
+            if (window.App?.Constants?.COLORS?.anp) {
                 zoningColor = window.App.Constants.COLORS.anp;
             }
         } else if (analysis.zoningKey === 'NODATA') {
@@ -179,7 +179,7 @@
                 hair: '1px solid #e5e7eb'
             };
 
-            const COLORS = (window.App.Constants && window.App.Constants.COLORS) ? window.App.Constants.COLORS : {};
+            const COLORS = (window.App?.Constants?.COLORS) ? window.App.Constants.COLORS : {};
             const C = {
                 ink: COLORS.text || '#111827',
                 sub: COLORS.subtext || '#4b5563',

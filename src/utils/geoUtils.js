@@ -72,8 +72,9 @@
         if (!key) return '#ccc';
         const k = key.toString().toUpperCase();
         // Busca parcial (ej: "FCE 2" -> match "FCE")
-        const cat = Object.keys(Constants.ZONING_CAT_INFO).find(c => k.startsWith(c));
-        return cat ? Constants.ZONING_CAT_INFO[cat].color : '#9ca3af';
+        const catInfo = Constants?.ZONING_CAT_INFO || {};
+        const cat = Object.keys(catInfo).find(c => k.startsWith(c));
+        return cat ? catInfo[cat].color : '#9ca3af';
     };
 
     const getAnpZoningColor = (zoningName) => {

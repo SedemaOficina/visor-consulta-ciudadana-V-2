@@ -1,6 +1,6 @@
 const { useState } = window.React;
 const { ZONING_CAT_INFO, CONTACT_INFO } = window.App.Constants || {};
-const COLORS = (window.App.Constants && window.App.Constants.COLORS) ? window.App.Constants.COLORS : {};
+const COLORS = (window.App?.Constants?.COLORS) ? window.App.Constants.COLORS : {};
 const { getZoningColor, getSectorStyle, getAnpZoningColor } = window.App.Utils;
 const Icons = window.App.Components.Icons;
 
@@ -356,8 +356,8 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                     <button
                                         onClick={() => setActiveTab('prohibidas')}
                                         className={`pb-2 text-[11px] font-bold uppercase tracking-wide border-b-2 transition-colors ${activeTab === 'prohibidas'
-                                                ? 'border-red-500 text-red-700'
-                                                : 'border-transparent text-gray-400 hover:text-gray-600'
+                                            ? 'border-red-500 text-red-700'
+                                            : 'border-transparent text-gray-400 hover:text-gray-600'
                                             }`}
                                     >
                                         Prohibidas ({analysis.prohibitedActivities?.length || 0})
@@ -365,8 +365,8 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                     <button
                                         onClick={() => setActiveTab('permitidas')}
                                         className={`pb-2 text-[11px] font-bold uppercase tracking-wide border-b-2 transition-colors ${activeTab === 'permitidas'
-                                                ? 'border-green-500 text-green-700'
-                                                : 'border-transparent text-gray-400 hover:text-gray-600'
+                                            ? 'border-green-500 text-green-700'
+                                            : 'border-transparent text-gray-400 hover:text-gray-600'
                                             }`}
                                     >
                                         Permitidas ({analysis.allowedActivities?.length || 0})
