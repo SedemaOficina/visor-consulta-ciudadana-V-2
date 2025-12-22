@@ -419,8 +419,7 @@
                                     padding: '8px',
                                     boxSizing: 'border-box',
                                     display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'center'
+                                    flexDirection: 'column'
                                 }}
                             >
                                 <div style={{ fontSize: `${T.small}px`, fontWeight: 800, marginBottom: '6px', color: C.ink }}>
@@ -567,7 +566,7 @@
                                         <td style={tbl.td}>
                                             <span style={badge(soilBg, soilFg)}>{statusLabel}</span>
                                             <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '3px' }}>
-                                                {isSC ? 'Clasificación territorial: SC (PGOEDF 2000)' : isUrban ? 'Clasificación territorial: SU' : ''}
+                                                {isSC ? 'Clasificación territorial: SC (PGOEDF 2000)' : ''}
                                             </div>
                                         </td>
                                     </tr>
@@ -630,12 +629,14 @@
                                             </tr>
                                         </>
                                     )}
-                                    <tr style={{ background: tbl.zebra(3) }}>
-                                        <td style={tbl.tdLabel}>Base de referencia</td>
-                                        <td style={tbl.td}>
-                                            Programa General de Ordenamiento Ecológico del Distrito Federal (PGOEDF 2000) y capas geoespaciales institucionales de SEDEMA.
-                                        </td>
-                                    </tr>
+                                    {!isUrban && (
+                                        <tr style={{ background: tbl.zebra(3) }}>
+                                            <td style={tbl.tdLabel}>Base de referencia</td>
+                                            <td style={tbl.td}>
+                                                Programa General de Ordenamiento Ecológico del Distrito Federal (PGOEDF 2000) y capas geoespaciales institucionales de SEDEMA.
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </section>
