@@ -381,11 +381,13 @@ const MapViewer = ({
 
         const label =
             analysisStatus === 'CONSERVATION_SOIL' ? 'SC' :
-                analysisStatus === 'URBAN_SOIL' ? 'SU' : '';
+                analysisStatus === 'URBAN_SOIL' ? 'SU' :
+                    analysisStatus === 'OUTSIDE_CDMX' ? 'X' : '';
 
         const bgColor =
             analysisStatus === 'CONSERVATION_SOIL' ? LAYER_STYLES.sc.color :
-                analysisStatus === 'URBAN_SOIL' ? '#3b82f6' : '#9ca3af';
+                analysisStatus === 'URBAN_SOIL' ? '#3b82f6' :
+                    analysisStatus === 'OUTSIDE_CDMX' ? '#b91c1c' : '#9ca3af';
 
         const iconHtml = `
       <div class="marker-pop" style="
