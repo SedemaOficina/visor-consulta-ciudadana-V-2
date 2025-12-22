@@ -103,29 +103,7 @@ const Legend = ({
                             />
                         </label>
 
-                        <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3.5 h-3.5 rounded border border-gray-200 shadow-sm opacity-60" style={{ backgroundColor: LAYER_STYLES.edomex.color }} />
-                                <span className="text-[11px] text-gray-700 font-medium group-hover:text-gray-900">Límite Edo. Méx</span>
-                            </div>
-                            <ToggleSwitch
-                                checked={visibleMapLayers.edomex}
-                                onChange={() => toggleLayer('edomex')}
-                                activeColor={LAYER_STYLES.edomex.color}
-                            />
-                        </label>
-
-                        <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3.5 h-3.5 rounded border border-gray-200 shadow-sm opacity-60" style={{ backgroundColor: LAYER_STYLES.morelos.color }} />
-                                <span className="text-[11px] text-gray-700 font-medium group-hover:text-gray-900">Límite Morelos</span>
-                            </div>
-                            <ToggleSwitch
-                                checked={visibleMapLayers.morelos}
-                                onChange={() => toggleLayer('morelos')}
-                                activeColor={LAYER_STYLES.morelos.color}
-                            />
-                        </label>
+                        {/* Capas Edomex y Morelos ocultas en leyenda a petición (pero existen en mapa) */}
 
                         <div className="pt-2 border-t border-gray-100">
                             <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
