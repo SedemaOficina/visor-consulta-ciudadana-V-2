@@ -512,7 +512,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    console.log("APP VERSION: DEBUG 2.2 - Cache Safety & Color Fixes");
+    console.log("APP VERSION: DEBUG 2.3 - Fixed Legend Syntax, Added RE, Color Safe");
     loadCoreData()
       .then(() => {
         setLoading(false);

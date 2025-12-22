@@ -51,7 +51,7 @@ window.App.Constants.ZONING_CAT_INFO = {
 };
 
 window.App.Constants.ZONING_ORDER = [
-    'FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE',
+    'FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE', 'RE',
     'PDU_PP', 'PDU_PR', 'PDU_ZU', 'PDU_ER'
 ];
 
