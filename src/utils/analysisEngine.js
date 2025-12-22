@@ -16,8 +16,8 @@
             allowedActivities: [],
             prohibitedActivities: [],
             timestamp: new Date().toLocaleString(),
+            coordinate: c
         };
-        const r = { ...defaultResult, coordinate: c };
 
         // ---------------------------------------------------
         // 1. Validar si está fuera de CDMX
