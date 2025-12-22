@@ -38,8 +38,8 @@ window.App.Constants.ZONING_CAT_INFO = {
     AF: { color: '#65a30d', label: 'Agroforestal (AF)' },               // Lime 600
     AFE: { color: '#a3e635', label: 'Agroforestal Especial (AFE)' },    // Lime 400
 
-    // Restauración (Tierras)
-    RE: { color: '#a16207', label: 'Rescate Ecológico (RE)' },          // Yellow 800
+    // Restauración (Tierras) - REMOVIDO a petición
+    // RE: { color: '#a16207', label: 'Rescate Ecológico (RE)' },
 
     // PDU y Otros (Estructurales - Colores Distintivos)
     PDU_PP: { color: '#e11d48', label: 'Programas Parciales (PP)' },    // Rose 600 (Distinct from ANP Purple)
@@ -51,7 +51,7 @@ window.App.Constants.ZONING_CAT_INFO = {
 };
 
 window.App.Constants.ZONING_ORDER = [
-    'FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE', 'RE',
+    'FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE',
     'PDU_PP', 'PDU_PR', 'PDU_ZU', 'PDU_ER'
 ];
 
