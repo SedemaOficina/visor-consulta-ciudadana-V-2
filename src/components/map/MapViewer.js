@@ -2,6 +2,7 @@ const { useState, useEffect, useRef } = window.React;
 const {
     LAYER_STYLES,
     ZONING_ORDER,
+    ZONING_CAT_INFO,
     INITIAL_CENTER,
     INITIAL_ZOOM,
     FOCUS_ZOOM
@@ -319,7 +320,7 @@ const MapViewer = ({
 
                 const fc = { type: 'FeatureCollection', features: feats };
                 // Obtenemos el color específico de esta categoría (ej. PDU_PP -> Naranja)
-                const catInfo = window.App.Constants.ZONING_CAT_INFO[k];
+                const catInfo = ZONING_CAT_INFO[k];
                 const fixedColor = catInfo ? catInfo.color : '#9ca3af';
 
                 const layer = window.L.geoJSON(fc, {

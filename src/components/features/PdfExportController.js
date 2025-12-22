@@ -117,8 +117,8 @@
         const visorUrl = `${window.location.origin}${window.location.pathname}?lat=${analysis.coordinate.lat}&lng=${analysis.coordinate.lng}&open=1`;
         const visorUrlShort = `${window.location.origin}${window.location.pathname}`;
 
-        const detalleProhibidas = (analysis.prohibitedActivities || []).slice(0, 25);
-        const detallePermitidas = (analysis.allowedActivities || []).slice(0, 25);
+        const detalleProhibidas = analysis.prohibitedActivities || [];
+        const detallePermitidas = analysis.allowedActivities || [];
 
         let soilBadgeBg = '#e5e7eb';
         let soilBadgeColor = '#374151';
@@ -582,9 +582,7 @@
                         <>
                             <section style={section(S.gap2)}>
                                 <h2 style={h2(C.red)}>3. Actividades prohibidas</h2>
-                                <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginBottom: '6px' }}>
-                                    Se muestran hasta 25 actividades específicas con clasificación “P” para la zonificación consultada.
-                                </div>
+
                                 {detalleProhibidas.length === 0 ? (
                                     <div style={{ fontSize: `${T.small}px`, color: C.sub }}>
                                         No se identificaron actividades clasificadas como prohibidas para esta zonificación en el catálogo cargado.
@@ -616,9 +614,7 @@
                                                 ))}
                                             </tbody>
                                         </table>
-                                        <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '4px' }}>
-                                            * Se muestran hasta 25 actividades específicas prohibidas. Para el listado completo, consultar el visor.
-                                        </div>
+
                                     </>
                                 )}
                             </section>
@@ -655,9 +651,7 @@
                                                 ))}
                                             </tbody>
                                         </table>
-                                        <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '4px' }}>
-                                            * Se muestran hasta 25 actividades específicas permitidas. Para el listado completo, consultar el visor.
-                                        </div>
+
                                     </>
                                 )}
 
