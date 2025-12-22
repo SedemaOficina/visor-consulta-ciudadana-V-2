@@ -156,19 +156,76 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
     );
 };
 
+/* ------------------------------------------------ */
+/* TARJETA SECUNDARIA: ZONIFICACIÓN INTERNA ANP */
+/* ------------------------------------------------ */
+const AnpInternalCard = ({ analysis }) => {
+    if (!analysis.hasInternalAnpZoning || !analysis.anpInternalFeature) return null;
+
+    const data = analysis.anpInternalFeature.properties || {};
+    // Campos solicitados: Nombre, Categoría, Decreto, Superficie, Fecha
+    const nombre = data.NOMBRE || analysis.anpNombre || 'Desconocido';
+    const categoria = data.CATEGORIA_PROTECCION || analysis.anpCategoria || 'N/A';
+    const tipoDecreto = data.TIPO_DECRETO || analysis.anpTipoDecreto || 'N/A';
+    const superficie = data.SUP_DECRETADA || analysis.anpSupDecretada || 'N/A';
+    const fecha = data.FECHA_DECRETO ? new Date(data.FECHA_DECRETO).toLocaleDateString() : (analysis.anpFechaDecreto ? new Date(analysis.anpFechaDecreto).toLocaleDateString() : 'N/A');
+
+    return (
+        <div className="glass-panel rounded-xl p-4 mb-4 animate-slide-up border border-purple-100 bg-purple-50/30">
+            <div className="flex items-center gap-2 text-purple-800 font-bold text-sm mb-3 border-b border-purple-100 pb-2">
+                <Icons.Verified className="h-4 w-4" />
+                <span>Detalle Área Natural Protegida</span>
+            </div>
+
+            <div className="space-y-2 text-xs text-gray-700">
+                <div className="grid grid-cols-1 gap-1">
+                    <span className="text-[10px] uppercase font-bold text-gray-500">Nombre del ANP</span>
+                    <span className="font-medium text-gray-900">{nombre}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                        <span className="text-[10px] uppercase font-bold text-gray-500">Categoría</span>
+                        <div className="font-medium text-gray-900">{categoria}</div>
+                    </div>
+                    <div>
+                        <span className="text-[10px] uppercase font-bold text-gray-500">Tipo Decreto</span>
+                        <div className="font-medium text-gray-900">{tipoDecreto}</div>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                        <span className="text-[10px] uppercase font-bold text-gray-500">Superficie</span>
+                        <div className="font-medium text-gray-900">{superficie}</div>
+                    </div>
+                    <div>
+                        <span className="text-[10px] uppercase font-bold text-gray-500">Fecha Decreto</span>
+                        <div className="font-medium text-gray-900">{fecha}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const LocationSummary = ({ analysis, onExportPDF }) => {
     const { status } = analysis;
     const isOutside = status === 'OUTSIDE_CDMX';
     const isSC = status === 'CONSERVATION_SOIL';
     const isUrban = status === 'URBAN_SOIL';
-    const isANP = analysis.isANP;
 
-    const zoningColor = analysis.hasInternalAnpZoning
-        ? getAnpZoningColor(analysis.zoningName)
-        : (analysis.zoningKey ? getZoningColor(analysis.zoningKey) : '#9ca3af');
+    // El color de zonificación depende si es ANP interna o PGOEDF normal
+    // PERO, si zoningKey es "ANP" (Caso A), usamos un color fijo (ej. verde/morado) o el hash
+    let zoningColor = '#9ca3af';
+    if (analysis.zoningKey === 'ANP') {
+        zoningColor = '#9333ea'; // Purple para "ÁREA NATURAL PROTEGIDA"
+    } else if (analysis.zoningKey === 'NODATA') {
+        zoningColor = '#9ca3af';
+    } else if (analysis.zoningKey) {
+        zoningColor = getZoningColor(analysis.zoningKey);
+    }
+
+    // Mostrar bloque de zonificación si NO es urbano y NO está fuera
     const showZoningBlock = !isOutside && !isUrban;
-
-    const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
 
     return (
         <>
@@ -211,39 +268,23 @@ const LocationSummary = ({ analysis, onExportPDF }) => {
                     </div>
                 )}
 
-                {/* Zonificación Badge */}
+                {/* Zonificación Badge (PGOEDF o ANP Jerárquico) */}
                 {showZoningBlock && (
                     <div className="mb-4">
                         <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-1">
-                            {analysis.hasInternalAnpZoning ? 'Zonificación Interna' : 'Zonificación PGOEDF'}
+                            Zonificación PGOEDF
                         </div>
-                        {analysis.zoningName ? (
-                            <div className="flex items-start gap-2">
-                                <div
-                                    className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                                    style={{ backgroundColor: zoningColor }}
-                                />
-                                <div className="text-sm font-semibold text-gray-700 leading-snug">
-                                    {analysis.zoningName} <span className="text-gray-400 font-normal">({analysis.zoningKey})</span>
-                                </div>
+                        <div className="flex items-start gap-2">
+                            <div
+                                className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                                style={{ backgroundColor: zoningColor }}
+                            />
+                            <div className="text-sm font-semibold text-gray-700 leading-snug">
+                                {analysis.zoningName}
+                                {analysis.zoningKey && analysis.zoningKey !== 'ANP' && analysis.zoningKey !== 'NODATA' && (
+                                    <span className="text-gray-400 font-normal ml-1">({analysis.zoningKey})</span>
+                                )}
                             </div>
-                        ) : (
-                            <span className="text-sm text-gray-400 italic">No disponible</span>
-                        )}
-                    </div>
-                )}
-
-                {/* ANP Block */}
-                {isSC && isANP && (
-                    <div className="bg-purple-50 border border-purple-100 rounded-lg p-3 mb-3">
-                        <div className="flex items-center gap-1.5 text-purple-800 font-bold text-xs mb-2">
-                            <Icons.Verified className="h-3 w-3" />
-                            <span>Área Natural Protegida</span>
-                        </div>
-                        <div className="space-y-1 text-xs text-gray-700">
-                            <div className="font-medium text-purple-900">{analysis.anpNombre}</div>
-                            <div className="flex justify-between"><span>Categoría:</span> <span className="font-medium">{analysis.anpCategoria}</span></div>
-                            <div className="flex justify-between"><span>Decreto:</span> <span className="font-mono text-[10px]">{formatDate(analysis.anpFechaDecreto)}</span></div>
                         </div>
                     </div>
                 )}
@@ -271,6 +312,9 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
         <div className="space-y-4 animate-in bg-white border border-gray-200 rounded-lg px-4 pt-2 pb-3">
 
             <LocationSummary analysis={analysis} onExportPDF={onExportPDF} />
+
+            {/* Tarjeta Secundaria: Detalle ANP (Si existe zonificación interna) */}
+            <AnpInternalCard analysis={analysis} />
 
             {analysis.zoningName === 'Cargando detalles...' && (
                 <div className="p-2 bg-yellow-50 text-yellow-800 text-[10px] rounded border border-yellow-200">

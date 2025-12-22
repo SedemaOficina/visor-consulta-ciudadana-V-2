@@ -498,7 +498,7 @@
                                         </div>
                                     </td>
                                 </tr>
-                                {!isUrban && !isANP && (
+                                {!isUrban && (
                                     <tr style={{ background: tbl.zebra(2) }}>
                                         <td style={tbl.tdLabel}>Zonificación PGOEDF</td>
                                         <td style={tbl.td}>
@@ -516,7 +516,7 @@
                                                     >
                                                         {analysis.zoningName}
                                                     </span>
-                                                    {analysis.zoningKey && (
+                                                    {analysis.zoningKey && analysis.zoningKey !== 'ANP' && analysis.zoningKey !== 'NODATA' && (
                                                         <span style={badge('#ffffff', C.ink, zoningColor)}>
                                                             {analysis.zoningKey}
                                                         </span>
@@ -528,19 +528,38 @@
                                         </td>
                                     </tr>
                                 )}
-                                {isANP && (
-                                    <tr style={{ background: tbl.zebra(2) }}>
-                                        <td style={tbl.tdLabel}>Área Natural Protegida</td>
-                                        <td style={tbl.td}>
-                                            <div style={{ display: 'grid', gap: '4px' }}>
-                                                <div><strong>NOMBRE:</strong> {analysis.anpNombre || '—'}</div>
-                                                <div><strong>TIPO_DECRETO:</strong> {analysis.anpTipoDecreto || '—'}</div>
-                                                <div><strong>CATEGORIA_PROTECCION:</strong> {analysis.anpCategoria || '—'}</div>
-                                                <div><strong>FECHA_DECRETO:</strong> {analysis.anpFechaDecreto ? String(analysis.anpFechaDecreto) : '—'}</div>
-                                                <div><strong>SUP_DECRETADA:</strong> {(analysis.anpSupDecretada ?? '—')}</div>
-                                            </div>
-                                        </td>
-                                    </tr>
+
+                                {/* TARJETA SECUNDARIA ANP (Si tiene zonificación interna) */}
+                                {analysis.hasInternalAnpZoning && analysis.anpInternalFeature && (
+                                    <>
+                                        <tr style={{ background: '#fdf4ff' }}>
+                                            <td colSpan="2" style={{ ...tbl.td, border: S.hair, fontWeight: 800, color: C.anp, textAlign: 'center' }}>
+                                                DETALLE ÁREA NATURAL PROTEGIDA
+                                            </td>
+                                        </tr>
+                                        <tr style={{ background: tbl.zebra(3) }}>
+                                            <td style={tbl.tdLabel}>Nombre ANP</td>
+                                            <td style={tbl.td}>
+                                                <strong>{analysis.anpInternalFeature.properties?.NOMBRE || analysis.anpNombre || '—'}</strong>
+                                            </td>
+                                        </tr>
+                                        <tr style={{ background: tbl.zebra(4) }}>
+                                            <td style={tbl.tdLabel}>Categoría</td>
+                                            <td style={tbl.td}>{analysis.anpInternalFeature.properties?.CATEGORIA_PROTECCION || analysis.anpCategoria || '—'}</td>
+                                        </tr>
+                                        <tr style={{ background: tbl.zebra(5) }}>
+                                            <td style={tbl.tdLabel}>Tipo Decreto</td>
+                                            <td style={tbl.td}>{analysis.anpInternalFeature.properties?.TIPO_DECRETO || analysis.anpTipoDecreto || '—'}</td>
+                                        </tr>
+                                        <tr style={{ background: tbl.zebra(6) }}>
+                                            <td style={tbl.tdLabel}>Superficie</td>
+                                            <td style={tbl.td}>{analysis.anpInternalFeature.properties?.SUP_DECRETADA || analysis.anpSupDecretada || '—'}</td>
+                                        </tr>
+                                        <tr style={{ background: tbl.zebra(7) }}>
+                                            <td style={tbl.tdLabel}>Fecha Decreto</td>
+                                            <td style={tbl.td}>{analysis.anpInternalFeature.properties?.FECHA_DECRETO ? new Date(analysis.anpInternalFeature.properties.FECHA_DECRETO).toLocaleDateString() : (analysis.anpFechaDecreto ? new Date(analysis.anpFechaDecreto).toLocaleDateString() : '—')}</td>
+                                        </tr>
+                                    </>
                                 )}
                                 <tr style={{ background: tbl.zebra(3) }}>
                                     <td style={tbl.tdLabel}>Base de referencia</td>

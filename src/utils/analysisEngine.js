@@ -36,7 +36,7 @@
 
         // Alcaldía
         const alc = findFeature(c, dataCache.alcaldias);
-        r.alcaldia = alc ? (alc.properties.NOMBRE || alc.properties.NOMGEO) : "CDMX";
+        r.alcaldia = alc ? alc.properties.NOMBRE : "CDMX";
 
         // ---------------------------------------------------
         // 2. Determinar STATUS: URBAN vs CONSERVATION
@@ -75,27 +75,45 @@
         }
 
         // ---------------------------------------------------
-        // 4. Zonificación PGOEDF (SOLO si es Suelo de Conservación)
+        // 4. Zonificación PGOEDF (JERARQUÍA ESTRICTA)
         // ---------------------------------------------------
-        if (r.status === 'CONSERVATION_SOIL' && dataCache.zoning?.features?.length) {
-            const z = findFeature(c, dataCache.zoning); // PGOEDF
+        if (r.status === 'CONSERVATION_SOIL') {
+            const z = dataCache.zoning?.features?.length ? findFeature(c, dataCache.zoning) : null;
 
-            if (z) {
+            // CASO A: Punto dentro de Suelo de Conservación y con ANP encima
+            if (r.isANP) {
+                r.zoningName = "ÁREA NATURAL PROTEGIDA";
+                r.zoningKey = "ANP"; // Clave especial para manejo de actividades
+            }
+            // CASO C: Punto intersecta un polígono PGOEDF válido
+            else if (z) {
+                // Usa el campo CLAVE para determinar la zonificación
                 r.zoningKey = (z.properties.CLAVE || '').toString().trim().toUpperCase();
-                r.zoningName = z.properties.PGOEDF || z.properties.UGA || r.zoningKey;
+                r.zoningName = r.zoningKey; // El nombre ES la clave
+            }
+            // CASO B: Punto dentro de SC pero en "hueco" (NO intersecta polígono PGOEDF)
+            else {
+                r.zoningName = "Información no disponible";
+                r.zoningKey = "NODATA";
+            }
 
-                // 4.1 Cruzar con CSV de actividades
-                if (dataCache.rules?.length) {
-                    const all = [];
-                    const pro = [];
+            // ---------------------------------------------------
+            // 4.1 Cruzar con CSV de actividades
+            // ---------------------------------------------------
+            if (dataCache.rules?.length) {
+                const all = [];
+                const pro = [];
+                const zn = (r.zoningName || '').toString().toUpperCase();
+                r.isPDU = zn.includes('PDU') || zn.includes('POBLAD'); // Detección legacy por si acaso
 
-                    // Filtro especial: PDU o Poblados -> no mostrar catálogo
-                    const zn = (r.zoningName || '').toString().toUpperCase();
-                    r.isPDU = zn.includes('PDU') || zn.includes('POBLAD');
-
+                // Si es ANP o NODATA o PDU, no mostrar catálogo
+                if (r.zoningKey === 'ANP' || r.zoningKey === 'NODATA' || r.isPDU) {
+                    r.noActivitiesCatalog = true;
+                } else {
+                    // Validar si la columna existe
                     const hasColumn = Object.prototype.hasOwnProperty.call(dataCache.rules[0], r.zoningKey);
 
-                    if (!hasColumn || r.isPDU) {
+                    if (!hasColumn) {
                         r.noActivitiesCatalog = true;
                     } else {
                         dataCache.rules.forEach(row => {
@@ -113,39 +131,24 @@
                         r.prohibitedActivities = pro;
                     }
                 }
-            } else {
-                // ✅ Fallback: Si no hay polígono PGOEDF (porque se recortó), pero es ANP:
-                if (r.isANP) {
-                    r.zoningName = r.anpNombre || "Área Natural Protegida";
-                    r.zoningKey = "ANP";
-                } else {
-                    r.zoningName = "Sin zonificación PGOEDF detectada";
-                    r.zoningKey = "SC";
-                }
-                r.noActivitiesCatalog = true;
             }
         } else if (r.status === 'URBAN_SOIL') {
-            // Si es urbano, no aplicamos PGOEDF (catálogo SC)
             r.noActivitiesCatalog = true;
+            r.zoningName = "Suelo Urbano"; // Valor por defecto para SU
         }
 
         // ---------------------------------------------------
-        // 5. Zonificación Interna ANP (Si aplica)
+        // 5. Zonificación Interna ANP (Caso Especial)
         // ---------------------------------------------------
+        // Si cae dentro de un ANP que cuenta con archivo de zonificación interna
         if (r.isANP && r.anpId && dataCache.anpInternal?.features?.length) {
-            // Buscar si cae en algún polígono interno
             const zInt = findFeature(c, dataCache.anpInternal);
             if (zInt) {
-                // Si encontramos zonificación interna, la guardamos para mostrarla
                 r.anpInternalFeature = zInt;
                 r.anpZoningData = { ...zInt.properties };
-                // Aquí indicamos que EXISTE zonificación específica
                 r.hasInternalAnpZoning = true;
-
-                // ✅ OVERWRITE UI fields
-                if (zInt.properties?.ZONIFICACION) {
-                    r.zoningName = zInt.properties.ZONIFICACION;
-                }
+                // NOTA: No sobrescribimos r.zoningName porque el Caso A ("ÁREA NATURAL PROTEGIDA") tiene prioridad en ese campo.
+                // Esta información se mostrará en una tarjeta adicional.
             }
         }
 
