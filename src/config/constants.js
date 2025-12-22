@@ -12,20 +12,17 @@ window.App.Constants.ZONING_CAT_INFO = {
     FCE: { color: '#C77DFF', label: 'Forestal Conservación Esp. (FCE)' },
     FC: { color: '#FF85D6', label: 'Forestal Conservación (FC)' },
     RE: { color: '#166534', label: 'Rescate Ecológico (RE)' },
-    PE: { color: '#14532d', label: 'Preservación Ecológica (PE)' },
-    PRA: { color: '#facc15', label: 'Producción Rural Agroindustrial (PRA)' },
-    ERA: { color: '#ca8a04', label: 'Equipamiento Rural y Agroind. (ERA)' },
-    E: { color: '#9ca3af', label: 'Equipamiento (E)' },
+    // Removed non-existent categories: PE, PRA, ERA, E
     PDU_PP: { color: '#fb923c', label: 'Programas Parciales (PP)' },
     PDU_PR: { color: '#8d6e63', label: 'Poblados Rurales (PR)' },
     PDU_ZU: { color: '#64748b', label: 'Zona Urbana (ZU)' },
+    PDU_ER: { color: '#dc2626', label: 'Equipamiento Rural (ER)' },
     ANP_ZON: { color: '#8b5cf6', label: 'Zonificación ANP (interna)' }
 };
 
 window.App.Constants.ZONING_ORDER = [
     'FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE',
-    'RE', 'PE', 'PRA', 'ERA', 'E',
-    'PDU_PP', 'PDU_PR', 'PDU_ZU'
+    'PDU_PP', 'PDU_PR', 'PDU_ZU', 'PDU_ER'
 ];
 
 window.App.Constants.LAYER_STYLES = {

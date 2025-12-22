@@ -305,6 +305,8 @@ const MapViewer = ({
                         k = 'PDU_PR'; // Poblados Rurales
                     } else if (desc.includes('urbana') || desc.includes('urbano') || desc.includes('barrio')) {
                         k = 'PDU_ZU'; // Zona Urbana / Centro de Barrio
+                    } else if (desc.includes('equipamiento')) {
+                        k = 'PDU_ER'; // Equipamiento Rural
                     }
                 }
 

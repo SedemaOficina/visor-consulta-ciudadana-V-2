@@ -99,6 +99,8 @@
                         k = 'PDU_PR';
                     } else if (desc.includes('urbana') || desc.includes('urbano') || desc.includes('barrio')) {
                         k = 'PDU_ZU';
+                    } else if (desc.includes('equipamiento')) {
+                        k = 'PDU_ER';
                     }
                 }
 

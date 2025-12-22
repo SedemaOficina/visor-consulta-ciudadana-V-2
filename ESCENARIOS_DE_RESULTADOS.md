@@ -35,9 +35,14 @@ Si el punto está en SC pero no intersecta ningún polígono de la capa de Zonif
 
 ### Caso C: SC + PGOEDF Válido
 Si el punto está en SC, NO es ANP, e intersecta un polígono PGOEDF válido.
-- **Zonificación PGOEDF:** Muestra la **CLAVE** del polígono (ej. `RE`, `PI`).
-- **Color:** Determinado por la clave (ej. Verde para RE, Amarillo para PI).
-- **Actividades:** Despliega tabla de Permitidas y Prohibidas basándose en la `CLAVE`.
+- **Zonificación PGOEDF:** Muestra el **NOMBRE** descriptivo del campo `PGOEDF` (ej. "Rescate Ecológico", "Producción Rural Agroindustrial").
+- **Color:** Determinado por la clave interna.
+- **Actividades:** Despliega tabla de Permitidas y Prohibidas.
+
+> **Nota sobre PDU:** Si la clave original es `PDU`, el sistema analiza el nombre para asignar colores distintivos:
+> *   **Programas Parciales:** Color Naranja.
+> *   **Poblados Rurales:** Color Café/Marrón.
+> *   **Zona Urbana:** Color Gris.
 
 ## 4. Área Natural Protegida - Detalle Secundario
 
@@ -60,8 +65,8 @@ Si el punto cae dentro de una ANP que cuenta con capa de *zonificación interna*
 {
   "status": "URBAN_SOIL | CONSERVATION_SOIL | OUTSIDE_CDMX",
   "isANP": true/false,
-  "zoningKey": "ANP | NODATA | [CLAVE]",
-  "zoningName": "ÁREA NATURAL PROTEGIDA | Información no disponible | [CLAVE]",
+  "zoningKey": "ANP | NODATA | [CLAVE_INTERNA] (ej. RE, PDU_PR)",
+  "zoningName": "ÁREA NATURAL PROTEGIDA | Información no disponible | [NOMBRE DESCRIPTIVO]",
   "hasInternalAnpZoning": true/false
 }
 ```
