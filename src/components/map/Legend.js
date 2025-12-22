@@ -165,17 +165,52 @@ const Legend = ({
                     </div>
                 </div>
 
-                {/* 2. Zonificación PGOEDF */}
+                {/* 2. Zonificación PGOEDF y PDU */}
                 <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Zonificación PGOEDF 2000</div>
+                    {/* Header PGOEDF */}
+                    <div className="flex items-center justify-between mb-3 mt-4">
+                        <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                            Zonificación PGOEDF 2000
+                        </div>
                         <button onClick={toggleZoningGroup} className="text-[10px] text-[#9d2148] font-bold hover:underline">
                             {visibleMapLayers.zoning ? 'Ocultar todo' : 'Mostrar todo'}
                         </button>
                     </div>
 
                     <div className={`space-y-2 pl-1 transition-opacity duration-200 ${!visibleMapLayers.zoning ? 'opacity-50 pointer-events-none' : ''}`}>
-                        {ZONING_ORDER.map(cat => {
+                        {ZONING_ORDER.filter(cat => !cat.startsWith('PDU_')).map(cat => {
+                            const info = ZONING_CAT_INFO[cat];
+                            const isChecked = visibleZoningCats[cat] !== false;
+                            return (
+                                <div key={cat} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2.5">
+                                        <span
+                                            className="w-3 h-3 rounded shadow-sm shrink-0"
+                                            style={{ backgroundColor: info?.color || '#999' }}
+                                        />
+                                        <span className="text-[11px] text-gray-600 font-medium leading-tight">
+                                            {info?.label || cat}
+                                        </span>
+                                    </div>
+                                    <ToggleSwitch
+                                        checked={isChecked}
+                                        onChange={() => setVisibleZoningCats(prev => ({ ...prev, [cat]: !isChecked }))}
+                                        activeColor={info?.color || '#999'}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Header PDU */}
+                    <div className="flex items-center justify-between mb-3 mt-6 pt-4 border-t border-gray-100">
+                        <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                            Programas de Desarrollo Urbano
+                        </div>
+                    </div>
+
+                    <div className={`space-y-2 pl-1 transition-opacity duration-200 ${!visibleMapLayers.zoning ? 'opacity-50 pointer-events-none' : ''}`}>
+                        {ZONING_ORDER.filter(cat => cat.startsWith('PDU_')).map(cat => {
                             const info = ZONING_CAT_INFO[cat];
                             const isChecked = visibleZoningCats[cat] !== false;
                             return (
