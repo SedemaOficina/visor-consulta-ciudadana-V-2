@@ -100,7 +100,15 @@
         const isUrban = analysis.status === 'URBAN_SOIL';
         const isSC = analysis.status === 'CONSERVATION_SOIL';
         const isOutside = analysis.status === 'OUTSIDE_CDMX';
-        const outsideContextName = analysis.outsideContext || null;
+        let outsideContextName = analysis.outsideContext || null;
+        if (outsideContextName) {
+            // Normalize names
+            if (outsideContextName.toLowerCase().includes('edomex') || outsideContextName.toLowerCase().includes('méxico')) {
+                outsideContextName = 'Estado de México';
+            } else if (outsideContextName.toLowerCase().includes('morelos')) {
+                outsideContextName = 'Morelos';
+            }
+        }
         const isANP = analysis.isANP || analysis.zoningKey === 'ANP';
 
         const statusLabel =
@@ -412,7 +420,7 @@
                                 }}
                             >
                                 <div style={{ fontSize: `${T.small}px`, fontWeight: 800, marginBottom: '6px', color: C.ink }}>
-                                    Simbología de puntos y zonificación
+                                    {isOutside ? 'Resultado fuera del ámbito territorial' : 'Simbología de puntos y zonificación'}
                                 </div>
                                 <div style={{ display: 'grid', gap: '6px', marginBottom: '8px' }}>
                                     {isOutside && (
@@ -424,13 +432,20 @@
                                             {outsideContextName && (
                                                 <div style={{ display: 'flex', alignItems: 'flex-start', fontSize: `${T.small}px`, color: C.sub }}>
                                                     <span style={{ flexShrink: 0, width: '10px', height: '10px', borderRadius: 2, background: outsideContextName.includes('Morelos') ? C.morelos : C.edomex, marginRight: '6px', marginTop: '3px', border: '1px solid #9ca3af' }} />
-                                                    <span style={{ lineHeight: 1.3 }}>Estado: <strong>{outsideContextName}</strong></span>
+                                                    <span style={{ lineHeight: 1.3 }}><strong>{outsideContextName}</strong></span>
                                                 </div>
                                             )}
-                                            <div style={{ marginTop: '8px', fontSize: `${T.micro}px`, color: C.sub, textAlign: 'justify', lineHeight: 1.35 }}>
-                                                <p style={{ margin: '0 0 6px 0' }}>La ubicación consultada se encuentra fuera del ámbito territorial de la Ciudad de México.</p>
-                                                <p style={{ margin: '0 0 6px 0' }}>En consecuencia, el presente visor no puede emitir información normativa aplicable, ya que su alcance se limita a los instrumentos de planeación y regulación ambiental vigentes en la Ciudad de México.</p>
-                                                <p style={{ margin: 0 }}>Para información correspondiente a esta ubicación, se recomienda consultar a la autoridad ambiental o de ordenamiento territorial competente.</p>
+                                            <div style={{ marginTop: '10px', fontSize: `${T.micro}px`, color: C.sub, textAlign: 'justify', lineHeight: 1.4 }}>
+                                                <p style={{ margin: '0 0 8px 0', fontSize: `${T.small}px`, fontWeight: 700, color: C.ink }}>
+                                                    La ubicación consultada se encuentra fuera del ámbito territorial de la Ciudad de México.
+                                                </p>
+                                                <p style={{ margin: '0 0 8px 0' }}>
+                                                    En consecuencia, el presente visor no puede emitir información normativa aplicable, ya que su alcance se limita a los instrumentos de planeación y regulación ambiental vigentes en la Ciudad de México.
+                                                </p>
+                                                <div style={{ backgroundColor: '#fefff5', border: '1px solid #e5e7eb', padding: '8px', borderRadius: '4px', borderLeft: `3px solid ${C.warning}` }}>
+                                                    <div style={{ fontWeight: 700, marginBottom: '2px', color: C.ink }}>Recomendación:</div>
+                                                    Para información correspondiente a esta ubicación, se recomienda consultar a la autoridad ambiental o de ordenamiento territorial competente en la entidad federativa correspondiente.
+                                                </div>
                                             </div>
                                         </div>
                                     )}
