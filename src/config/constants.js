@@ -42,7 +42,7 @@ window.App.Constants.ZONING_CAT_INFO = {
     RE: { color: '#a16207', label: 'Rescate Ecológico (RE)' },          // Yellow 800
 
     // PDU y Otros (Estructurales - Colores Distintivos)
-    PDU_PP: { color: '#c084fc', label: 'Programas Parciales (PP)' },    // Purple 400
+    PDU_PP: { color: '#e11d48', label: 'Programas Parciales (PP)' },    // Rose 600 (Distinct from ANP Purple)
     PDU_PR: { color: '#d97706', label: 'Poblados Rurales (PR)' },       // Amber 600
     PDU_ZU: { color: '#94a3b8', label: 'Zona Urbana (ZU)' },            // Slate 400
     PDU_ER: { color: '#3b82f6', label: 'Equipamiento Rural (ER)' },     // Blue 500
