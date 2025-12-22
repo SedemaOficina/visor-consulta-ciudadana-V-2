@@ -9,9 +9,7 @@ El contenido se renderiza verticalmente en el orden listado para cada caso.
 ## 1. Fuera de CDMX (Sin Contexto)
 Se muestra cuando el punto cae fuera del límite político de la Ciudad de México y no intersecta con capas de contexto (Edomex/Morelos).
 
-*   **Header:** Badge (ninguno)
-*   **Aviso de Estado:** Tarjeta Roja ("Fuera de CDMX")
-    *   Icono: `XCircle`
+*   **Aviso:** Tarjeta Roja única ("Fuera de CDMX")
     *   Texto: "Este punto se encuentra en **otro estado**."
 *   **Botones:** Google Maps / Exportar PDF
 *   **Aviso Legal**
@@ -19,9 +17,7 @@ Se muestra cuando el punto cae fuera del límite político de la Ciudad de Méxi
 ## 2. Fuera de CDMX (Con Contexto)
 Se muestra cuando el punto cae en Estado de México o Morelos (si las capas de contexto están cargadas).
 
-*   **Header:** Badge (ninguno)
-*   **Aviso de Estado:** Tarjeta Roja ("Fuera de CDMX")
-    *   Icono: `XCircle`
+*   **Aviso:** Tarjeta Roja única ("Fuera de CDMX")
     *   Texto: "Este punto se encuentra en **Edo. Méx**" (o Morelos).
 *   **Botones:** Google Maps / Exportar PDF
 *   **Aviso Legal**

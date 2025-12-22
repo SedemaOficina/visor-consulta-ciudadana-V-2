@@ -270,47 +270,45 @@ const LocationSummary = ({ analysis, zoningDisplay }) => {
 
     const showZoningBlock = !isOutside && !isUrban;
 
+    // ✅ Case: Fuera de CDMX -> Solo caja roja sin wrapper blanco
+    if (isOutside) {
+        return (
+            <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-4 animate-pulse-subtle">
+                <div className="flex items-center gap-2 text-red-700 font-bold text-sm mb-1">
+                    <Icons.XCircle className="h-4 w-4" />
+                    <span>Fuera de CDMX</span>
+                </div>
+                <p className="text-xs text-red-600 leading-snug">
+                    Este punto se encuentra en <strong>{analysis.outsideContext || 'otro estado'}</strong>.
+                </p>
+            </div>
+        );
+    }
+
+    // ✅ Case: Dentro de CDMX (SC, SU, ANP) -> Wrapper blanco con detalles
     return (
         <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 mb-4 animate-slide-up">
             {/* Header con Badge */}
             <div className="flex items-center justify-between mb-3">
-                {!isOutside && (
-                    <span
-                        className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm"
-                        style={{
-                            backgroundColor: isSC ? COLORS.sc : isUrban ? COLORS.su : '#6b7280',
-                            color: '#ffffff'
-                        }}
-                    >
-                        {isSC ? 'Suelo de Conservación' : 'Suelo Urbano'}
-                    </span>
-                )}
-
-                {/* Mini KPIs visuales removidos a petición del usuario (Hacían ruido visual) */}
-                {/* !isOutside && !isUrban && ( ... ) */}
+                <span
+                    className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm"
+                    style={{
+                        backgroundColor: isSC ? COLORS.sc : isUrban ? COLORS.su : '#6b7280',
+                        color: '#ffffff'
+                    }}
+                >
+                    {isSC ? 'Suelo de Conservación' : 'Suelo Urbano'}
+                </span>
             </div>
 
             <StatusMessage analysis={analysis} />
 
-            {/* Warning Outside */}
-            {isOutside ? (
-                <div className="bg-red-50 border border-red-100 rounded-lg p-3 mb-2 animate-pulse-subtle">
-                    <div className="flex items-center gap-2 text-red-700 font-bold text-sm mb-1">
-                        <Icons.XCircle className="h-4 w-4" />
-                        <span>Fuera de CDMX</span>
-                    </div>
-                    <p className="text-xs text-red-600 leading-snug">
-                        Este punto se encuentra en <strong>{analysis.outsideContext || 'otro estado'}</strong>.
-                    </p>
+            <div className="mb-4">
+                <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-0.5">Alcaldía</div>
+                <div className="text-lg font-bold text-gray-800 leading-tight">
+                    {analysis.alcaldia || 'Ciudad de México'}
                 </div>
-            ) : (
-                <div className="mb-4">
-                    <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-0.5">Alcaldía</div>
-                    <div className="text-lg font-bold text-gray-800 leading-tight">
-                        {analysis.alcaldia || 'Ciudad de México'}
-                    </div>
-                </div>
-            )}
+            </div>
 
             {/* Badge Zonificación */}
             {showZoningBlock && (
