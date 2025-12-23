@@ -12,14 +12,14 @@ const Legend = ({
     setVisibleMapLayers,
     visibleZoningCats,
     setVisibleZoningCats,
-    selectedAnpId
+    selectedAnpId,
+    isOpen,
+    setIsOpen
 }) => {
     // Access safely inside component
     const Icons = getIcons();
     const ToggleSwitch = getToggleSwitch();
     const { ZONING_CAT_INFO, ZONING_ORDER, LAYER_STYLES } = getConstants();
-
-    const [collapsed, setCollapsed] = useState(false);
 
     // Fallback styles if Constants not loaded
     const styles = LAYER_STYLES || {
@@ -46,22 +46,10 @@ const Legend = ({
         }));
     };
 
-    if (collapsed) {
-        return (
-            <div className="absolute bottom-6 right-4 z-[1000]">
-                <button
-                    onClick={() => setCollapsed(false)}
-                    className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-50 border border-gray-200 transition-all"
-                    title="Mostrar Leyenda"
-                >
-                    {Icons.Layers ? <Icons.Layers className="h-5 w-5 text-gray-700" /> : <span>L</span>}
-                </button>
-            </div>
-        );
-    }
+    if (!isOpen) return null;
 
     return (
-        <div className="absolute bottom-20 right-4 z-[1000] w-64 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 flex flex-col max-h-[60vh] transition-all">
+        <div className="absolute bottom-24 right-4 z-[1000] w-64 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 flex flex-col max-h-[50vh] transition-all animate-slide-up">
             {/* Header */}
             <div className="flex items-center justify-between p-3 border-b border-gray-100 bg-white/50 rounded-t-lg">
                 <div className="flex items-center gap-2">
@@ -69,7 +57,7 @@ const Legend = ({
                     <span className="font-bold text-gray-800 text-xs uppercase tracking-wide">Capas y Zonificación</span>
                 </div>
                 <button
-                    onClick={() => setCollapsed(true)}
+                    onClick={() => setIsOpen(false)}
                     className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                     title="Ocultar leyenda"
                 >
