@@ -491,6 +491,11 @@ const App = () => {
 
       // Pre-flight Check
       const checkIntegrity = () => {
+        console.log("DEBUG: Checking Integrity...");
+        console.log("DEBUG: window.App state:", window.App);
+        console.log("DEBUG: window.App?.Constants:", window.App?.Constants);
+        console.log("DEBUG: window.App?.Utils:", window.App?.Utils);
+
         const missing = [];
         if (!window.App?.Constants?.DATA_FILES) missing.push("config/constants.js");
         if (!window.App?.Utils?.getBaseLayerUrl) missing.push("utils/geoUtils.js");
