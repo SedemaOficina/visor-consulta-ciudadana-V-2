@@ -1,206 +1,202 @@
-// REMOVED unsafe top-level destructuring.
-// Constants are now accessed lazily inside the component.
+const { useState, useEffect } = window.React;
 
-const Icons = window.App.Components.Icons;
-const ToggleSwitch = window.App.Components.ToggleSwitch;
+/**
+ * Safe Lazy Access Helpers
+ */
+const getIcons = () => window.App?.Components?.Icons || new Proxy({}, { get: () => () => null });
+const getToggleSwitch = () => window.App?.Components?.ToggleSwitch || (() => null);
+const getConstants = () => window.App?.Constants || {};
 
 const Legend = ({
     visibleMapLayers,
-    toggleLayer,
-    isOpen,
-    setIsOpen,
+    setVisibleMapLayers,
     visibleZoningCats,
-    toggleZoningGroup,
     setVisibleZoningCats,
-
-    activeBaseLayer,
-    setActiveBaseLayer,
-    selectedAnpId,
-    anpName,
-    anpGeneralVisible
+    selectedAnpId
 }) => {
-    // Safe Lazy Access
-    const { LAYER_STYLES, ZONING_CAT_INFO, ZONING_ORDER } = window.App?.Constants || {};
+    // Access safely inside component
+    const Icons = getIcons();
+    const ToggleSwitch = getToggleSwitch();
+    const { ZONING_CAT_INFO, ZONING_ORDER, LAYER_STYLES } = getConstants();
 
-    // Safety check just in case
-    if (!LAYER_STYLES || !ZONING_CAT_INFO || !ZONING_ORDER) return null;
-    if (!isOpen) return null; // ✅ Legend logic moved to MapControls
+    const [collapsed, setCollapsed] = useState(false);
+
+    // Fallback styles if Constants not loaded
+    const styles = LAYER_STYLES || {
+        sc: { color: '#3B7D23' },
+        anp: { color: '#a855f7' },
+        edomex: { color: '#64748b' },
+        morelos: { color: '#64748b' }
+    };
+
+    const toggleZoningCat = (catId) => {
+        setVisibleZoningCats(prev => ({
+            ...prev,
+            [catId]: !prev[catId]
+        }));
+    };
+
+    const handleToggleLayer = (layerKey) => {
+        // Prevent toggling locked layers if UI somehow exposes them
+        if (layerKey === 'edomex' || layerKey === 'morelos') return;
+
+        setVisibleMapLayers(prev => ({
+            ...prev,
+            [layerKey]: !prev[layerKey]
+        }));
+    };
+
+    if (collapsed) {
+        return (
+            <div className="absolute bottom-6 right-4 z-[1000]">
+                <button
+                    onClick={() => setCollapsed(false)}
+                    className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-50 border border-gray-200 transition-all"
+                    title="Mostrar Leyenda"
+                >
+                    {Icons.Layers ? <Icons.Layers className="h-5 w-5 text-gray-700" /> : <span>L</span>}
+                </button>
+            </div>
+        );
+    }
 
     return (
-        <div className="fixed top-20 md:top-24 right-16 z-[2000] w-64 max-h-[60vh] md:max-h-[500px] glass-panel rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 flex flex-col border border-gray-100/50">
+        <div className="absolute bottom-20 right-4 z-[1000] w-64 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 flex flex-col max-h-[60vh] transition-all">
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/20 bg-[#9d2148]/90 backdrop-blur-md rounded-t-xl shrink-0">
-                <h3 className="font-bold text-white text-xs flex items-center gap-2">
-                    <Icons.Layers className="h-3.5 w-3.5 text-white" />
-                    Capas y Simbología
-                </h3>
+            <div className="flex items-center justify-between p-3 border-b border-gray-100 bg-white/50 rounded-t-lg">
+                <div className="flex items-center gap-2">
+                    {Icons.Map ? <Icons.Map className="h-4 w-4 text-[#9d2148]" /> : <span>M</span>}
+                    <span className="font-bold text-gray-800 text-xs uppercase tracking-wide">Capas y Zonificación</span>
+                </div>
                 <button
-                    onClick={() => setIsOpen(false)}
-                    className="p-1 hover:bg-white/20 rounded-full transition-colors text-white"
-                    aria-label="Cerrar panel de capas"
+                    onClick={() => setCollapsed(true)}
+                    className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                    title="Ocultar leyenda"
                 >
-                    <Icons.X className="h-3.5 w-3.5" />
+                    {Icons.ChevronDown ? <Icons.ChevronDown className="h-4 w-4 text-gray-500" /> : <span>-</span>}
                 </button>
             </div>
 
-            {/* Content Scrollable - Compacto */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-3 bg-white/90 space-y-4">
+            {/* Content with Scroll */}
+            <div className="overflow-y-auto p-3 space-y-4 custom-scrollbar">
 
-                {/* 0. Mapa Base */}
-                <div>
-                    <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 px-1">Mapa Base</div>
-                    <div className="flex bg-gray-100 p-0.5 rounded-lg gap-0.5 border border-gray-100">
-                        {[
-                            { id: 'STREETS', label: 'Calles' },
-                            { id: 'SATELLITE', label: 'Satélite' },
-                            { id: 'TOPO', label: 'Topográfico' }
-                        ].map(opt => {
-                            const isActive = activeBaseLayer === opt.id;
-                            return (
-                                <button
-                                    key={opt.id}
-                                    onClick={() => setActiveBaseLayer(opt.id)}
-                                    className={`
-                    flex-1 py-1 px-1 rounded-md text-[9px] font-bold transition-all duration-200
-                    ${isActive
-                                            ? 'bg-white text-[#9d2148] shadow-sm ring-1 ring-[#9d2148]/10'
-                                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                                        }
-                  `}
-                                >
-                                    {opt.label}
-                                </button>
-                            );
-                        })}
+                {/* ESTRUCTURA URBANA (Capas Base) */}
+                <div className="space-y-2">
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Estructura</h4>
+
+                    {/* SC Toggle */}
+                    <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-2">
+                            <span
+                                className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
+                                style={{ backgroundColor: styles.sc?.color }}
+                            />
+                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900">
+                                Suelo de Conservación
+                            </span>
+                        </div>
+                        <ToggleSwitch
+                            checked={!!visibleMapLayers.sc}
+                            onChange={() => handleToggleLayer('sc')}
+                            size="sm"
+                        />
+                    </div>
+
+                    {/* ANP Toggle */}
+                    <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-2">
+                            <span
+                                className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
+                                style={{ backgroundColor: styles.anp?.color }}
+                            />
+                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900">
+                                Áreas Naturales Protegidas
+                            </span>
+                        </div>
+                        <ToggleSwitch
+                            checked={!!visibleMapLayers.anp}
+                            onChange={() => handleToggleLayer('anp')}
+                            size="sm"
+                        />
                     </div>
                 </div>
 
-                {/* 1. Contexto - CON SIMBOLOGÍA */}
-                <div>
-                    <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Contexto y Límites</div>
-                    <div className="space-y-2">
+                {/* ZONIFICACIÓN */}
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between mb-1">
+                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Zonificación CDMX</h4>
+                        <ToggleSwitch
+                            checked={!!visibleMapLayers.zoning}
+                            onChange={() => handleToggleLayer('zoning')}
+                            size="sm"
+                        />
+                    </div>
 
-                        {/* Capa Alcaldías, Edomex y Morelos visibles pero no toggleables a petición */}
+                    {/* Lista de Categorías de Zonificación */}
+                    {visibleMapLayers.zoning && ZONING_ORDER && ZONING_CAT_INFO && (
+                        <div className="pl-1 space-y-1.5 border-l-2 border-gray-100 ml-1">
+                            {ZONING_ORDER.map(catKey => {
+                                const info = ZONING_CAT_INFO[catKey];
+                                if (!info) return null;
+                                const isVisible = visibleZoningCats[catKey] !== false;
 
-                        <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
+                                return (
+                                    <div
+                                        key={catKey}
+                                        className={`flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-gray-50 transition-colors ${!isVisible ? 'opacity-50 grayscale' : ''}`}
+                                        onClick={() => toggleZoningCat(catKey)}
+                                    >
+                                        <div
+                                            className="w-2.5 h-2.5 rounded-sm shadow-sm flex-shrink-0"
+                                            style={{ backgroundColor: info.color }}
+                                        />
+                                        <div className="flex flex-col leading-none">
+                                            <span className="text-[10px] font-semibold text-gray-700">{info.label}</span>
+                                            <span className="text-[9px] text-gray-500">{info.desc}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* ANP SELECTED ZONING (Dynamic Info) */}
+                {selectedAnpId && (
+                    <div className="pt-2 border-t border-gray-100 mt-2">
+                        <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <div className="w-3.5 h-3.5 rounded shadow-sm opacity-80" style={{ backgroundColor: LAYER_STYLES.sc.color }} />
-                                <span className="text-[11px] text-gray-700 font-medium group-hover:text-gray-900">Suelo de Conservación</span>
+                                {Icons.Info ? <Icons.Info className="h-3 w-3 text-blue-500" /> : <span>i</span>}
+                                <span className="text-[10px] font-semibold text-blue-700">Zonificación Interna ANP</span>
                             </div>
                             <ToggleSwitch
-                                checked={visibleMapLayers.sc}
-                                onChange={() => toggleLayer('sc')}
-                                activeColor="#9d2148"
+                                checked={!!visibleMapLayers.selectedAnpZoning}
+                                onChange={() => handleToggleLayer('selectedAnpZoning')}
+                                size="sm"
                             />
-                        </label>
-
-                        {/* Capas Edomex y Morelos ocultas en leyenda a petición (pero existen en mapa) */}
-
-                        <div className="pt-2 border-t border-gray-100">
-                            <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-3.5 h-3.5 rounded bg-[#a855f7] border border-white shadow-sm" />
-                                    <span className="text-[11px] text-gray-800 font-bold">Áreas Naturales Protegidas</span>
-                                </div>
-                                <ToggleSwitch
-                                    checked={visibleMapLayers.anp}
-                                    onChange={() => toggleLayer('anp')}
-                                    activeColor="#9d2148"
-                                    title={selectedAnpId && anpName ? `ANP: ${anpName}` : "Activar/Desactivar capa ANP"}
-                                />
-                            </label>
-                        </div>
-
-                        <div className={`transition-opacity ${!selectedAnpId ? 'opacity-40 pointer-events-none' : ''}`}>
-                            <label className="flex items-center justify-between group cursor-pointer hover:bg-gray-50/50 p-1 rounded-lg transition-colors">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-3.5 h-3.5 rounded border border-purple-500 bg-purple-100 shadow-sm" />
-                                    <span className="text-[11px] text-purple-900 font-bold">Zonificación Interna ANP</span>
-                                </div>
-                                <ToggleSwitch
-                                    checked={visibleMapLayers.selectedAnpZoning}
-                                    onChange={() => {
-                                        if (!selectedAnpId) return;
-                                        if (anpGeneralVisible) {
-                                            alert("Desactiva la capa 'Áreas Naturales Protegidas' para ver el detalle interno.");
-                                            return;
-                                        }
-                                        toggleLayer('selectedAnpZoning');
-                                    }}
-                                    activeColor="#9d2148"
-                                />
-                            </label>
                         </div>
                     </div>
-                </div>
+                )}
 
-                {/* 2. Zonificación PGOEDF y PDU */}
-                <div>
-                    {/* Header PGOEDF */}
-                    <div className="flex items-center justify-between mb-3 mt-4">
-                        <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                            Zonificación PGOEDF 2000
+
+                {/* CONTEXTO REGIONAL (Locked/Info only) */}
+                <div className="pt-3 border-t border-gray-100 mt-2">
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Contexto Regional</h4>
+                    <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                            <span
+                                className="w-2 h-2 rounded-full opacity-50"
+                                style={{ backgroundColor: styles.edomex?.color || '#999' }}
+                            ></span>
+                            <span className="text-[10px] text-gray-500 font-medium">Estado de México</span>
                         </div>
-                        <button onClick={toggleZoningGroup} className="text-[10px] text-[#9d2148] font-bold hover:underline">
-                            {visibleMapLayers.zoning ? 'Ocultar todo' : 'Mostrar todo'}
-                        </button>
-                    </div>
-
-                    <div className={`space-y-2 pl-1 transition-opacity duration-200 ${!visibleMapLayers.zoning ? 'opacity-50 pointer-events-none' : ''}`}>
-                        {ZONING_ORDER.filter(cat => !cat.startsWith('PDU_')).map(cat => {
-                            const info = ZONING_CAT_INFO[cat];
-                            const isChecked = visibleZoningCats[cat] !== false;
-                            return (
-                                <div key={cat} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2.5">
-                                        <span
-                                            className="w-3 h-3 rounded shadow-sm shrink-0"
-                                            style={{ backgroundColor: info?.color || '#999' }}
-                                        />
-                                        <span className="text-[11px] text-gray-600 font-medium leading-tight">
-                                            {info?.label || cat}
-                                        </span>
-                                    </div>
-                                    <ToggleSwitch
-                                        checked={isChecked}
-                                        onChange={() => setVisibleZoningCats(prev => ({ ...prev, [cat]: !isChecked }))}
-                                        activeColor="#9d2148"
-                                    />
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Header PDU */}
-                    <div className="flex items-center justify-between mb-3 mt-6 pt-4 border-t border-gray-100">
-                        <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                            Programas de Desarrollo Urbano
+                        <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                            <span
+                                className="w-2 h-2 rounded-full opacity-50"
+                                style={{ backgroundColor: styles.morelos?.color || '#999' }}
+                            ></span>
+                            <span className="text-[10px] text-gray-500 font-medium">Morelos</span>
                         </div>
-                    </div>
-
-                    <div className={`space-y-2 pl-1 transition-opacity duration-200 ${!visibleMapLayers.zoning ? 'opacity-50 pointer-events-none' : ''}`}>
-                        {ZONING_ORDER.filter(cat => cat.startsWith('PDU_')).map(cat => {
-                            const info = ZONING_CAT_INFO[cat];
-                            const isChecked = visibleZoningCats[cat] !== false;
-                            return (
-                                <div key={cat} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2.5">
-                                        <span
-                                            className="w-3 h-3 rounded shadow-sm shrink-0"
-                                            style={{ backgroundColor: info?.color || '#999' }}
-                                        />
-                                        <span className="text-[11px] text-gray-600 font-medium leading-tight">
-                                            {info?.label || cat}
-                                        </span>
-                                    </div>
-                                    <ToggleSwitch
-                                        checked={isChecked}
-                                        onChange={() => setVisibleZoningCats(prev => ({ ...prev, [cat]: !isChecked }))}
-                                        activeColor="#9d2148"
-                                    />
-                                </div>
-                            );
-                        })}
                     </div>
                 </div>
 
