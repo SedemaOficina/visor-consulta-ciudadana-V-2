@@ -11,7 +11,7 @@ Se muestra cuando el punto cae fuera del límite político de la Ciudad de Méxi
 
 *   **Aviso:** Tarjeta Roja única ("Fuera de CDMX")
     *   Texto: "Este punto se encuentra en **otro estado**."
-*   **Botones:** Google Maps / Exportar PDF
+*   **Botones:** Google Maps / Exportar PDF (Formato Oficio)
 *   **Aviso Legal**
 
 ## 2. Fuera de CDMX (Con Contexto)
