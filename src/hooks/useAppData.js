@@ -34,15 +34,10 @@
             PDU_PR: { color: '#d97706', label: 'Poblados Rurales' },
             PDU_ZU: { color: '#94a3b8', label: 'Zona Urbana' },
             PDU_ER: { color: '#3b82f6', label: 'Equipamiento Rural' },
-            ANP_ZON: { color: '#7e22ce', label: 'Zonificación ANP (interna)' },
-            // Missing PGOEDF Categories
-            RE: { color: '#10b981', label: 'Rescate Ecológico' },
-            PRA: { color: '#f59e0b', label: 'Producción Rural Agroindustrial' },
-            PE: { color: '#0ea5e9', label: 'Preservación Ecológica' }
+            ANP_ZON: { color: '#7e22ce', label: 'Zonificación ANP (interna)' }
         },
         ZONING_ORDER: [
             'FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE',
-            'RE', 'PRA', 'PE',
             'PDU_PP', 'PDU_PR', 'PDU_ZU', 'PDU_ER'
         ],
         LAYER_STYLES: {

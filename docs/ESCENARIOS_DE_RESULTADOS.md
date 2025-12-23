@@ -92,6 +92,9 @@ Se ha rediseñado la paleta para reducir el ruido visual y garantizar accesibili
 **Causa:** Inconsistencia en la carga de constantes (frecuente tras actualizaciones).
 **Estado:** **Corregido** en la versión 2.2 con validaciones de seguridad (null-checks) en `ResultsContent.js` y `analysisEngine.js`.
 
-### Error: Datos de PDF incompletos
-**Causa:** Anteriormente se limitaba a 25 actividades.
-**Estado:** **Corregido**. El sistema ahora exporta el catálogo completo de actividades sin truncamiento.
+### Error: Datos de PDF incompletos o Mapa en Blanco
+**Causa:** Fallo en la generación de imagen del mapa (leaflet-image) por timeouts o carga de tiles.
+**Estado:** **Corregido** (v2.3). Se implementó estrategia híbrida:
+1.  **Mapbox Static API (Prioridad):** Genera una imagen de alta resolución desde el servidor.
+2.  **Fallback Robusto:** Si falla Static, usa renderizado local con protección contra crashes.
+3.  **Diseño:** Se actualizó el formato a estilo "Oficio" institucional.
