@@ -46,10 +46,8 @@ const Legend = ({
         }));
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="absolute bottom-24 right-4 z-[1000] w-64 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 flex flex-col max-h-[50vh] transition-all animate-slide-up">
+        <div className="absolute top-24 right-16 z-[1000] w-64 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 flex flex-col max-h-[70vh] transition-all animate-slide-left">
             {/* Header */}
             <div className="flex items-center justify-between p-3 border-b border-gray-100 bg-white/50 rounded-t-lg">
                 <div className="flex items-center gap-2">
@@ -67,6 +65,31 @@ const Legend = ({
 
             {/* Content with Scroll */}
             <div className="overflow-y-auto p-3 space-y-4 custom-scrollbar">
+
+                {/* MAPA BASE (New Section) */}
+                <div className="space-y-2">
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Mapa Base</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                        <button
+                            onClick={() => setActiveBaseLayer && setActiveBaseLayer('SATELLITE')}
+                            className={`px-2 py-1.5 rounded-md text-[10px] font-semibold border transition-all ${activeBaseLayer === 'SATELLITE'
+                                ? 'bg-[#9d2148] text-white border-[#9d2148]'
+                                : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+                        >
+                            Satélite
+                        </button>
+                        <button
+                            onClick={() => setActiveBaseLayer && setActiveBaseLayer('STREETS')}
+                            className={`px-2 py-1.5 rounded-md text-[10px] font-semibold border transition-all ${activeBaseLayer === 'STREETS'
+                                ? 'bg-[#9d2148] text-white border-[#9d2148]'
+                                : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+                        >
+                            Callejero
+                        </button>
+                    </div>
+                </div>
+
+                <hr className="border-gray-100" />
 
                 {/* ESTRUCTURA URBANA (Capas Base) */}
                 <div className="space-y-2">
