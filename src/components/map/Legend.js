@@ -1,8 +1,5 @@
-const {
-    LAYER_STYLES,
-    ZONING_CAT_INFO,
-    ZONING_ORDER
-} = window.App.Constants;
+// REMOVED unsafe top-level destructuring.
+// Constants are now accessed lazily inside the component.
 
 const Icons = window.App.Components.Icons;
 const ToggleSwitch = window.App.Components.ToggleSwitch;
@@ -22,6 +19,11 @@ const Legend = ({
     anpName,
     anpGeneralVisible
 }) => {
+    // Safe Lazy Access
+    const { LAYER_STYLES, ZONING_CAT_INFO, ZONING_ORDER } = window.App?.Constants || {};
+
+    // Safety check just in case
+    if (!LAYER_STYLES || !ZONING_CAT_INFO || !ZONING_ORDER) return null;
     if (!isOpen) return null; // ✅ Legend logic moved to MapControls
 
     return (
