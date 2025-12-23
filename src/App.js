@@ -108,6 +108,7 @@ const mergeFeatureCollections = (collections) => {
 const loadExtraData = async () => {
   const fJ = async (u) => {
     try {
+      if (!u) return { type: "FeatureCollection", features: [] }; // Silent fail for undefined
       const res = await fetch(u, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status} ${u}`);
       return await res.json();
@@ -506,24 +507,42 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    loadCoreData()
-      .then(() => {
+    const initApp = async () => {
+      // ⏳ Polling: Esperar hasta 5s a que carguen las constantes
+      let attempts = 0;
+      while (!window.App?.Constants?.DATA_FILES && attempts < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        attempts++;
+      }
+
+      if (!window.App?.Constants?.DATA_FILES) {
+        console.error("Timeout: Constants.DATA_FILES never loaded.");
         setLoading(false);
+        return;
+      }
 
-        const params = new URLSearchParams(window.location.search);
-        const lat = parseFloat(params.get("lat"));
-        const lng = parseFloat(params.get("lng"));
-        const hasCoords = !isNaN(lat) && !isNaN(lng);
+      // Ahora seguro procedemos
+      loadCoreData()
+        .then(() => {
+          setLoading(false);
 
-        if (!hasCoords) setIsHelpOpen(true);
-        if (hasCoords) handleLocationSelect({ lat, lng });
+          const params = new URLSearchParams(window.location.search);
+          const lat = parseFloat(params.get("lat"));
+          const lng = parseFloat(params.get("lng"));
+          const hasCoords = !isNaN(lat) && !isNaN(lng);
 
-        loadExtraData().then(() => setExtraDataLoaded(true));
-      })
-      .catch(err => {
-        console.error("Error loading initial data:", err);
-        setLoading(false); // Stop loading spinner so user isn't stuck
-      });
+          if (!hasCoords) setIsHelpOpen(true);
+          if (hasCoords) handleLocationSelect({ lat, lng });
+
+          loadExtraData().then(() => setExtraDataLoaded(true));
+        })
+        .catch(err => {
+          console.error("Error loading initial data:", err);
+          setLoading(false);
+        });
+    };
+
+    initApp();
   }, []);
 
   useEffect(() => {
