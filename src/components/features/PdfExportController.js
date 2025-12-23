@@ -100,15 +100,8 @@
         const isUrban = analysis.status === 'URBAN_SOIL';
         const isSC = analysis.status === 'CONSERVATION_SOIL';
         const isOutside = analysis.status === 'OUTSIDE_CDMX';
-        let outsideContextName = analysis.outsideContext || null;
-        if (outsideContextName) {
-            // Normalize names
-            if (outsideContextName.toLowerCase().includes('edomex') || outsideContextName.toLowerCase().includes('méxico')) {
-                outsideContextName = 'Estado de México';
-            } else if (outsideContextName.toLowerCase().includes('morelos')) {
-                outsideContextName = 'Morelos';
-            }
-        }
+        // Logic normalization is handled by analysisEngine
+        const outsideContextName = analysis.outsideContext || null;
         const isANP = analysis.isANP || analysis.zoningKey === 'ANP';
 
         const statusLabel =
@@ -189,21 +182,20 @@
                 hair: '1px solid #e5e7eb'
             };
 
-            const COLORS = (window.App?.Constants?.COLORS) ? window.App.Constants.COLORS : {};
+            const COLORS = window.App?.Constants?.COLORS || {};
             const C = {
                 ink: COLORS.text || '#111827',
                 sub: COLORS.subtext || '#4b5563',
                 mute: '#9ca3af',
-                hair: '#e5e7eb',
+                hair: '#e5e7eb', // Keeping specific gray for tables
                 panel: '#f9fafb',
                 guinda: COLORS.primary || '#9d2148',
                 sc: COLORS.sc || '#3B7D23',
                 su: COLORS.su || '#3b82f6',
                 anp: COLORS.anp || '#7e22ce',
-                anp: COLORS.anp || '#7e22ce',
                 red: COLORS.error || '#b91c1c',
                 green: COLORS.success || '#15803d',
-                warning: '#f59e0b', // Amber 500
+                warning: COLORS.warning || '#f59e0b',
                 edomex: '#FFD86B',
                 morelos: '#B8A1FF'
             };

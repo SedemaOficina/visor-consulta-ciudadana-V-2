@@ -1,5 +1,5 @@
 const { useState } = window.React;
-const { ZONING_CAT_INFO, CONTACT_INFO } = window.App.Constants || {};
+const { ZONING_CAT_INFO, CONTACT_INFO, REGULATORY_NOTES } = window.App.Constants || {};
 const COLORS = (window.App?.Constants?.COLORS) ? window.App.Constants.COLORS : {};
 const { getZoningColor, getSectorStyle, getAnpZoningColor } = window.App.Utils;
 const Icons = window.App.Components.Icons;
@@ -346,16 +346,6 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
 
     // Calcular el display name unificado
     const zoningDisplay = getZoningDisplay(analysis);
-    // Hardcoded fallback to ensure notes always appear
-    const REGULATORY_NOTES = [
-        "Adicionalmente a lo dispuesto en la tabla de usos del suelo, para cualquier obra o actividad que se pretenda desarrollar se deberán contemplar los criterios y lineamientos señalados en el programa de Ordenamiento Ecológico, así como cumplir con los permisos y autorizaciones en materia ambiental del Distrito Federal.",
-        "Los usos del suelo no identificados en esta tabla deberán cumplir con los permisos y autorizaciones en materia urbana y ambiental aplicables en Suelo de Conservación.",
-        "En las Areas Naturales Protegidas ANP regirá la zonificación especificada en su respectivo Programa de Manejo.",
-        "La zonificación denominada PDU corresponde a las áreas normadas por los Programas Delegacionales o Parciales de Desarrollo Urbano vigentes.",
-        "Las disposiciones de la presente regulación no prejuzgan sobre la propiedad de la tierra.",
-        "El Suelo de Conservación definido por las barrancas estará regulado por la zonificación Forestal de Conservación FC, conforme a los límites establecidos por la Norma de Ordenación N° 21, señalada en los Programas de Desarrollo Urbano.",
-        "* Se instrumentará un programa de reconversión de esta actividad por la producción de composta. Para ello, se elaborará un padrón de los productores y diseñar y ejecutar un programa de capacitación y proponer paquetes tecnológicos para transferencia y el desarrollo de estudios de mercado para la sustitución progresiva del producto y la reducción de la extracción directa."
-    ];
 
     return (
         <div className="space-y-4 animate-in">
