@@ -1,15 +1,19 @@
 const { useState } = window.React;
-// REMOVED top-level destructuring to safe-guard against loading order.
-// Access happens inside components now.
 
-/* Helpers */
+/**
+ * Safe Lazy Access Helpers
+ */
+const getIcons = () => window.App?.Components?.Icons || {};
+const getColors = () => window.App?.Constants?.COLORS || {};
+const getUtils = () => window.App?.Utils || {};
+const getConstants = () => window.App?.Constants || {};
+
+/* Helper de Zonificación Display */
 const getZoningDisplay = (analysis) => {
-    // Si la clave es explicitamente ANP (fallback) mostramos eso, si no, mostramos el nombre real (ej. Forestal)
     if (analysis.zoningKey === 'ANP') return 'ÁREA NATURAL PROTEGIDA';
     if (analysis.zoningKey === 'NODATA') return 'Información no disponible';
 
-    // ✅ Prioritize Clean Label from Constants (if matches key)
-    const store = window.App?.Constants?.ZONING_CAT_INFO || {};
+    const store = getConstants().ZONING_CAT_INFO || {};
     const catInfo = store[analysis.zoningKey];
     if (catInfo && catInfo.label) return catInfo.label;
 
@@ -17,11 +21,11 @@ const getZoningDisplay = (analysis) => {
 };
 
 /* ------------------------------------------------ */
-/* SUB-COMPONENTES DE AYUDA */
+/* SUB-COMPONENTES */
 /* ------------------------------------------------ */
 
 const StatusMessage = ({ analysis }) => {
-    const { status, outsideContext, isANP, zoningKey } = analysis;
+    const { status, isANP, zoningKey } = analysis;
 
     if (status === 'OUTSIDE_CDMX') return null;
 
@@ -46,8 +50,8 @@ const StatusMessage = ({ analysis }) => {
 const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, accentColor }) => {
     if (!activities || activities.length === 0) return null;
 
-    const isProhibidas = (title || '').toUpperCase().includes('PROHIBIDAS');
-    const isPermitidas = (title || '').toUpperCase().includes('PERMITIDAS');
+    const Icons = getIcons(); // Safe access
+    const Utils = getUtils(); // Safe access
 
     const groups = {};
     activities.forEach(a => {
@@ -68,14 +72,12 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
                         </span>
                     </span>
                 </div>
-                <Icons.ChevronDown className="h-4 w-4 group-open:rotate-180 transition-transform" />
+                {Icons.ChevronDown && <Icons.ChevronDown className="h-4 w-4 group-open:rotate-180 transition-transform" />}
             </summary>
 
             <div className="px-3 py-2 bg-white border-t border-gray-100 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {Object.entries(groups).map(([sector, generals], i) => {
-                    const st = window.App.Utils.getSectorStyle(sector);
-                    // Use sector style always for consistency, or override for prohibited/allowed context
-                    // User feedback: "GroupedActivities UX is fine". We just needed to close internal details.
+                    const st = Utils.getSectorStyle ? Utils.getSectorStyle(sector) : { border: '#ccc', text: '#333' };
 
                     return (
                         <div key={i} className="mb-3 rounded overflow-hidden border border-gray-100">
@@ -104,7 +106,7 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
                                                 <span className="text-[9px] text-gray-400 bg-gray-100 px-1.5 rounded-full">
                                                     {specifics.length}
                                                 </span>
-                                                <Icons.ChevronDown className="h-3 w-3 text-gray-400 group-open/inner:rotate-180 transition-transform" />
+                                                {Icons.ChevronDown && <Icons.ChevronDown className="h-3 w-3 text-gray-400 group-open/inner:rotate-180 transition-transform" />}
                                             </div>
                                         </summary>
 
@@ -136,8 +138,8 @@ const LegalDisclaimer = () => (
 );
 
 const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
-    const COLORS = window.App?.Constants?.COLORS || {};
-    // Definimos estilo base y estados hover usando style para evitar problemas de purga
+    const COLORS = getColors();
+    const Icons = getIcons();
     const btnClass = "flex flex-col items-center justify-center p-2 bg-white border border-gray-200 rounded text-gray-600 transition-all hover:shadow-sm";
 
     return (
@@ -153,7 +155,7 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#4b5563'; }}
                 title="Ver ubicación en Google Maps"
             >
-                <Icons.MapIcon className="h-5 w-5 mb-1" />
+                {Icons.MapIcon && <Icons.MapIcon className="h-5 w-5 mb-1" />}
                 <span className="text-[9px] font-bold">Google Maps</span>
             </a>
 
@@ -167,25 +169,22 @@ const ActionButtonsDesktop = ({ analysis, onExportPDF }) => {
                 title="Generar ficha en PDF"
                 aria-label="Exportar resultados a PDF"
             >
-                <Icons.Pdf className="h-5 w-5 mb-1" />
+                {Icons.Pdf && <Icons.Pdf className="h-5 w-5 mb-1" />}
                 <span className="text-[9px] font-bold">Exportar PDF</span>
             </button>
         </div>
     );
 };
 
-/* ------------------------------------------------ */
-/* TARJETA: DATOS GENERALES ANP */
-/* ------------------------------------------------ */
 const AnpGeneralCard = ({ analysis }) => {
     if (!analysis || !analysis.isANP) return null;
-
+    const Icons = getIcons();
     const { anpNombre, anpCategoria, anpTipoDecreto, anpFechaDecreto, anpSupDecretada } = analysis;
 
     return (
         <div className="bg-purple-50 rounded-xl p-4 mb-4 animate-slide-up border border-purple-100">
             <div className="flex items-center gap-2 text-purple-800 font-bold text-sm mb-3 border-b border-purple-100 pb-2">
-                <Icons.Leaf className="h-4 w-4" />
+                {Icons.Leaf && <Icons.Leaf className="h-4 w-4" />}
                 <span>Datos Generales ANP</span>
             </div>
 
@@ -221,21 +220,17 @@ const AnpGeneralCard = ({ analysis }) => {
     );
 };
 
-/* ------------------------------------------------ */
-/* TARJETA SECUNDARIA: ZONIFICACIÓN INTERNA ANP */
-/* ------------------------------------------------ */
 const AnpInternalCard = ({ analysis }) => {
     if (!analysis.hasInternalAnpZoning || !analysis.anpInternalFeature) return null;
-
+    const Icons = getIcons();
     const data = analysis.anpInternalFeature.properties || {};
     const nombre = data.NOMBRE || analysis.anpNombre || 'Desconocido';
-    // Prioritize specific fields from the detailed shapefile
     const zonificacion = data.ZONIFICACION || data.CATEGORIA_PROTECCION || analysis.anpCategoria || 'N/A';
 
     return (
         <div className="bg-purple-50 rounded-xl p-4 mb-4 animate-slide-up border border-purple-100">
             <div className="flex items-center gap-2 text-purple-800 font-bold text-sm mb-3 border-b border-purple-100 pb-2">
-                <Icons.Verified className="h-4 w-4" />
+                {Icons.Verified && <Icons.Verified className="h-4 w-4" />}
                 <span>Zonificación del Área Natural Protegida</span>
             </div>
 
@@ -254,6 +249,10 @@ const AnpInternalCard = ({ analysis }) => {
 };
 
 const LocationSummary = ({ analysis, zoningDisplay }) => {
+    const Icons = getIcons();
+    const COLORS = getColors();
+    const Utils = getUtils();
+
     const { status } = analysis;
     const isOutside = status === 'OUTSIDE_CDMX';
     const isSC = status === 'CONSERVATION_SOIL';
@@ -261,21 +260,20 @@ const LocationSummary = ({ analysis, zoningDisplay }) => {
 
     let zoningColor = '#9ca3af';
     if (analysis.zoningKey === 'ANP') {
-        zoningColor = window.App?.Constants?.COLORS?.anp || '#9333ea';
+        zoningColor = COLORS.anp || '#9333ea';
     } else if (analysis.zoningKey === 'NODATA') {
         zoningColor = '#9ca3af';
-    } else if (analysis.zoningKey) {
-        zoningColor = window.App.Utils.getZoningColor(analysis.zoningKey);
+    } else if (analysis.zoningKey && Utils.getZoningColor) {
+        zoningColor = Utils.getZoningColor(analysis.zoningKey);
     }
 
     const showZoningBlock = !isOutside && !isUrban;
 
-    // ✅ Case: Fuera de CDMX -> Solo caja roja sin wrapper blanco
     if (isOutside) {
         return (
             <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-4 animate-pulse-subtle">
                 <div className="flex items-center gap-2 text-red-700 font-bold text-sm mb-1">
-                    <Icons.XCircle className="h-4 w-4" />
+                    {Icons.XCircle && <Icons.XCircle className="h-4 w-4" />}
                     <span>Fuera de CDMX</span>
                 </div>
                 <p className="text-xs text-red-600 leading-snug">
@@ -285,10 +283,8 @@ const LocationSummary = ({ analysis, zoningDisplay }) => {
         );
     }
 
-    // ✅ Case: Dentro de CDMX (SC, SU, ANP) -> Wrapper blanco con detalles
     return (
         <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 mb-4 animate-slide-up">
-            {/* Header con Badge */}
             <div className="flex items-center justify-between mb-3">
                 <span
                     className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm leading-none"
@@ -310,7 +306,6 @@ const LocationSummary = ({ analysis, zoningDisplay }) => {
                 </div>
             </div>
 
-            {/* Badge Zonificación */}
             {showZoningBlock && (
                 <div className="mb-2">
                     <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mb-1">
@@ -323,7 +318,6 @@ const LocationSummary = ({ analysis, zoningDisplay }) => {
                         />
                         <div className="text-sm font-semibold text-gray-700 leading-snug break-words">
                             {zoningDisplay}
-
                         </div>
                     </div>
                 </div>
@@ -332,10 +326,6 @@ const LocationSummary = ({ analysis, zoningDisplay }) => {
     );
 };
 
-/* ------------------------------------------------ */
-/* COMPONENTE PRINCIPAL */
-/* ------------------------------------------------ */
-
 const ResultsContent = ({ analysis, onExportPDF }) => {
     if (!analysis) return null;
 
@@ -343,19 +333,17 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
     const [showDetails, setShowDetails] = useState(true);
     const [showNotes, setShowNotes] = useState(false);
 
-    // Globals access
-    const { REGULATORY_NOTES } = window.App?.Constants || {};
-    const COLORS = window.App?.Constants?.COLORS || {};
-    const Icons = window.App?.Components?.Icons || {};
+    // Globals access for Main Component
+    const Icons = getIcons();
+    const COLORS = getColors();
+    const Constants = getConstants();
+    const REGULATORY_NOTES = Constants.REGULATORY_NOTES || [];
 
-    // Calcular el display name unificado
     const zoningDisplay = getZoningDisplay(analysis);
 
     return (
         <div className="space-y-4 animate-in">
-
             <LocationSummary analysis={analysis} zoningDisplay={zoningDisplay} />
-
             <AnpGeneralCard analysis={analysis} />
             <AnpInternalCard analysis={analysis} />
 
@@ -368,8 +356,6 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                     Consulte el documento oficial de SEDUVI para detalle de usos.
                 </div>
             )}
-
-
 
             {analysis.status === 'CONSERVATION_SOIL' &&
                 !analysis.isPDU &&
@@ -390,7 +376,6 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                         {showDetails && (
                             <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
                                 <div className="border-b border-gray-200 mb-4 flex gap-4">
-                                    {/* TABS SIMPLIFICADOS */}
                                     <button
                                         onClick={() => setActiveTab('prohibidas')}
                                         className={`pb-2 text-[11px] font-bold uppercase tracking-wide border-b-2 transition-colors ${activeTab === 'prohibidas'
@@ -415,7 +400,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                     <GroupedActivities
                                         title="ACTIVIDADES PROHIBIDAS"
                                         activities={analysis.prohibitedActivities}
-                                        icon={<Icons.XCircle className="h-4 w-4" />}
+                                        icon={Icons.XCircle ? <Icons.XCircle className="h-4 w-4" /> : null}
                                         headerClass="text-red-900 bg-red-50"
                                         bgClass="bg-white"
                                         accentColor={COLORS.error}
@@ -426,7 +411,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                     <GroupedActivities
                                         title="ACTIVIDADES PERMITIDAS"
                                         activities={analysis.allowedActivities}
-                                        icon={<Icons.CheckCircle className="h-4 w-4" />}
+                                        icon={Icons.CheckCircle ? <Icons.CheckCircle className="h-4 w-4" /> : null}
                                         headerClass="text-green-900 bg-green-50"
                                         bgClass="bg-white"
                                         accentColor={COLORS.success}
@@ -442,7 +427,9 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
                                             {Icons.Info ? <Icons.Info className="h-4 w-4 text-gray-500" /> : <span>i</span>}
                                             Notas Normativas
                                         </span>
-                                        {showNotes ? (Icons.ChevronUp ? <Icons.ChevronUp className="h-4 w-4 text-gray-400" /> : <span>-</span>) : (Icons.ChevronDown ? <Icons.ChevronDown className="h-4 w-4 text-gray-400" /> : <span>+</span>)}
+                                        {showNotes ?
+                                            (Icons.ChevronUp ? <Icons.ChevronUp className="h-4 w-4 text-gray-400" /> : <span>-</span>) :
+                                            (Icons.ChevronDown ? <Icons.ChevronDown className="h-4 w-4 text-gray-400" /> : <span>+</span>)}
                                     </button>
 
                                     {showNotes && (
@@ -465,7 +452,6 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
             <div className="bg-gray-50 border border-gray-100 p-3 rounded-xl mb-4">
                 <ActionButtonsDesktop analysis={analysis} onExportPDF={onExportPDF} />
             </div>
-
             <LegalDisclaimer />
         </div>
     );
