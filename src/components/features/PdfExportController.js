@@ -1,17 +1,7 @@
 (function () {
     const { useState, useEffect, useRef } = window.React;
-    const {
-        MAPBOX_TOKEN,
-        ZONING_ORDER,
-        ZONING_CAT_INFO,
-        LAYER_STYLES
-    } = window.App.Constants;
+    // Lazy access setup in component
 
-    const {
-        getZoningColor,
-        getZoningStyle,
-        getBaseLayerUrl
-    } = window.App.Utils;
 
     /* ------------------------------------------------ */
     /* HELPERS INTERNOS */
@@ -25,7 +15,7 @@
         return (
             `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/` +
             `${overlay}/${lng},${lat},${zoom}/${clampedW}x${clampedH}` +
-            `?access_token=${MAPBOX_TOKEN}&logo=false&attribution=false`
+            `?access_token=${window.App?.Constants?.MAPBOX_TOKEN}&logo=false&attribution=false`
         );
     };
 
@@ -778,6 +768,10 @@
     });
 
     const PdfExportController = ({ analysis, onExportReady, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats }) => {
+        // Safe Lazy Access
+        const { ZONING_ORDER, LAYER_STYLES } = window.App?.Constants || {};
+        const { getBaseLayerUrl, getZoningColor } = window.App?.Utils || {};
+
         const [mapImage, setMapImage] = useState(null);
         const pdfRef = useRef(null);
         const exportArmedRef = useRef(false);
