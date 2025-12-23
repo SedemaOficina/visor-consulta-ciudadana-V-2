@@ -22,8 +22,8 @@ const {
 } = Constants;
 
 const {
-  getZoningStyle,
-  getBaseLayerUrl
+  getZoningStyle = () => ({}),
+  getBaseLayerUrl = () => ''
 } = Utils;
 
 // Componentes UI

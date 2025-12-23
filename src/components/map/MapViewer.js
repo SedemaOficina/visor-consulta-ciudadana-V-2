@@ -27,8 +27,8 @@ const MapViewer = ({
     } = window.App.Constants || {};
 
     const {
-        getBaseLayerUrl,
-        getZoningStyle
+        getBaseLayerUrl = () => '',
+        getZoningStyle = () => ({ color: '#ccc' })
     } = window.App.Utils || {};
 
     const Icons = window.App?.Components?.Icons || new Proxy({}, { get: () => () => null });
