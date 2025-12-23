@@ -372,19 +372,19 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
 
 const App = () => {
   // Safe Lazy Access
-  const { ZONING_ORDER, INITIAL_CENTER, INITIAL_ZOOM, FOCUS_ZOOM, DATA_FILES } = window.App?.Constants || {};
+  const { ZONING_ORDER } = window.App?.Constants || {};
   const { analyzeLocation } = window.App?.Analysis || {};
 
-  const [loading, setLoading] = useState(true); // Carga inicial (datos)
-  const [analyzing, setAnalyzing] = useState(false); // Carga de análisis (geocoding/polígonos)
+  // ✅ React Hooks at top level (Fixing the crash)
+  const [loading, setLoading] = useState(true);
+  const [analyzing, setAnalyzing] = useState(false);
   const [extraDataLoaded, setExtraDataLoaded] = useState(false);
-
-  const [isHelpOpen, setIsHelpOpen] = useState(false); // ✅ Definir estado ayuda
-
-  const { addToast } = useToast(); // ✅ Use newly added hook
+  const [systemError, setSystemError] = useState(null);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [location, setLocation] = useState(null);
 
+  const { addToast } = useToast();
 
   // Capas mapa
   const [visibleMapLayers, setVisibleMapLayers] = useState({
@@ -392,8 +392,8 @@ const App = () => {
     anp: true,
     zoning: true,
     alcaldias: true,
-    edomex: true, // Visible siempre (Locked)
-    morelos: true, // Visible siempre (Locked)
+    edomex: true,
+    morelos: true,
     selectedAnpZoning: true
   });
 
@@ -407,14 +407,10 @@ const App = () => {
   const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeBaseLayer, setActiveBaseLayer] = useState('SATELLITE');
+  const [mobileSheetState, setMobileSheetState] = useState('collapsed');
 
-
-  const [mobileSheetState, setMobileSheetState] = useState('collapsed'); // collapsed | mid | full
-
-  // ✅ acá se guarda la función REAL que exporta el PDF (la define ResultsContent)
   const [exportHandler, setExportHandler] = useState(null);
 
-  // ✅ Wrapper: solo se ejecuta por botón (acción del usuario)
   const handleExportClick = React.useCallback((e) => {
     if (typeof exportHandler === 'function') {
       exportHandler(e);
@@ -423,7 +419,6 @@ const App = () => {
     }
   }, [exportHandler]);
 
-  // ✅ Refs (sin window.__*)
   const invalidateMapRef = useRef(null);
   const resetMapViewRef = useRef(null);
   const desktopSearchInputRef = useRef(null);
@@ -439,11 +434,10 @@ const App = () => {
 
     setLocation(coord);
 
-    // ✅ Empuja al textbox en desktop y móvil
     desktopSearchInputRef.current?.(text);
     mobileSearchInputRef.current?.(text);
 
-    setAnalyzing(true); // Start analysis loading
+    setAnalyzing(true);
 
     try {
       const res = await analyzeLocation(coord, dataCache);
@@ -458,7 +452,7 @@ const App = () => {
       addToast('Error al analizar la ubicación', 'error');
       console.error(err);
     } finally {
-      setAnalyzing(false); // End analysis loading
+      setAnalyzing(false);
     }
   };
 
@@ -466,8 +460,6 @@ const App = () => {
     setLocation(null);
     setAnalysis(null);
     setMobileSheetState('collapsed');
-
-
     resetMapViewRef.current?.();
   };
 
@@ -485,263 +477,242 @@ const App = () => {
     );
   };
 
-  // Helper to toggle layers
   const toggleLayer = React.useCallback((key) => {
     setVisibleMapLayers(prev => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
-  // Helper to toggle zoning group
   const toggleZoningGroup = React.useCallback(() => {
     setVisibleMapLayers(prev => ({ ...prev, zoning: !prev.zoning }));
   }, []);
 
+  // Initialization Effect
   useEffect(() => {
     const initApp = async () => {
-      // ✅ Estado de Integridad del Sistema
-      const [systemError, setSystemError] = useState(null);
 
-      useEffect(() => {
-        // 🔍 Pre-flight System Check (Fail Fast)
-        const checkIntegrity = () => {
-          const missing = [];
-          if (!window.App?.Constants?.DATA_FILES) missing.push("config/constants.js");
-          if (!window.App?.Utils?.getBaseLayerUrl) missing.push("utils/geoUtils.js");
-          if (!window.Papa) missing.push("PapaParse Library (CDN)");
-          // if (!window.App?.Analysis?.analyzeLocation) missing.push("utils/analysisEngine.js"); // Opcional, pero bueno tenerlo
+      // Pre-flight Check
+      const checkIntegrity = () => {
+        const missing = [];
+        if (!window.App?.Constants?.DATA_FILES) missing.push("config/constants.js");
+        if (!window.App?.Utils?.getBaseLayerUrl) missing.push("utils/geoUtils.js");
+        if (!window.Papa) missing.push("PapaParse Library");
 
-          if (missing.length > 0) {
-            console.error("CRITICAL: Missing system modules:", missing);
-            setSystemError(`Error crítico de carga. Faltan módulos: ${missing.join(', ')}. Verifica tu conexión o recarga la página.`);
-            return false;
-          }
-          return true;
-        };
-
-        if (checkIntegrity()) {
-          loadCoreData()
-            .then(() => {
-              setLoading(false);
-
-              const params = new URLSearchParams(window.location.search);
-              const lat = parseFloat(params.get("lat"));
-              const lng = parseFloat(params.get("lng"));
-              const hasCoords = !isNaN(lat) && !isNaN(lng);
-
-              if (!hasCoords) setIsHelpOpen(true);
-              if (hasCoords) handleLocationSelect({ lat, lng });
-
-              loadExtraData().then(() => setExtraDataLoaded(true));
-            })
-            .catch(err => {
-              console.error("Error loading initial data:", err);
-              setSystemError(`Error cargando datos geográficos: ${err.message}`);
-              setLoading(false);
-            });
+        if (missing.length > 0) {
+          console.error("CRITICAL: Missing system modules:", missing);
+          setSystemError(`Error crítico de carga: ${missing.join(', ')}`);
+          return false;
         }
-      }, []);
+        return true;
+      };
 
-      if (systemError) {
-        return (
-          <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-50 text-center p-4">
-            <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md border-l-4 border-red-600">
-              <Icons.AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-              <h1 className="text-xl font-bold text-gray-900 mb-2">Error de Inicialización</h1>
-              <p className="text-sm text-gray-600 mb-6">{systemError}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors"
-              >
-                Recargar Página
-              </button>
-            </div>
-          </div>
-        );
+      if (!checkIntegrity()) return;
+
+      try {
+        await loadCoreData();
+        setLoading(false);
+
+        const params = new URLSearchParams(window.location.search);
+        const lat = parseFloat(params.get("lat"));
+        const lng = parseFloat(params.get("lng"));
+        const hasCoords = !isNaN(lat) && !isNaN(lng);
+
+        if (!hasCoords) setIsHelpOpen(true);
+        if (hasCoords) handleLocationSelect({ lat, lng });
+
+        await loadExtraData();
+        setExtraDataLoaded(true);
+
+      } catch (err) {
+        console.error("Error loading initial data:", err);
+        setSystemError(`Error cargando datos: ${err.message}`);
+        setLoading(false);
       }
-
-      if (loading) {
-        return (
-          <div className="h-screen flex items-center justify-center text-[#9d2148] flex-col gap-3">
-            <Icons.Loader2 className="animate-spin h-10 w-10" />
-            <span className="text-sm font-medium animate-pulse">Cargando visor...</span>
-          </div>
-        );
-      }
-
-      return (
-        <div className={`flex flex-col w-full h-full overflow-hidden bg-[#f3f4f6] ${loading || analyzing ? 'cursor-wait' : ''}`}>
-
-
-          {/* ✅ HEADER INSTITUCIONAL (Desktop only, or responsive?) - User asked for "start of page" */}
-          <InstitutionalHeader />
-
-          {/* ✅ CONTENEDOR PRINCIPAL (Flex Row en Desktop, Col en Mobile) */}
-          <div className="flex-1 relative flex flex-col md:flex-row overflow-hidden">
-
-            {/* ✅ BARRA SUPERIOR MÓVIL (APP HEADER) */}
-            <div className="md:hidden absolute top-0 left-0 right-0 z-[1045] p-3 pointer-events-none">
-              <MobileSearchBar
-                onLocationSelect={handleLocationSelect}
-                onReset={handleReset}
-                setInputRef={mobileSearchInputRef}
-                initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
-              />
-            </div>
-
-            {/* Sidebar Desktop */}
-            <SidebarDesktop
-              analysis={analysis}
-              onLocationSelect={handleLocationSelect}
-              onReset={handleReset}
-              isOpen={isSidebarOpen}
-              onToggle={() => setIsSidebarOpen(v => !v)}
-              onExportPDF={handleExportClick}
-              desktopSearchSetRef={desktopSearchInputRef}
-              isLoading={analyzing}
-              onOpenHelp={() => setIsHelpOpen(true)} // ✅ Pasar handler
-            />
-
-            {/* Main Map Area */}
-            <div className="relative flex-1 h-full w-full">
-              <MapViewer
-                location={location}
-                onLocationSelect={handleLocationSelect}
-                analysisStatus={analysis?.status}
-                visibleMapLayers={visibleMapLayers}
-                setVisibleMapLayers={setVisibleMapLayers}
-                visibleZoningCats={visibleZoningCats}
-                setVisibleZoningCats={setVisibleZoningCats}
-                extraDataLoaded={extraDataLoaded}
-                activeBaseLayer={activeBaseLayer}
-                setActiveBaseLayer={setActiveBaseLayer}
-                invalidateMapRef={invalidateMapRef} // ✅ Pass REF
-                resetMapViewRef={resetMapViewRef}     // ✅ Pass REF
-                selectedAnpId={analysis?.anpId} // ✅ Pass ANP ID
-                dataCache={dataCache}
-              />
-
-              {/* Loading Overlay - Only on initial data load, NOT analysis */}
-              {loading && (
-                <div className="absolute inset-0 z-[2000] bg-white/60 backdrop-blur-sm flex items-center justify-center animate-fade-in">
-                  <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center">
-                    <div className="w-10 h-10 border-4 border-gray-200 border-l-[#9d2148] rounded-full animate-spin mb-3"></div>
-                    <span className="text-gray-800 font-bold text-sm">Cargando mapa base...</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Legend */}
-              <Legend
-                visibleMapLayers={visibleMapLayers}
-                toggleLayer={toggleLayer}
-                isOpen={isLegendOpen}
-                setIsOpen={setIsLegendOpen}
-                visibleZoningCats={visibleZoningCats}
-                toggleZoningGroup={toggleZoningGroup}
-                setVisibleZoningCats={setVisibleZoningCats}
-                activeBaseLayer={activeBaseLayer}
-                setActiveBaseLayer={setActiveBaseLayer}
-                selectedAnpId={analysis?.anpId}
-                anpName={analysis?.anpNombre}
-                anpGeneralVisible={visibleMapLayers.anp}
-              />
-
-              {/* Nota inicial desktop */}
-              {!analysis?.status && (
-                <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
-                  <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
-                    Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
-                  </div>
-                </div>
-              )}
-
-              {/* CONTROLES DE MAPA (NUEVA UI UNIFICADA) */}
-              <div className="absolute top-20 md:top-24 right-4 flex flex-col items-end gap-2.5 pointer-events-auto z-[1100]">
-
-                {/* 1. Ayuda */}
-                <button
-                  type="button"
-                  onClick={() => setIsHelpOpen(true)}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
-                  title="Ayuda"
-                  aria-label="Ayuda"
-                >
-                  <span className="font-bold text-lg">?</span>
-                </button>
-
-                {/* 2. Capas */}
-                <button
-                  type="button"
-                  onClick={() => setIsLegendOpen(v => !v)}
-                  className={`w-10 h-10 flex items-center justify-center rounded-full shadow-lg border border-gray-200 hover:scale-105 active:scale-95 transition ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148]'}`}
-                  title="Capas y Simbología"
-                  aria-label="Capas"
-                >
-                  <Icons.Layers className="h-5 w-5" />
-                </button>
-
-                {/* 3. Reset View (Siempre visible) */}
-                <button
-                  type="button"
-                  onClick={() => resetMapViewRef.current?.()}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
-                  title="Restablecer vista"
-                  aria-label="Restablecer vista"
-                >
-                  <Icons.RotateCcw className="h-5 w-5" />
-                </button>
-
-                {/* 4. Mi Ubicación */}
-                <button
-                  type="button"
-                  onClick={handleUserLocation}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
-                  title="Mi ubicación"
-                  aria-label="Usar mi ubicación actual"
-                >
-                  <Icons.Navigation className="h-5 w-5" />
-                </button>
-
-              </div>
-            </div>
-
-            {/* Mobile Bottom Sheet */}
-            <BottomSheetMobile
-              analysis={analysis}
-              onLocationSelect={handleLocationSelect}
-              onReset={handleReset}
-              onStateChange={setMobileSheetState}
-              onClose={() => {
-                // Close logic if needed, usually just collapsing
-                handleReset();
-              }}
-              onExportPDF={handleExportClick} // pass the handler that calls the state func
-            />
-
-            {/* ✅ MODAL DE AYUDA (Restaurado) */}
-            <HelpModal
-              isOpen={isHelpOpen}
-              onClose={() => setIsHelpOpen(false)}
-            />
-
-            {/* ✅ PDF EXPORT CONTROLLER (Singleton) */}
-            <PdfExportController
-              analysis={analysis}
-              onExportReady={setExportHandler}
-              dataCache={dataCache}
-              visibleMapLayers={visibleMapLayers}
-              activeBaseLayer={activeBaseLayer}
-              visibleZoningCats={visibleZoningCats}
-            />
-          </div>
-        </div>
-      );
     };
 
+    initApp();
+  }, []);
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(
-      <ToastProvider>
-        <App />
-      </ToastProvider>
+  if (systemError) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-50 text-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md border-l-4 border-red-600">
+          <Icons.AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Error de Inicialización</h1>
+          <p className="text-sm text-gray-600 mb-6">{systemError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors"
+          >
+            Recargar Página
+          </button>
+        </div>
+      </div>
     );
+  }
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center text-[#9d2148] flex-col gap-3">
+        <Icons.Loader2 className="animate-spin h-10 w-10" />
+        <span className="text-sm font-medium animate-pulse">Cargando visor...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col w-full h-full overflow-hidden bg-[#f3f4f6] ${loading || analyzing ? 'cursor-wait' : ''}`}>
+
+      <InstitutionalHeader />
+
+      <div className="flex-1 relative flex flex-col md:flex-row overflow-hidden">
+
+        <div className="md:hidden absolute top-0 left-0 right-0 z-[1045] p-3 pointer-events-none">
+          <MobileSearchBar
+            onLocationSelect={handleLocationSelect}
+            onReset={handleReset}
+            setInputRef={mobileSearchInputRef}
+            initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
+          />
+        </div>
+
+        <SidebarDesktop
+          analysis={analysis}
+          onLocationSelect={handleLocationSelect}
+          onReset={handleReset}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(v => !v)}
+          onExportPDF={handleExportClick}
+          desktopSearchSetRef={desktopSearchInputRef}
+          isLoading={analyzing}
+          onOpenHelp={() => setIsHelpOpen(true)}
+        />
+
+        <div className="relative flex-1 h-full w-full">
+          <MapViewer
+            location={location}
+            onLocationSelect={handleLocationSelect}
+            analysisStatus={analysis?.status}
+            visibleMapLayers={visibleMapLayers}
+            setVisibleMapLayers={setVisibleMapLayers}
+            visibleZoningCats={visibleZoningCats}
+            setVisibleZoningCats={setVisibleZoningCats}
+            extraDataLoaded={extraDataLoaded}
+            activeBaseLayer={activeBaseLayer}
+            setActiveBaseLayer={setActiveBaseLayer}
+            invalidateMapRef={invalidateMapRef}
+            resetMapViewRef={resetMapViewRef}
+            selectedAnpId={analysis?.anpId}
+            dataCache={dataCache}
+          />
+
+          {loading && (
+            <div className="absolute inset-0 z-[2000] bg-white/60 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+              <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center">
+                <div className="w-10 h-10 border-4 border-gray-200 border-l-[#9d2148] rounded-full animate-spin mb-3"></div>
+                <span className="text-gray-800 font-bold text-sm">Cargando mapa base...</span>
+              </div>
+            </div>
+          )}
+
+          <Legend
+            visibleMapLayers={visibleMapLayers}
+            toggleLayer={toggleLayer}
+            isOpen={isLegendOpen}
+            setIsOpen={setIsLegendOpen}
+            visibleZoningCats={visibleZoningCats}
+            toggleZoningGroup={toggleZoningGroup}
+            setVisibleZoningCats={setVisibleZoningCats}
+            activeBaseLayer={activeBaseLayer}
+            setActiveBaseLayer={setActiveBaseLayer}
+            selectedAnpId={analysis?.anpId}
+            anpName={analysis?.anpNombre}
+            anpGeneralVisible={visibleMapLayers.anp}
+          />
+
+          {!analysis?.status && (
+            <div className="hidden md:flex absolute top-20 right-20 z-[1100]">
+              <div className="bg-white/95 border border-gray-200 rounded-lg shadow-md px-3 py-2 text-[11px] text-gray-700 max-w-xs">
+                Haz clic en el mapa o busca una dirección para iniciar la consulta de zonificación.
+              </div>
+            </div>
+          )}
+
+          <div className="absolute top-20 md:top-24 right-4 flex flex-col items-end gap-2.5 pointer-events-auto z-[1100]">
+
+            <button
+              type="button"
+              onClick={() => setIsHelpOpen(true)}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
+              title="Ayuda"
+              aria-label="Ayuda"
+            >
+              <span className="font-bold text-lg">?</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsLegendOpen(v => !v)}
+              className={`w-10 h-10 flex items-center justify-center rounded-full shadow-lg border border-gray-200 hover:scale-105 active:scale-95 transition ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148]'}`}
+              title="Capas y Simbología"
+              aria-label="Capas"
+            >
+              <Icons.Layers className="h-5 w-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => resetMapViewRef.current?.()}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
+              title="Restablecer vista"
+              aria-label="Restablecer vista"
+            >
+              <Icons.RotateCcw className="h-5 w-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleUserLocation}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
+              title="Mi ubicación"
+              aria-label="Usar mi ubicación actual"
+            >
+              <Icons.Navigation className="h-5 w-5" />
+            </button>
+
+          </div>
+        </div>
+
+        <BottomSheetMobile
+          analysis={analysis}
+          onLocationSelect={handleLocationSelect}
+          onReset={handleReset}
+          onStateChange={setMobileSheetState}
+          onClose={handleReset}
+          onExportPDF={handleExportClick}
+        />
+
+        <HelpModal
+          isOpen={isHelpOpen}
+          onClose={() => setIsHelpOpen(false)}
+        />
+
+        <PdfExportController
+          analysis={analysis}
+          onExportReady={setExportHandler}
+          dataCache={dataCache}
+          visibleMapLayers={visibleMapLayers}
+          activeBaseLayer={activeBaseLayer}
+          visibleZoningCats={visibleZoningCats}
+        />
+      </div>
+    </div>
+  );
+};
+
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <ToastProvider>
+    <App />
+  </ToastProvider>
+);
 

@@ -1,21 +1,22 @@
 (function () {
     const { useState, useEffect, useRef } = window.React;
-    // Lazy access setup in component
-
 
     /* ------------------------------------------------ */
-    /* HELPERS INTERNOS */
+    /* HELPERS INTERNOS SAFE ACCESS */
     /* ------------------------------------------------ */
+    const getConstants = () => window.App?.Constants || {};
+    const getUtils = () => window.App?.Utils || {};
 
     const getStaticMapUrl = ({ lat, lng, zoom = 14, width = 900, height = 520 }) => {
         const clampedW = Math.min(Math.max(width, 300), 1280);
         const clampedH = Math.min(Math.max(height, 200), 1280);
         const overlay = `pin-s+9d2449(${lng},${lat})`;
+        const token = getConstants().MAPBOX_TOKEN;
 
         return (
             `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/` +
             `${overlay}/${lng},${lat},${zoom}/${clampedW}x${clampedH}` +
-            `?access_token=${window.App?.Constants?.MAPBOX_TOKEN}&logo=false&attribution=false`
+            `?access_token=${token}&logo=false&attribution=false`
         );
     };
 
@@ -52,9 +53,9 @@
             });
 
             setTimeout(() => {
-                const canvas = holderRef.current.querySelector('canvas');
+                const canvas = holderRef.current?.querySelector('canvas');
                 if (canvas) setSrc(canvas.toDataURL('image/png'));
-            }, 30);
+            }, 50);
         }, [value, size]);
 
         if (!value) return null;
@@ -84,20 +85,23 @@
     const PdfFicha = window.React.forwardRef(({ analysis, mapImage }, ref) => {
         if (!analysis) return null;
 
+        // Safe Access within Render
+        const { COLORS, REGULATORY_NOTES } = getConstants();
+        const { getZoningColor } = getUtils();
+
         const fecha = analysis.timestamp || new Date().toLocaleString();
         const folio = `F-${new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 12)}`;
 
         const isUrban = analysis.status === 'URBAN_SOIL';
         const isSC = analysis.status === 'CONSERVATION_SOIL';
         const isOutside = analysis.status === 'OUTSIDE_CDMX';
-        // Logic normalization is handled by analysisEngine
         const outsideContextName = analysis.outsideContext || null;
         const isANP = analysis.isANP || analysis.zoningKey === 'ANP';
 
         const statusLabel =
             isSC ? 'Suelo de Conservación' :
                 isUrban ? 'Suelo Urbano' :
-                    analysis.status === 'OUTSIDE_CDMX' ? 'Fuera de la Ciudad de México' :
+                    isOutside ? 'Fuera de la Ciudad de México' :
                         'Información no disponible';
 
         const direccion =
@@ -113,6 +117,7 @@
         const detalleProhibidas = analysis.prohibitedActivities || [];
         const detallePermitidas = analysis.allowedActivities || [];
 
+        // Colors
         let soilBadgeBg = '#e5e7eb';
         let soilBadgeColor = '#374151';
 
@@ -127,16 +132,13 @@
         const soilBg = soilBadgeBg;
         const soilFg = soilBadgeColor;
 
-        // Logic Unification
+        // Zoning Logic
         let zoningColor = '#6b7280';
         if (isANP) {
-            zoningColor = '#9d2148'; // Use primary or specific ANP color
-            if (window.App?.Constants?.COLORS?.anp) {
-                zoningColor = window.App.Constants.COLORS.anp;
-            }
+            zoningColor = COLORS?.anp || '#9d2148';
         } else if (analysis.zoningKey === 'NODATA') {
             zoningColor = '#9ca3af';
-        } else if (analysis.zoningKey) {
+        } else if (analysis.zoningKey && getZoningColor) {
             zoningColor = getZoningColor(analysis.zoningKey);
         }
 
@@ -164,28 +166,27 @@
 
             const S = {
                 pageW: 794,
-                pagePad: 20, // Reduced from 28
-                gap1: 4,     // Reduced from 6
-                gap2: 8,     // Reduced from 10
-                gap3: 10,    // Reduced from 12
+                pagePad: 20,
+                gap1: 4,
+                gap2: 8,
+                gap3: 10,
                 radius: 6,
                 hair: '1px solid #e5e7eb'
             };
 
-            const COLORS = window.App?.Constants?.COLORS || {};
             const C = {
-                ink: COLORS.text || '#111827',
-                sub: COLORS.subtext || '#4b5563',
+                ink: COLORS?.text || '#111827',
+                sub: COLORS?.subtext || '#4b5563',
                 mute: '#9ca3af',
-                hair: '#e5e7eb', // Keeping specific gray for tables
+                hair: '#e5e7eb',
                 panel: '#f9fafb',
-                guinda: COLORS.primary || '#9d2148',
-                sc: COLORS.sc || '#3B7D23',
-                su: COLORS.su || '#3b82f6',
-                anp: COLORS.anp || '#7e22ce',
-                red: COLORS.error || '#b91c1c',
-                green: COLORS.success || '#15803d',
-                warning: COLORS.warning || '#f59e0b',
+                guinda: COLORS?.primary || '#9d2148',
+                sc: COLORS?.sc || '#3B7D23',
+                su: COLORS?.su || '#3b82f6',
+                anp: COLORS?.anp || '#7e22ce',
+                red: COLORS?.error || '#b91c1c',
+                green: COLORS?.success || '#15803d',
+                warning: COLORS?.warning || '#f59e0b',
                 edomex: '#FFD86B',
                 morelos: '#B8A1FF'
             };
@@ -200,63 +201,66 @@
                 th: (bg = '#f3f4f6') => ({
                     border: S.hair,
                     background: bg,
-                    padding: '6px 8px',
+                    padding: '8px 8px', // Increased top/bottom padding
                     textAlign: 'left',
                     verticalAlign: 'middle',
                     fontSize: `${T.small}px`,
                     fontWeight: 700,
-                    lineHeight: 1.15,
+                    lineHeight: 1.2,
                     color: C.ink
                 }),
                 td: {
                     border: S.hair,
-                    padding: '6px 8px',
+                    padding: '8px 8px', // Increased padding for vertical centering space
                     textAlign: 'left',
                     verticalAlign: 'middle',
                     fontSize: `${T.base}px`,
-                    lineHeight: 1.15,
+                    lineHeight: 1.25, // Adjusted line height
                     color: C.ink
                 },
                 tdLabel: {
                     border: S.hair,
-                    padding: '6px 8px',
+                    padding: '8px 8px',
                     width: '34%',
                     background: C.panel,
                     fontSize: `${T.small}px`,
                     fontWeight: 700,
-                    lineHeight: 1.15,
+                    lineHeight: 1.2,
                     color: C.sub,
                     verticalAlign: 'middle'
                 },
                 zebra: (i) => (i % 2 === 0 ? '#ffffff' : '#fbfbfc')
             };
 
+            // Improved Badge Style for Vertical Centering
             const badge = (bg, fg = '#fff', border = 'transparent') => ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px',
-                padding: '3px 10px',
-                borderRadius: 999,
+                height: 'auto',
+                minHeight: '18px',
+                padding: '2px 10px', // Balanced padding
+                borderRadius: '999px',
                 fontSize: `${T.small}px`,
                 fontWeight: 800,
                 letterSpacing: '0.02em',
-                lineHeight: 1,
+                lineHeight: '1.2', // Ensure line height matches font size nicely
                 backgroundColor: bg,
                 color: fg,
                 border: border === 'transparent' ? '1px solid transparent' : `1px solid ${border}`,
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                verticalAlign: 'middle' // Helps with inline flow
             });
 
             const h2 = (color = C.ink) => ({
                 fontSize: `${T.h2}px`,
                 fontWeight: 800,
                 margin: `0 0 ${S.gap1}px 0`,
-                color: '#111827', // Use dark text for contrast
-                backgroundColor: '#f3f4f6', // Light gray background
+                color: '#111827',
+                backgroundColor: '#f3f4f6',
                 padding: '6px 10px',
                 borderRadius: '6px',
-                borderLeft: `4px solid ${color === C.ink ? C.guinda : color}`, // Colored indicator
+                borderLeft: `4px solid ${color === C.ink ? C.guinda : color}`,
                 display: 'flex',
                 alignItems: 'center',
                 lineHeight: 1.2
@@ -414,6 +418,7 @@
                                     {isOutside ? 'Resultado fuera del ámbito territorial' : 'Simbología de puntos y zonificación'}
                                 </div>
                                 <div style={{ display: 'grid', gap: '6px', marginBottom: '8px' }}>
+                                    {/* SIMBOLOGIA LOGIC */}
                                     {isOutside && (
                                         <div style={{ display: 'grid', gap: '4px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small}px`, color: C.sub }}>
@@ -426,21 +431,9 @@
                                                     <span style={{ lineHeight: 1.1 }}><strong>{outsideContextName}</strong></span>
                                                 </div>
                                             )}
-
-                                            <div style={{ marginTop: '10px', fontSize: `${T.micro}px`, color: C.sub, textAlign: 'justify', lineHeight: 1.4 }}>
-                                                <p style={{ margin: '0 0 8px 0', fontSize: `${T.small}px`, fontWeight: 700, color: C.ink }}>
-                                                    La ubicación consultada se encuentra fuera del ámbito territorial de la Ciudad de México.
-                                                </p>
-                                                <p style={{ margin: '0 0 8px 0' }}>
-                                                    En consecuencia, el presente visor no puede emitir información normativa aplicable, ya que su alcance se limita a los instrumentos de planeación y regulación ambiental vigentes en la Ciudad de México.
-                                                </p>
-                                                <div style={{ backgroundColor: '#fefff5', border: '1px solid #e5e7eb', padding: '8px', borderRadius: '4px', borderLeft: `3px solid ${C.warning}` }}>
-                                                    <div style={{ fontWeight: 700, marginBottom: '2px', color: C.ink }}>Recomendación:</div>
-                                                    Para información correspondiente a esta ubicación, se recomienda consultar a la autoridad ambiental o de ordenamiento territorial competente en la entidad federativa correspondiente.
-                                                </div>
-                                            </div>
                                         </div>
                                     )}
+                                    {/* Normal coloring */}
                                     {isSC && (
                                         <div style={{ display: 'flex', alignItems: 'center', fontSize: `${T.small}px`, color: C.sub }}>
                                             <span style={{ flexShrink: 0, width: '10px', height: '10px', borderRadius: 999, background: C.sc, marginRight: '6px', border: '1px solid #fff', boxShadow: '0 0 1px rgba(0,0,0,0.25)' }} />
@@ -453,34 +446,22 @@
                                             <span style={{ lineHeight: 1.1 }}>Punto “SU”: Suelo Urbano</span>
                                         </div>
                                     )}
+
                                 </div>
+
+                                {/* ZONING KEY DISPLAY */}
                                 {!isOutside && !(isUrban && !analysis.zoningKey) && (
-                                    <div style={{ marginBottom: '6px' }}>
-                                        <strong>{isANP ? 'Área Natural Protegida en el punto consultado' : 'Zonificación activa en el punto consultado'}</strong>
-                                    </div>
-                                )}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                    {isANP ? (
-                                        <>
-                                            <span style={{ width: '10px', height: '10px', borderRadius: 2, background: C.anp, border: '1px solid #9ca3af' }} />
-                                            <span style={{ fontSize: `${T.small}px` }}>
-                                                <strong>ANP</strong> — {analysis.anpNombre || '—'}
-                                            </span>
-                                        </>
-                                    ) : (!isOutside && !(isUrban && !analysis.zoningKey)) && (analysis?.zoningKey ? (
-                                        <>
-                                            <span style={{ width: '10px', height: '10px', borderRadius: 2, background: zoningColor, border: '1px solid #9ca3af' }} />
-                                            <span style={{ fontSize: `${T.small}px` }}>
-                                                <strong>{analysis.zoningKey}</strong> — {analysis.zoningName || '—'}
-                                            </span>
-                                        </>
-                                    ) : (
-                                        <span style={{ fontSize: `${T.small}px`, color: C.mute }}>Sin zonificación disponible.</span>
-                                    ))}
-                                </div>
-                                {!isOutside && !(isUrban && !analysis.zoningKey) && (
-                                    <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginTop: '6px' }}>
-                                        * Para categorías completas y simbología, consulte el visor.
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                        {analysis.zoningKey ? (
+                                            <>
+                                                <span style={{ width: '10px', height: '10px', borderRadius: 2, background: zoningColor, border: '1px solid #9ca3af' }} />
+                                                <span style={{ fontSize: `${T.small}px` }}>
+                                                    <strong>{analysis.zoningKey}</strong>
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span style={{ fontSize: `${T.small}px`, color: C.mute }}>Sin zonificación disponible.</span>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -550,16 +531,18 @@
                                         <td style={tbl.tdLabel}>Tipo de suelo</td>
                                         <td style={tbl.td}>
                                             <span style={badge(soilBg, soilFg)}>{statusLabel}</span>
-                                            <div style={{ fontSize: `${T.micro}px`, color: C.mute }}>
-                                                {isSC ? 'Clasificación territorial: SC (PGOEDF 2000)' : ''}
-                                            </div>
+                                            {isSC && (
+                                                <div style={{ marginTop: '4px', fontSize: `${T.micro}px`, color: C.mute }}>
+                                                    Clasificación territorial: SC (PGOEDF 2000)
+                                                </div>
+                                            )}
                                         </td>
                                     </tr>
-                                    {!isUrban && (
+                                    {(!isUrban && analysis.zoningKey) && (
                                         <tr style={{ background: tbl.zebra(2) }}>
                                             <td style={tbl.tdLabel}>Zonificación PGOEDF</td>
                                             <td style={tbl.td}>
-                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', maxWidth: '100%' }}>
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', maxWidth: '100%', flexWrap: 'wrap' }}>
                                                     <span
                                                         style={{
                                                             ...badge(zoningColor, '#ffffff'),
@@ -572,7 +555,7 @@
                                                     >
                                                         {zoningDisplay}
                                                     </span>
-                                                    {analysis.zoningKey && !['ANP', 'NODATA'].includes(analysis.zoningKey) && (
+                                                    {!['ANP', 'NODATA'].includes(analysis.zoningKey) && (
                                                         <span style={badge('#ffffff', C.ink, zoningColor)}>
                                                             {analysis.zoningKey}
                                                         </span>
@@ -600,121 +583,91 @@
                                                 <td style={tbl.tdLabel}>Categoría</td>
                                                 <td style={tbl.td}>{analysis.anpInternalFeature.properties?.CATEGORIA_PROTECCION || analysis.anpCategoria || '—'}</td>
                                             </tr>
-                                            <tr style={{ background: tbl.zebra(5) }}>
-                                                <td style={tbl.tdLabel}>Tipo Decreto</td>
-                                                <td style={tbl.td}>{analysis.anpInternalFeature.properties?.TIPO_DECRETO || analysis.anpTipoDecreto || '—'}</td>
-                                            </tr>
-                                            <tr style={{ background: tbl.zebra(6) }}>
-                                                <td style={tbl.tdLabel}>Superficie</td>
-                                                <td style={tbl.td}>{analysis.anpInternalFeature.properties?.SUP_DECRETADA || analysis.anpSupDecretada || '—'}</td>
-                                            </tr>
-                                            <tr style={{ background: tbl.zebra(7) }}>
-                                                <td style={tbl.tdLabel}>Fecha Decreto</td>
-                                                <td style={tbl.td}>{analysis.anpInternalFeature.properties?.FECHA_DECRETO ? new Date(analysis.anpInternalFeature.properties.FECHA_DECRETO).toLocaleDateString() : (analysis.anpFechaDecreto ? new Date(analysis.anpFechaDecreto).toLocaleDateString() : '—')}</td>
-                                            </tr>
                                         </>
-                                    )}
-                                    {!isUrban && (
-                                        <tr style={{ background: tbl.zebra(3) }}>
-                                            <td style={tbl.tdLabel}>Base de referencia</td>
-                                            <td style={tbl.td}>
-                                                Programa General de Ordenamiento Ecológico del Distrito Federal (PGOEDF 2000) y capas geoespaciales institucionales de SEDEMA.
-                                            </td>
-                                        </tr>
                                     )}
                                 </tbody>
                             </table>
                         </section>
                     )}
+
                     {isUrban && (
                         <section style={section(S.gap3)}>
                             <h2 style={h2()}>Referencia para Suelo Urbano</h2>
                             <div style={{ fontSize: `${T.base}px`, color: C.sub, textAlign: 'justify', margin: 0 }}>
-                                La ubicación consultada se encuentra en Suelo Urbano. La regulación específica del uso del suelo corresponde a los Programas de Desarrollo Urbano aplicables, emitidos por la autoridad competente en materia de desarrollo urbano (SEDUVI). Esta ficha es de carácter orientativo y no sustituye los instrumentos oficiales.
+                                La ubicación consultada se encuentra en Suelo Urbano. La regulación específica corresponde a la SEDUVI.
                             </div>
                         </section>
                     )}
+
                     {isSC && !isANP && !analysis.isPDU && !analysis.noActivitiesCatalog && (
                         <>
                             <section style={section(S.gap2)}>
                                 <h2 style={h2(C.red)}>Actividades prohibidas</h2>
-
                                 {detalleProhibidas.length === 0 ? (
                                     <div style={{ fontSize: `${T.small}px`, color: C.sub }}>
-                                        No se identificaron actividades clasificadas como prohibidas para esta zonificación en el catálogo cargado.
+                                        No se identificaron actividades prohibidas específicas.
                                     </div>
                                 ) : (
-                                    <>
-                                        <table style={{ ...tbl.table, fontSize: `${T.small}px`, tableLayout: 'fixed' }}>
-                                            <colgroup>
-                                                <col style={{ width: '22%' }} />
-                                                <col style={{ width: '30%' }} />
-                                                <col style={{ width: '48%' }} />
-                                            </colgroup>
-                                            <thead>
-                                                <tr>
-                                                    <th style={tbl.th('#fff1f2')}>Sector</th>
-                                                    <th style={tbl.th('#fff1f2')}>Actividad general</th>
-                                                    <th style={tbl.th('#fff1f2')}>Actividad específica</th>
+                                    <table style={{ ...tbl.table, fontSize: `${T.small}px`, tableLayout: 'fixed' }}>
+                                        <colgroup>
+                                            <col style={{ width: '22%' }} />
+                                            <col style={{ width: '30%' }} />
+                                            <col style={{ width: '48%' }} />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th style={tbl.th('#fff1f2')}>Sector</th>
+                                                <th style={tbl.th('#fff1f2')}>Actividad general</th>
+                                                <th style={tbl.th('#fff1f2')}>Actividad específica</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {detalleProhibidas.map((a, i) => (
+                                                <tr key={i} style={{ background: tbl.zebra(i) }}>
+                                                    <td style={{ ...tbl.td, verticalAlign: 'middle' }}>{a.sector || '-'}</td>
+                                                    <td style={{ ...tbl.td, verticalAlign: 'middle' }}>{a.general || '-'}</td>
+                                                    <td style={{ ...tbl.td, overflowWrap: 'break-word' }}>{a.specific || '-'}</td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {detalleProhibidas.map((a, i) => (
-                                                    <tr key={i} style={{ background: tbl.zebra(i) }}>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px`, verticalAlign: 'middle' }}>{a.sector || '-'}</td>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px`, verticalAlign: 'middle' }}>{a.general || '-'}</td>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px`, wordBreak: 'break-word' }}>
-                                                            {a.specific || '-'}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-
-                                    </>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 )}
                             </section>
+
                             <section style={section(S.gap2)}>
                                 <h2 style={h2(C.green)}>Actividades permitidas</h2>
                                 {detallePermitidas.length === 0 ? (
                                     <div style={{ fontSize: `${T.small}px`, color: C.sub }}>
-                                        No se identificaron actividades clasificadas como permitidas para esta zonificación en el catálogo cargado.
+                                        No se identificaron actividades permitidas específicas.
                                     </div>
                                 ) : (
-                                    <>
-                                        <table style={{ ...tbl.table, fontSize: `${T.small}px`, tableLayout: 'fixed' }}>
-                                            <colgroup>
-                                                <col style={{ width: '22%' }} />
-                                                <col style={{ width: '30%' }} />
-                                                <col style={{ width: '48%' }} />
-                                            </colgroup>
-                                            <thead>
-                                                <tr>
-                                                    <th style={tbl.th('#dcfce7')}>Sector</th>
-                                                    <th style={tbl.th('#dcfce7')}>Actividad general</th>
-                                                    <th style={tbl.th('#dcfce7')}>Actividad específica</th>
+                                    <table style={{ ...tbl.table, fontSize: `${T.small}px`, tableLayout: 'fixed' }}>
+                                        <colgroup>
+                                            <col style={{ width: '22%' }} />
+                                            <col style={{ width: '30%' }} />
+                                            <col style={{ width: '48%' }} />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th style={tbl.th('#dcfce7')}>Sector</th>
+                                                <th style={tbl.th('#dcfce7')}>Actividad general</th>
+                                                <th style={tbl.th('#dcfce7')}>Actividad específica</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {detallePermitidas.map((a, i) => (
+                                                <tr key={i} style={{ background: tbl.zebra(i) }}>
+                                                    <td style={{ ...tbl.td, verticalAlign: 'middle' }}>{a.sector || '-'}</td>
+                                                    <td style={{ ...tbl.td, verticalAlign: 'middle' }}>{a.general || '-'}</td>
+                                                    <td style={{ ...tbl.td, overflowWrap: 'break-word' }}>{a.specific || '-'}</td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {detallePermitidas.map((a, i) => (
-                                                    <tr key={i} style={{ background: tbl.zebra(i) }}>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px` }}>{a.sector || '-'}</td>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px` }}>{a.general || '-'}</td>
-                                                        <td style={{ ...tbl.td, fontSize: `${T.small}px`, wordBreak: 'break-word', verticalAlign: 'top' }}>
-                                                            {a.specific || '-'}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-
-                                    </>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 )}
-
                             </section>
-
                             <section style={section(S.gap2)}>
-                                <h2 style={h2()}>Notas Normativas Generales y Complementarias</h2>
+                                <h2 style={h2()}>Notas Normativas</h2>
                                 <div style={{
                                     border: `1px solid ${C.hair}`,
                                     padding: '10px 12px',
@@ -722,7 +675,7 @@
                                     backgroundColor: '#fbfbfc'
                                 }}>
                                     <ul style={{ margin: 0, paddingLeft: '16px', listStyleType: 'disc' }}>
-                                        {(window.App?.Constants?.REGULATORY_NOTES || []).map((note, idx) => (
+                                        {(REGULATORY_NOTES || []).map((note, idx) => (
                                             <li key={idx} style={{
                                                 fontSize: `${T.base}px`,
                                                 marginBottom: '6px',
@@ -736,16 +689,13 @@
                                 </div>
                             </section>
                         </>
-                    )
-                    }
+                    )}
+
                     <section style={{ marginTop: `${S.gap2}px` }}>
                         <h2 style={h2()}>Enlaces de referencia</h2>
                         <div style={{ fontSize: `${T.small}px`, color: C.sub, marginBottom: `${S.gap2}px` }}>
                             <strong>Visor:</strong> {visorUrlShort}
                             <div style={{ marginTop: '8px' }}>
-                                <div style={{ fontSize: `${T.micro}px`, color: C.mute, marginBottom: '4px' }}>
-                                    Escanea para abrir el visor en la ubicación consultada:
-                                </div>
                                 <QrCodeImg value={visorUrl} size={74} />
                             </div>
                         </div>
@@ -759,7 +709,7 @@
                                 lineHeight: 1.45
                             }}
                         >
-                            <strong>Aviso legal:</strong> La presente ficha tiene carácter orientativo y no sustituye dictámenes técnicos, resoluciones administrativas ni instrumentos jurídicos emitidos por las autoridades competentes. La información se basa en datos geoespaciales y normativos disponibles al momento de la consulta y puede estar sujeta a actualización.
+                            <strong>Aviso legal:</strong> La presente ficha tiene carácter orientativo y no sustituye dictámenes técnicos, resoluciones administrativas ni instrumentos jurídicos emitidos por las autoridades competentes.
                         </div>
                     </section >
                 </div >
@@ -769,8 +719,8 @@
 
     const PdfExportController = ({ analysis, onExportReady, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats }) => {
         // Safe Lazy Access
-        const { ZONING_ORDER, LAYER_STYLES } = window.App?.Constants || {};
-        const { getBaseLayerUrl, getZoningColor } = window.App?.Utils || {};
+        const { ZONING_ORDER, LAYER_STYLES, ZONING_CAT_INFO } = getConstants();
+        const { getBaseLayerUrl, getZoningColor } = getUtils();
 
         const [mapImage, setMapImage] = useState(null);
         const pdfRef = useRef(null);
@@ -779,10 +729,7 @@
         const buildExportMapImage = ({ lat, lng, zoom = 14, analysisStatus }) => {
             return new Promise((resolve) => {
                 const L = window.L;
-                const leafletImageFn =
-                    window.leafletImage ||
-                    window.leafletImage?.default ||
-                    (typeof leafletImage !== 'undefined' ? leafletImage : null);
+                const leafletImageFn = window.leafletImage || window.leafletImage?.default;
 
                 if (!L || typeof leafletImageFn !== 'function') {
                     console.warn('leaflet-image no disponible');
@@ -790,10 +737,7 @@
                 }
 
                 const el = document.getElementById('export-map');
-                if (!el) {
-                    console.warn('No existe #export-map');
-                    return resolve(null);
-                }
+                if (!el) return resolve(null);
 
                 el.innerHTML = '';
                 const m = L.map(el, {
@@ -802,24 +746,22 @@
                     preferCanvas: true
                 }).setView([lat, lng], zoom);
 
-                // Wait for tile load manually or just increase timeout
-                let tileCount = 0;
-                let tilesLoaded = 0;
-
-                m.on('layeradd', () => { tileCount++; });
-
-                // Track tile loading on the base layer specifically
-                base.on('tileloadstart', () => { tileCount++; });
-                base.on('tileload', () => { tilesLoaded++; });
-                base.on('load', () => {
-                    // Base layer fully loaded
-                });
-
-                const base = L.tileLayer(getBaseLayerUrl(activeBaseLayer || 'SATELLITE'), {
+                // ✅ FIX: Define base layer first
+                const base = L.tileLayer(getBaseLayerUrl ? getBaseLayerUrl(activeBaseLayer || 'SATELLITE') : '', {
                     crossOrigin: 'anonymous',
                     maxZoom: 19
-                }).addTo(m);
+                });
 
+                // ✅ FIX: Attach listeners BEFORE adding to map
+                let tileCount = 0;
+                base.on('tileloadstart', () => { tileCount++; });
+                base.on('load', () => {
+                    // Explicit load complete
+                });
+
+                base.addTo(m);
+
+                // GeoJSON Helper
                 const addGeoJson = (fc, style, paneZ = 400) => {
                     if (!fc?.features?.length) return null;
                     const paneName = `p${paneZ}`;
@@ -828,28 +770,20 @@
                     return L.geoJSON(fc, { pane: paneName, style, interactive: false }).addTo(m);
                 };
 
-                if (visibleMapLayers?.sc) {
-                    addGeoJson(dataCache.sc, { color: LAYER_STYLES.sc.color, weight: 1.8, opacity: 0.9, fillColor: LAYER_STYLES.sc.fill, fillOpacity: 0.18 }, 410);
+                // Add Layers with fallback checks
+                if (visibleMapLayers?.sc && dataCache?.sc) {
+                    addGeoJson(dataCache.sc, { color: LAYER_STYLES?.sc?.color || 'green', weight: 1.8, opacity: 0.9, fillColor: LAYER_STYLES?.sc?.fill, fillOpacity: 0.18 }, 410);
                 }
-                if (visibleMapLayers?.alcaldias) {
+                if (visibleMapLayers?.alcaldias && dataCache?.alcaldias) {
                     addGeoJson(dataCache.alcaldias, { color: '#ffffff', weight: 3, dashArray: '8,4', opacity: 0.9, fillOpacity: 0 }, 420);
                 }
-                if (visibleMapLayers?.edomex) {
-                    addGeoJson(dataCache.edomex, { color: LAYER_STYLES.edomex.color, weight: 1, dashArray: '4,4', opacity: 0.9, fillOpacity: 0.08 }, 405);
-                }
-                if (visibleMapLayers?.morelos) {
-                    addGeoJson(dataCache.morelos, { color: LAYER_STYLES.morelos.color, weight: 1, dashArray: '4,4', opacity: 0.9, fillOpacity: 0.08 }, 405);
-                }
-                if (visibleMapLayers?.anp) {
-                    addGeoJson(dataCache.anp, { color: LAYER_STYLES.anp.color, weight: 2.2, opacity: 0.95, fillColor: LAYER_STYLES.anp.fill, fillOpacity: 0.12 }, 428);
-                }
-                if (visibleMapLayers?.zoning && dataCache.zoning?.features?.length) {
+
+                // Zoning
+                if (visibleMapLayers?.zoning && dataCache?.zoning?.features?.length) {
                     const byKey = {};
-                    ZONING_ORDER.forEach(k => (byKey[k] = []));
+                    (ZONING_ORDER || []).forEach(k => (byKey[k] = []));
                     dataCache.zoning.features.forEach(f => {
                         let k = (f.properties?.CLAVE || '').toString().trim().toUpperCase();
-
-                        // Lógica PDU idéntica a MapViewer
                         if (k === 'PDU' || k === 'PROGRAMAS' || k === 'ZONA URBANA') {
                             const desc = (f.properties?.PGOEDF || '').toLowerCase();
                             if (desc.includes('equipamiento')) k = 'PDU_ER';
@@ -857,20 +791,20 @@
                             else if (desc.includes('poblad') || desc.includes('rural') || desc.includes('habitacional')) k = 'PDU_PR';
                             else if (desc.includes('urbana') || desc.includes('urbano') || desc.includes('barrio')) k = 'PDU_ZU';
                         }
-
                         if (byKey[k]) byKey[k].push(f);
                     });
-                    ZONING_ORDER.forEach((k, idx) => {
+
+                    (ZONING_ORDER || []).forEach((k, idx) => {
                         const isOn = (visibleZoningCats?.[k] !== false);
                         if (!isOn) return;
                         const feats = byKey[k];
                         if (!feats?.length) return;
 
-                        const color = ZONING_CAT_INFO[k]?.color || '#9ca3af';
+                        const color = ZONING_CAT_INFO?.[k]?.color || '#9ca3af';
                         addGeoJson({ type: 'FeatureCollection', features: feats }, {
                             color,
                             weight: 1.5,
-                            opacity: 0.9, // Reduced slightly for PDF clarity
+                            opacity: 0.9,
                             fillColor: color,
                             fillOpacity: 0.2,
                             interactive: false
@@ -878,9 +812,10 @@
                     });
                 }
 
+                // Pin
                 const isSC = (analysisStatus === 'CONSERVATION_SOIL');
                 const isSU = (analysisStatus === 'URBAN_SOIL');
-                const pinFill = isSC ? LAYER_STYLES.sc.color : isSU ? '#3b82f6' : '#9d2148';
+                const pinFill = isSC ? (LAYER_STYLES?.sc?.color || 'green') : isSU ? '#3b82f6' : '#9d2148';
 
                 if (!m.getPane('pointPane')) {
                     m.createPane('pointPane');
@@ -896,6 +831,7 @@
                     pane: 'pointPane'
                 }).addTo(m);
 
+                /* Capture Logic */
                 let settled = false;
                 const done = (img) => {
                     if (settled) return;
@@ -904,29 +840,23 @@
                     resolve(img || null);
                 };
 
-                // Logic to wait for tiles
                 const capture = () => {
                     leafletImageFn(m, (err, canvas) => {
                         if (err || !canvas) return done(null);
-
-                        // Check if canvas is basically empty/gray? (Optional)
-                        // For now we rely on the wait.
                         done(canvas.toDataURL('image/png'));
                     });
                 };
 
-                // Backup timeout if 'load' never fires properly
                 const safetyTimeout = setTimeout(() => {
-                    console.warn('Map capture timeout - forcing capture');
+                    console.warn('Capture timeout');
                     capture();
-                }, 4000);
+                }, 3000);
 
                 base.once('load', () => {
-                    // Add a small delay after load to ensure painting
                     setTimeout(() => {
                         clearTimeout(safetyTimeout);
                         capture();
-                    }, 800);
+                    }, 500);
                 });
             });
         };
@@ -938,20 +868,10 @@
             if (!analysis || !pdfRef.current) return;
 
             if (!window.jspdf?.jsPDF) {
-                alert('Error: La librería de PDF no se ha cargado correctamente.');
+                alert('Error: Librería PDF no cargada.');
                 return;
             }
             const { jsPDF } = window.jspdf;
-
-            if (typeof html2canvas === 'undefined') {
-                alert('No se encontró html2canvas. Verifica que el script esté cargado.');
-                return;
-            }
-
-            if (!dataCache?.sc || !dataCache?.alcaldias || !dataCache?.anp) {
-                alert('Aún se están cargando capas del mapa. Intenta de nuevo en unos segundos.');
-                return;
-            }
 
             try {
                 const img = await buildExportMapImage({
@@ -961,99 +881,44 @@
                     analysisStatus: analysis.status
                 });
 
-                if (img) {
-                    setMapImage(img);
-                } else {
-                    const url = getStaticMapUrl({
-                        lat: analysis.coordinate.lat,
-                        lng: analysis.coordinate.lng,
-                        zoom: 14
-                    });
+                // Fallback attempt
+                if (img) setMapImage(img);
+                else {
+                    const url = getStaticMapUrl({ lat: analysis.coordinate.lat, lng: analysis.coordinate.lng });
                     const ok = await preloadImage(url);
                     setMapImage(ok ? url : null);
                 }
-                await new Promise(r => setTimeout(r, 100)); // Render cycle wait
+
+                await new Promise(r => setTimeout(r, 150)); // Render wait
             } catch (e) {
-                console.warn('No se pudo generar/cargar mapa exportable:', e);
-                try {
-                    const url = getStaticMapUrl({ lat: analysis.coordinate.lat, lng: analysis.coordinate.lng, zoom: 14 });
-                    const ok = await preloadImage(url);
-                    setMapImage(ok ? url : null);
-                    await new Promise(r => setTimeout(r, 100));
-                } catch {
-                    setMapImage(null);
-                }
+                setMapImage(null);
             }
 
             const element = pdfRef.current;
             const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-            const scale = isMobile ? 1.8 : 2.2; // Increased scale for better quality
+            const scale = isMobile ? 1.8 : 2.2;
 
-            let canvas;
             try {
-                canvas = await html2canvas(element, { scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
+                const canvas = await html2canvas(element, { scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const M = 12; // Margin
+
+                const imgProps = pdf.getImageProperties(imgData);
+                const usableW = pdfWidth - (M * 2);
+                const imgH = (imgProps.height * usableW) / imgProps.width;
+
+                pdf.addImage(imgData, 'PNG', M, M, usableW, imgH);
+
+                const cleanAlcaldia = (analysis.alcaldia || 'CDMX').replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+                pdf.save(`FICHA_${cleanAlcaldia}.pdf`);
+
             } catch (e) {
-                console.error('Fallo al renderizar la ficha para PDF:', e);
-                alert('No se pudo generar la ficha PDF en este dispositivo/navegador. Intenta desde Chrome/desktop.');
-                return;
+                console.error("PDF Fail", e);
+                alert("Error al generar PDF.");
             }
-
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const M = 12;
-            const FOOTER = 16;
-            const usableW = pdfWidth - (M * 2);
-            const usableH = pdfHeight - (M * 2) - FOOTER;
-
-            const imgProps = pdf.getImageProperties(imgData);
-            let imgW = usableW;
-            let imgH = (imgProps.height * imgW) / imgProps.width;
-
-            let totalPages = Math.max(1, Math.ceil(imgH / usableH));
-            const remainder = imgH - usableH * (totalPages - 1);
-
-            if (totalPages > 1 && remainder / usableH < 0.28) {
-                const targetPages = totalPages - 1;
-                const scaleDown = (usableH * targetPages) / imgH;
-                if (scaleDown > 0.92) {
-                    imgW = imgW * scaleDown;
-                    imgH = (imgProps.height * imgW) / imgProps.width;
-                    totalPages = Math.max(1, Math.ceil(imgH / usableH));
-                }
-            }
-
-            const drawPage = (pageIndex) => {
-                const yOffset = -(pageIndex * usableH);
-                pdf.setFillColor(255, 255, 255);
-                // Mask only if needed, but primarily we just draw the image now without the text header
-                pdf.rect(0, 0, pdfWidth, M, 'F');
-
-                // Image drawing
-                pdf.addImage(imgData, 'PNG', M, M + yOffset, imgW, imgH);
-
-                // Footer (White background + Line + Page Number)
-                pdf.setFillColor(255, 255, 255);
-                pdf.rect(0, pdfHeight - (M + FOOTER), pdfWidth, (M + FOOTER), 'F');
-                pdf.setDrawColor(229, 231, 235);
-                pdf.setLineWidth(0.2);
-                pdf.line(M, pdfHeight - (M + FOOTER) + 4, pdfWidth - M, pdfHeight - (M + FOOTER) + 4);
-                pdf.setFontSize(8);
-                pdf.setTextColor(107, 114, 128);
-                pdf.text(`Página ${pageIndex + 1} de ${totalPages} `, pdfWidth / 2, pdfHeight - 6, { align: 'center' });
-            };
-
-            for (let i = 0; i < totalPages; i++) {
-                if (i > 0) pdf.addPage();
-                drawPage(i);
-            }
-
-            const cleanAlcaldia = (analysis.alcaldia || 'CDMX').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-            const fechaStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-            const nombreArchivo = `ficha_${cleanAlcaldia}_${fechaStr}.pdf`;
-            pdf.save(nombreArchivo);
         }, [analysis, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats]);
 
         const requestExportPDF = React.useCallback((e) => {
@@ -1074,7 +939,6 @@
             <>
                 <div id="export-map" style={{ width: '900px', height: '520px', position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}></div>
                 <div style={{ position: 'absolute', top: -9999, left: -9999, width: '794px', zIndex: -1 }}>
-                    {/* Aseguramos que PdfFicha tenga un fondo blanco opaco para captura */}
                     <div style={{ background: '#ffffff' }}>
                         <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} />
                     </div>

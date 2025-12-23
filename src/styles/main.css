@@ -145,9 +145,16 @@ textarea {
 
 /* Allow click-through on specific overlay panes (like Alcaldias borders) */
 .leaflet-paneContext-pane {
-  pointer-events: none !important;
+  pointer-events: none;
   z-index: 450;
   /* Ensure z-index is respected visually */
+}
+
+/* Permitir interacción en los elementos vectoriales dentro del panel */
+.leaflet-paneContext-pane path,
+.leaflet-paneContext-pane polyline,
+.leaflet-paneContext-pane img {
+  pointer-events: auto;
 }
 
 .leaflet-tooltip.custom-tooltip::before {
