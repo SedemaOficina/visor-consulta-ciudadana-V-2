@@ -53,15 +53,26 @@ const Legend = ({
             {/* Header */}
             <div className="flex items-center justify-between p-3 border-b border-gray-100 bg-white/50 rounded-t-lg">
                 <div className="flex items-center gap-2">
-                    {Icons.Map ? <Icons.Map className="h-4 w-4 text-[#9d2148]" /> : <span>M</span>}
+                    {/* Inline fallback SVG if Icons.Map fails */}
+                    {Icons.Map ? <Icons.Map className="h-4 w-4 text-[#9d2148]" /> : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9d2148" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+                            <line x1="8" y1="2" x2="8" y2="18"></line>
+                            <line x1="16" y1="6" x2="16" y2="22"></line>
+                        </svg>
+                    )}
                     <span className="font-bold text-gray-800 text-xs uppercase tracking-wide">Capas y Zonificación</span>
                 </div>
                 <button
-                    onClick={() => setIsOpen(false)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Close legend clicked');
+                        setIsOpen(false);
+                    }}
                     className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                     title="Cerrar"
                 >
-                    {Icons.X ? <Icons.X className="h-4 w-4 text-gray-500" /> : <span>x</span>}
+                    {Icons.X ? <Icons.X className="h-4 w-4 text-gray-500" /> : <span>✕</span>}
                 </button>
             </div>
 
@@ -156,17 +167,23 @@ const Legend = ({
                                 return (
                                     <div
                                         key={catKey}
-                                        className={`flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-gray-50 transition-colors ${!isVisible ? 'opacity-50 grayscale' : ''}`}
-                                        onClick={() => toggleZoningCat(catKey)}
+                                        className="flex items-center justify-between p-1 rounded hover:bg-gray-50 transition-colors"
                                     >
-                                        <div
-                                            className="w-2.5 h-2.5 rounded-sm shadow-sm flex-shrink-0"
-                                            style={{ backgroundColor: info.color }}
-                                        />
-                                        <div className="flex flex-col leading-none">
-                                            <span className="text-[10px] font-semibold text-gray-700">{info.label}</span>
-                                            <span className="text-[9px] text-gray-500">{info.desc}</span>
+                                        <div className="flex items-center gap-2">
+                                            <div
+                                                className="w-2.5 h-2.5 rounded-sm shadow-sm flex-shrink-0"
+                                                style={{ backgroundColor: info.color }}
+                                            />
+                                            <div className="flex flex-col leading-none">
+                                                <span className="text-[10px] font-semibold text-gray-700">{info.label}</span>
+                                                <span className="text-[9px] text-gray-500">{info.desc}</span>
+                                            </div>
                                         </div>
+                                        <ToggleSwitch
+                                            checked={isVisible}
+                                            onChange={() => toggleZoningCat(catKey)}
+                                            size="sm"
+                                        />
                                     </div>
                                 );
                             })}
