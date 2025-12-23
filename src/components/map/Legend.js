@@ -9,7 +9,7 @@ const getConstants = () => window.App?.Constants || {};
 
 const Legend = ({
     visibleMapLayers,
-    setVisibleMapLayers,
+    toggleLayer,      // Changed from setVisibleMapLayers
     visibleZoningCats,
     setVisibleZoningCats,
     selectedAnpId,
@@ -43,10 +43,9 @@ const Legend = ({
         if (layerKey === 'edomex' || layerKey === 'morelos') return;
 
         console.log('Toggling layer:', layerKey);
-        setVisibleMapLayers(prev => ({
-            ...prev,
-            [layerKey]: !prev[layerKey]
-        }));
+        if (toggleLayer) {
+            toggleLayer(layerKey);
+        }
     };
 
     return (
