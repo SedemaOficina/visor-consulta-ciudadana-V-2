@@ -11,20 +11,14 @@ const Utils = AppGlobals.Utils || {};
 const Components = AppGlobals.Components || {};
 const Analysis = AppGlobals.Analysis || {};
 
-const {
-  DATA_FILES,
-  LAYER_STYLES,
-  ZONING_CAT_INFO,
-  ZONING_ORDER,
-  INITIAL_CENTER,
-  INITIAL_ZOOM,
-  FOCUS_ZOOM
-} = Constants;
+// 1. CONFIGURACIÓN E IMPORTACIONES
+const React = window.React;
+const { useState, useEffect, useRef } = React;
+const ReactDOM = window.ReactDOM;
 
-const {
-  getZoningStyle = () => ({}),
-  getBaseLayerUrl = () => ''
-} = Utils;
+// Namespaces (Lazy access preferred)
+// const AppGlobals = window.App || {}; 
+// Removed unsafe top-level destructurings to prevent race conditions
 
 // Componentes UI
 const Icons = Components.Icons || new Proxy({}, { get: () => () => null });
@@ -39,7 +33,8 @@ const ResultsContent = Components.ResultsContent || (() => null);
 const SearchLogicDesktop = Components.SearchLogicDesktop || (() => null);
 const SidebarDesktop = Components.SidebarDesktop || (() => null);
 
-const { analyzeLocation } = Analysis;
+// Analysis access moved to component scope
+
 
 const PdfExportController = Components.PdfExportController || (() => null);
 
@@ -76,8 +71,11 @@ let dataCache = {
 
 
 const loadCoreData = async () => {
+  const { DATA_FILES } = window.App?.Constants || {};
+
   const fJ = async (u) => {
     try {
+      if (!u) throw new Error('URL undefined');
       const res = await fetch(u, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status} ${u}`);
       return await res.json();
@@ -87,9 +85,9 @@ const loadCoreData = async () => {
     }
   };
   const [cdmx, alcaldias, sc] = await Promise.all([
-    fJ(DATA_FILES.LIMITES_CDMX),
-    fJ(DATA_FILES.LIMITES_ALCALDIAS),
-    fJ(DATA_FILES.SUELO_CONSERVACION)
+    fJ(DATA_FILES?.LIMITES_CDMX),
+    fJ(DATA_FILES?.LIMITES_ALCALDIAS),
+    fJ(DATA_FILES?.SUELO_CONSERVACION)
   ]);
 
   dataCache.cdmx = cdmx;
@@ -133,14 +131,15 @@ const loadExtraData = async () => {
       })
     );
 
+  const { DATA_FILES } = window.App?.Constants || {};
   // ✅ Cargar zonificación MAIN + zonificaciones extra
   const [mainZoning, anpInternalList, rules, edomex, morelos, anp] = await Promise.all([
-    fJ(DATA_FILES.ZONIFICACION_MAIN),
-    Promise.all((DATA_FILES.ZONIFICACION_FILES || []).map(fJ)),
-    fC(DATA_FILES.USOS_SUELO_CSV),
-    fJ(DATA_FILES.LIMITES_EDOMEX),
-    fJ(DATA_FILES.LIMITES_MORELOS),
-    fJ(DATA_FILES.ANP)
+    fJ(DATA_FILES?.ZONIFICACION_MAIN),
+    Promise.all((DATA_FILES?.ZONIFICACION_FILES || []).map(fJ)),
+    fC(DATA_FILES?.USOS_SUELO_CSV),
+    fJ(DATA_FILES?.LIMITES_EDOMEX),
+    fJ(DATA_FILES?.LIMITES_MORELOS),
+    fJ(DATA_FILES?.ANP)
   ]);
 
   dataCache.zoning = mainZoning; // Solo PGOEDF
@@ -385,6 +384,10 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
 /* ------------------------------------------------ */
 
 const App = () => {
+  // Safe Lazy Access
+  const { ZONING_ORDER, INITIAL_CENTER, INITIAL_ZOOM, FOCUS_ZOOM, DATA_FILES } = window.App?.Constants || {};
+  const { analyzeLocation } = window.App?.Analysis || {};
+
   const [loading, setLoading] = useState(true); // Carga inicial (datos)
   const [analyzing, setAnalyzing] = useState(false); // Carga de análisis (geocoding/polígonos)
   const [extraDataLoaded, setExtraDataLoaded] = useState(false);
