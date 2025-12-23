@@ -11,10 +11,7 @@ const Utils = AppGlobals.Utils || {};
 const Components = AppGlobals.Components || {};
 const Analysis = AppGlobals.Analysis || {};
 
-// 1. CONFIGURACIÓN E IMPORTACIONES
-const React = window.React;
-const { useState, useEffect, useRef } = React;
-const ReactDOM = window.ReactDOM;
+
 
 // Namespaces (Lazy access preferred)
 // const AppGlobals = window.App || {}; 
