@@ -551,7 +551,21 @@ const App = () => {
           'FC', 'FCE', 'FP', 'FPE', 'AF', 'AFE', 'AE', 'AEE',
           'PDU_PP', 'PDU_PR', 'PDU_ZU', 'PDU_ER'
         ];
-        // ... (ZONING_CAT_INFO could be added here too if critical)
+        window.App.Constants.ZONING_CAT_INFO = {
+          FC: { color: '#15803d', label: 'Forestal Conservación' },
+          FCE: { color: '#4ade80', label: 'Forestal Conservación Especial' },
+          FP: { color: '#0e7490', label: 'Forestal Protección' },
+          FPE: { color: '#0284c7', label: 'Forestal Protección Especial' },
+          AF: { color: '#65a30d', label: 'Agroforestal' },
+          AFE: { color: '#a3e635', label: 'Agroforestal Especial' },
+          AE: { color: '#fbbf24', label: 'Agroecológico' },
+          AEE: { color: '#eab308', label: 'Agroecológico Especial' },
+          PDU_PP: { color: '#e11d48', label: 'Programas Parciales' },
+          PDU_PR: { color: '#d97706', label: 'Poblados Rurales' },
+          PDU_ZU: { color: '#94a3b8', label: 'Zona Urbana' },
+          PDU_ER: { color: '#3b82f6', label: 'Equipamiento Rural' },
+          ANP_ZON: { color: '#7e22ce', label: 'Zonificación ANP (interna)' }
+        };
       }
 
       // Ahora seguro procedemos
