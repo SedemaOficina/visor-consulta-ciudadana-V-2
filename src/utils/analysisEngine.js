@@ -31,7 +31,7 @@
             if (dataCache.edomex && dataCache.morelos) {
                 const inEM = findFeature(c, dataCache.edomex);
                 const inMOR = findFeature(c, dataCache.morelos);
-                r.outsideContext = inEM ? "Edo. Méx" : inMOR ? "Morelos" : null;
+                r.outsideContext = inEM ? "Estado de México" : inMOR ? "Morelos" : null;
             }
             return r;
         }
