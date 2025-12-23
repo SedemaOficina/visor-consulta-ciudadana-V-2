@@ -42,13 +42,12 @@
   <div id="root"></div>
 
   <!-- ✅ CONFIG & UTILS -->
-  <script src="./src/config/constants.js?v=3.1"></script>
-  <script src="./src/utils/geoUtils.js?v=3.1"></script>
-  <script src="./src/config/constants.js?v=3.1"></script>
-  <script src="./src/utils/geoUtils.js?v=3.1"></script>
+  <!-- 1. DATA/CONFIG HOOK (Provides Global Constants) - MUST LOAD FIRST -->
+  <script src="./src/hooks/useAppData.js?v=3.2"></script>
+
+  <!-- 2. UTILS (Depends on Constants) -->
+  <script src="./src/utils/geoUtils.js?v=3.2"></script>
   <script src="./src/utils/analysisEngine.js?v=3.1"></script>
-  <!-- NEW: Data Hook -->
-  <script src="./src/hooks/useAppData.js?v=3.1"></script>
 
   <!-- DEBUG: Verify App Globals before React loads -->
   <script>

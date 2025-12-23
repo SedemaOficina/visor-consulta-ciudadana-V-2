@@ -2,7 +2,7 @@
     const { useState, useEffect } = window.React;
 
     /* ------------------------------------------------ */
-    /* BUNDLED CONFIGURATION (Extracted from constants.js) */
+    /* BUNDLED CONFIGURATION (Single Source of Truth) */
     /* ------------------------------------------------ */
     const BUNDLED_CONSTANTS = {
         COLORS: {
@@ -76,6 +76,12 @@
         INITIAL_ZOOM: 10,
         FOCUS_ZOOM: 16
     };
+
+    // IMMEDIATE GLOBAL ASSIGNMENT
+    // Replaces constants.js functionality
+    window.App = window.App || {};
+    window.App.Constants = BUNDLED_CONSTANTS;
+    console.log('✅ Constants initialized from useAppData.js');
 
     const useAppData = () => {
         const [loading, setLoading] = useState(true);
@@ -159,10 +165,6 @@
                     setLoading(false);
                 }
             };
-
-            // Inject Constants globally for legacy components
-            if (!window.App) window.App = {};
-            if (!window.App.Constants) window.App.Constants = BUNDLED_CONSTANTS;
 
             loadData();
         }, []);
