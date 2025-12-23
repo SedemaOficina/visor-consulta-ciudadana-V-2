@@ -395,7 +395,7 @@ const App = () => {
   const { addToast } = useToast(); // ✅ Use newly added hook
   const [analysis, setAnalysis] = useState(null);
   const [location, setLocation] = useState(null);
-  // const [addressText, setAddressText] = useState(''); // ✅ Nuevo estado compartido para la barra de búsqueda
+
 
   // Capas mapa
   const [visibleMapLayers, setVisibleMapLayers] = useState({
@@ -449,7 +449,6 @@ const App = () => {
     const text = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
     setLocation(coord);
-    // setAddressText(text); // No longer needed, derived from analysis
 
     // ✅ Empuja al textbox en desktop y móvil
     desktopSearchInputRef.current?.(text);
@@ -478,7 +477,6 @@ const App = () => {
     setLocation(null);
     setAnalysis(null);
     setMobileSheetState('collapsed');
-    // setAddressText(''); // No longer needed
 
 
     resetMapViewRef.current?.();
@@ -593,10 +591,7 @@ const App = () => {
             analysisStatus={analysis?.status}
             visibleMapLayers={visibleMapLayers}
             setVisibleMapLayers={setVisibleMapLayers}
-            visibleZoningCats={visibleZoningCats}
             setVisibleZoningCats={setVisibleZoningCats}
-            // isLegendOpen={isLegendOpen} // Removed, Legend handles its own visibility
-            // setIsLegendOpen={setIsLegendOpen} // Removed
             extraDataLoaded={extraDataLoaded}
             activeBaseLayer={activeBaseLayer}
             setActiveBaseLayer={setActiveBaseLayer}
