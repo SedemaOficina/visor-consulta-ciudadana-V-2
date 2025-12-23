@@ -402,61 +402,29 @@ const App = () => {
 
   // Initialization Effect
   useEffect(() => {
-    const initApp = async () => {
+    if (loading) return; // Wait for hook to finish
 
-      // Pre-flight Check
-      const checkIntegrity = () => {
-        console.log("DEBUG: Checking Integrity...");
-        console.log("DEBUG: window.App state:", window.App);
-        console.log("DEBUG: window.App?.Constants:", window.App?.Constants);
-        console.log("DEBUG: window.App?.Utils:", window.App?.Utils);
+    // Simulate deprecated values for component compat
+    setExtraDataLoaded(true);
 
-        const missing = [];
-        if (!window.Papa) missing.push("PapaParse Library");
+    if (error) {
+      setSystemError(`Error cargando datos: ${error}`);
+      return;
+    }
 
-        // ✅ INLINE FIX: Restore global if missing
-        if (!window.App) window.App = {};
-        if (!window.App.Constants) window.App.Constants = BUNDLED_CONSTANTS;
+    const initUrlParams = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const lat = parseFloat(params.get("lat"));
+      const lng = parseFloat(params.get("lng"));
+      const hasCoords = !isNaN(lat) && !isNaN(lng);
 
-        // Soft check for Utils - simple warning
-        if (!window.App.Utils || !window.App.Utils.getBaseLayerUrl) {
-          console.warn("Utils missing at init - Component logic might fail later.");
-        }
-
-        if (missing.length > 0) {
-          console.error("CRITICAL: Missing system modules:", missing);
-          setSystemError(`Error crítico de carga: ${missing.join(', ')}`);
-          return false;
-        }
-        return true;
-      };
-
-      if (!checkIntegrity()) return;
-
-      try {
-        await loadCoreData();
-        setLoading(false);
-
-        const params = new URLSearchParams(window.location.search);
-        const lat = parseFloat(params.get("lat"));
-        const lng = parseFloat(params.get("lng"));
-        const hasCoords = !isNaN(lat) && !isNaN(lng);
-
-        if (!hasCoords) setIsHelpOpen(true);
-        if (hasCoords) handleLocationSelect({ lat, lng });
-
-        await loadExtraData();
-        setExtraDataLoaded(true);
-
-      } catch (err) {
-        console.error("Error loading initial data:", err);
-        setSystemError(`Error cargando datos: ${err.message}`);
-        setLoading(false);
-      }
+      if (!hasCoords) setIsHelpOpen(true);
+      if (hasCoords) handleLocationSelect({ lat, lng });
     };
 
-    initApp();
-  }, []);
+    initUrlParams();
+
+  }, [loading, error, handleLocationSelect]);
 
   if (systemError) {
     return (
