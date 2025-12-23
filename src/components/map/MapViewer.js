@@ -176,7 +176,7 @@ const MapViewer = ({
                     if (name === 'sc') {
                         // SC usa tooltip estandar pero podriamos colorearlo si se quiere. Mantenemos standard por ahora o verde?
                         // Usuario pidio "capas", SC es una capa. Vamos a ponerle verde.
-                        bindColoredTooltip(layerInstance, "Suelo de Conservación", LAYER_STYLES.sc.color);
+                        bindColoredTooltip(layerInstance, "Suelo de Conservación", LAYER_STYLES?.sc?.color || '#3B7D23');
                     } else if (tooltipField && feature.properties?.[tooltipField]) {
                         // Generic fallback
                         layerInstance.bindTooltip(feature.properties[tooltipField], {
@@ -195,10 +195,10 @@ const MapViewer = ({
             'sc',
             sc,
             {
-                color: LAYER_STYLES.sc.color,
+                color: LAYER_STYLES?.sc?.color || '#3B7D23',
                 weight: 1.5,
                 opacity: 1,
-                fillColor: LAYER_STYLES.sc.fill,
+                fillColor: LAYER_STYLES?.sc?.fill || '#3B7D23',
                 fillOpacity: 0.2,
                 interactive: true
             },
@@ -211,7 +211,7 @@ const MapViewer = ({
             'alcaldias',
             alcaldias,
             {
-                color: LAYER_STYLES.alcaldias.color,
+                color: LAYER_STYLES?.alcaldias?.color || '#FFFFFF',
                 weight: 2, // Hierarchy: Thicker than zones, thinner than 3
                 opacity: 0.9,
                 fillOpacity: 0
