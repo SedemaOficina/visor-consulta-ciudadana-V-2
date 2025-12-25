@@ -132,11 +132,11 @@ const Legend = ({
                     </div>
                 </div>
 
-                {/* ZONIFICACIÓN PGOEDF 2000 */}
-                <div className="space-y-2">
+                {/* ZONIFICACIÓN PGOEDF 2000 (Indented) */}
+                <div className="space-y-2 pl-4 border-l-2 border-gray-100 ml-1">
                     <div className="flex items-start justify-between mb-1 gap-2">
                         <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">
-                            Zonificación Programa General de Ordenamiento Ecológico del Distrito Federal (2000)
+                            1.1 Zonificación PGOEDF (2000)
                         </h4>
                         <div className="flex-shrink-0 pt-0.5">
                             <ToggleSwitch
@@ -149,7 +149,7 @@ const Legend = ({
 
                     {/* Lista de Categorías de Zonificación */}
                     {visibleMapLayers.zoning && ZONING_ORDER && ZONING_CAT_INFO && (
-                        <div className="pl-1 space-y-1.5 border-l-2 border-gray-100 ml-1">
+                        <div className="pl-1 space-y-1.5">
                             {ZONING_ORDER.map(catKey => {
                                 const info = ZONING_CAT_INFO[catKey];
                                 if (!info) return null;
