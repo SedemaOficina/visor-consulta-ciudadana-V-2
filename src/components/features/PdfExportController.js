@@ -503,28 +503,39 @@
 
                     base.addTo(m);
 
-                    // GeoJSON Helper
-                    const addGeoJson = (fc, style, paneZ = 400) => {
+                    // Helper para panes seguros
+                    const createPane = (name, zIndex) => {
+                        if (!m.getPane(name)) m.createPane(name);
+                        m.getPane(name).style.zIndex = zIndex;
+                        return name;
+                    };
+
+                    // GeoJSON Helper - Simplificado
+                    const addGeoJson = (fc, style, pane) => {
                         try {
                             if (!fc?.features?.length) return null;
-                            const paneName = `p${paneZ}`;
-                            if (!m.getPane(paneName)) m.createPane(paneName);
-                            m.getPane(paneName).style.zIndex = paneZ;
-                            return L.geoJSON(fc, { pane: paneName, style, interactive: false }).addTo(m);
+                            return L.geoJSON(fc, { pane, style, interactive: false }).addTo(m);
                         } catch (err) {
                             return null;
                         }
                     };
 
-                    // Add Layers
-                    if (visibleMapLayers?.sc && dataCache?.sc) {
-                        addGeoJson(dataCache.sc, { color: LAYER_STYLES?.sc?.color || 'green', weight: 1.8, opacity: 0.9, fillColor: LAYER_STYLES?.sc?.fill, fillOpacity: 0.18 }, 410);
-                    }
+                    // Configurar Panes en orden correcto
+                    const contextPane = createPane('contextPane', 400);
+                    const overlayPane = createPane('overlayPane', 450);
+                    const markerPane = createPane('markerPane', 600);
+
+                    // 1. Capas de Contexto
                     if (visibleMapLayers?.alcaldias && dataCache?.alcaldias) {
-                        addGeoJson(dataCache.alcaldias, { color: '#ffffff', weight: 3, dashArray: '8,4', opacity: 0.9, fillOpacity: 0 }, 420);
+                        addGeoJson(dataCache.alcaldias, { color: '#ffffff', weight: 3, dashArray: '8,4', opacity: 0.9, fillOpacity: 0 }, contextPane);
                     }
 
-                    // Zoning logic
+                    // 2. Capas Principales (SC sobre todo lo demás)
+                    if (visibleMapLayers?.sc && dataCache?.sc) {
+                        addGeoJson(dataCache.sc, { color: LAYER_STYLES?.sc?.color || 'green', weight: 1.8, opacity: 0.9, fillColor: LAYER_STYLES?.sc?.fill, fillOpacity: 0.18 }, overlayPane);
+                    }
+
+                    // 3. Zoning logic
                     if (visibleMapLayers?.zoning && dataCache?.zoning?.features?.length) {
                         const byKey = {};
                         (ZONING_ORDER || []).forEach(k => (byKey[k] = []));
@@ -540,7 +551,7 @@
                             if (byKey[k]) byKey[k].push(f);
                         });
 
-                        (ZONING_ORDER || []).forEach((k, idx) => {
+                        (ZONING_ORDER || []).forEach((k) => {
                             const isOn = (visibleZoningCats?.[k] !== false);
                             if (!isOn) return;
                             const feats = byKey[k];
@@ -548,22 +559,22 @@
                             const color = ZONING_CAT_INFO?.[k]?.color || '#9ca3af';
                             addGeoJson({ type: 'FeatureCollection', features: feats }, {
                                 color, weight: 1.5, opacity: 0.9, fillColor: color, fillOpacity: 0.2, interactive: false
-                            }, 430 + idx);
+                            }, overlayPane);
                         });
                     }
 
-                    // Pin
+                    // 4. Pin (Encima de todo)
                     const isSC = (analysisStatus === 'CONSERVATION_SOIL');
                     const isSU = (analysisStatus === 'URBAN_SOIL');
                     const pinFill = isSC ? (LAYER_STYLES?.sc?.color || 'green') : isSU ? '#3b82f6' : '#9d2148';
 
-                    if (!m.getPane('pointPane')) {
-                        m.createPane('pointPane');
-                        m.getPane('pointPane').style.zIndex = 600;
-                    }
-
                     L.circleMarker([lat, lng], {
-                        radius: 8, color: '#ffffff', weight: 3, fillColor: pinFill, fillOpacity: 1, pane: 'pointPane'
+                        radius: 10,  // Un poco más grande para visibilidad
+                        color: '#ffffff',
+                        weight: 4,
+                        fillColor: pinFill,
+                        fillOpacity: 1,
+                        pane: markerPane
                     }).addTo(m);
 
                     /* Capture Logic Segura */
@@ -586,23 +597,28 @@
                         }
                     };
 
+                    // Timeout absoluto (Safety)
                     const safetyTimeout = setTimeout(() => {
-                        console.warn('Capture timeout');
+                        console.warn('Capture timeout reached');
                         capture();
-                    }, 5000); // 5s timeout
+                    }, 6000);
 
-                    // Wait slightly longer for tiles and overlays
-                    base.once('load', () => {
+                    // Estrategia híbrida: esperar load de base + tiempo extra
+                    base.on('load', () => {
+                        console.log('Map base loaded, waiting for render...');
                         setTimeout(() => {
                             clearTimeout(safetyTimeout);
                             capture();
-                        }, 800);
+                        }, 1200); // 1.2s extra para capas pesadas
                     });
 
-                    // Failsafe
+                    // Si no carga en 3s, intentar capturar de todas formas (por si load event se pierde)
                     setTimeout(() => {
-                        if (!settled) capture();
-                    }, 5500);
+                        if (!settled) {
+                            console.warn('Force capture triggered');
+                            capture();
+                        }
+                    }, 3500);
 
                 } catch (e) {
                     console.error('Error crítico en buildExportMapImage', e);
