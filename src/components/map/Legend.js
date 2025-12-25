@@ -114,31 +114,39 @@ const Legend = ({
                     <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Zonificación Primaria</h4>
 
                     {/* SC Toggle */}
-                    <div className="flex items-center justify-between group">
+                    <div
+                        className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+                        onClick={() => handleToggleLayer('sc')}
+                    >
                         <div className="flex items-center gap-2">
                             <span
                                 className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
                                 style={{ backgroundColor: styles.sc?.color }}
                             />
-                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900">
+                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900 select-none">
                                 Suelo de Conservación
                             </span>
                         </div>
-                        <ToggleSwitch
-                            checked={!!visibleMapLayers.sc}
-                            onChange={() => handleToggleLayer('sc')}
-                            size="sm"
-                        />
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <ToggleSwitch
+                                checked={!!visibleMapLayers.sc}
+                                onChange={() => handleToggleLayer('sc')}
+                                size="sm"
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* ZONIFICACIÓN PGOEDF 2000 (Indented) */}
                 <div className="space-y-2 pl-4 border-l-2 border-gray-100 ml-1">
-                    <div className="flex items-start justify-between mb-1 gap-2">
-                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">
+                    <div
+                        className="flex items-start justify-between mb-1 gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+                        onClick={() => handleToggleLayer('zoning')}
+                    >
+                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight select-none">
                             1.1 Zonificación PGOEDF (2000)
                         </h4>
-                        <div className="flex-shrink-0 pt-0.5">
+                        <div className="flex-shrink-0 pt-0.5" onClick={(e) => e.stopPropagation()}>
                             <ToggleSwitch
                                 checked={!!visibleMapLayers.zoning}
                                 onChange={() => handleToggleLayer('zoning')}
@@ -158,7 +166,8 @@ const Legend = ({
                                 return (
                                     <div
                                         key={catKey}
-                                        className="flex items-center justify-between p-1 rounded hover:bg-gray-50 transition-colors"
+                                        className="flex items-center justify-between p-1 rounded hover:bg-gray-50 transition-colors cursor-pointer"
+                                        onClick={() => toggleZoningCat(catKey)}
                                     >
                                         <div className="flex items-center gap-2">
                                             <div
@@ -166,15 +175,17 @@ const Legend = ({
                                                 style={{ backgroundColor: info.color }}
                                             />
                                             <div className="flex flex-col leading-none">
-                                                <span className="text-[10px] font-semibold text-gray-700">{info.label}</span>
-                                                <span className="text-[9px] text-gray-500">{info.desc}</span>
+                                                <span className="text-[10px] font-semibold text-gray-700 select-none">{info.label}</span>
+                                                <span className="text-[9px] text-gray-500 select-none">{info.desc}</span>
                                             </div>
                                         </div>
-                                        <ToggleSwitch
-                                            checked={isVisible}
-                                            onChange={() => toggleZoningCat(catKey)}
-                                            size="sm"
-                                        />
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <ToggleSwitch
+                                                checked={isVisible}
+                                                onChange={() => toggleZoningCat(catKey)}
+                                                size="sm"
+                                            />
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -187,36 +198,46 @@ const Legend = ({
                     <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Áreas Naturales Protegidas</h4>
 
                     {/* ANP General Toggle */}
-                    <div className="flex items-center justify-between group">
+                    <div
+                        className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+                        onClick={() => handleToggleLayer('anp')}
+                    >
                         <div className="flex items-center gap-2">
                             <span
                                 className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
                                 style={{ backgroundColor: styles.anp?.color }}
                             />
-                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900">
+                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900 select-none">
                                 Polígonos ANP
                             </span>
                         </div>
-                        <ToggleSwitch
-                            checked={!!visibleMapLayers.anp}
-                            onChange={() => handleToggleLayer('anp')}
-                            size="sm"
-                        />
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <ToggleSwitch
+                                checked={!!visibleMapLayers.anp}
+                                onChange={() => handleToggleLayer('anp')}
+                                size="sm"
+                            />
+                        </div>
                     </div>
 
                     {/* ANP SELECTED ZONING (Dynamic Info) */}
                     {selectedAnpId && (
                         <div className="pl-4 mt-2">
-                            <div className="flex items-center justify-between">
+                            <div
+                                className="flex items-center justify-between cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+                                onClick={() => handleToggleLayer('selectedAnpZoning')}
+                            >
                                 <div className="flex items-center gap-2">
                                     {Icons.Info ? <Icons.Info className="h-3 w-3 text-blue-500" /> : <span>i</span>}
-                                    <span className="text-[10px] font-semibold text-blue-700">Zonificación Interna ANP</span>
+                                    <span className="text-[10px] font-semibold text-blue-700 select-none">Zonificación Interna ANP</span>
                                 </div>
-                                <ToggleSwitch
-                                    checked={!!visibleMapLayers.selectedAnpZoning}
-                                    onChange={() => handleToggleLayer('selectedAnpZoning')}
-                                    size="sm"
-                                />
+                                <div onClick={(e) => e.stopPropagation()}>
+                                    <ToggleSwitch
+                                        checked={!!visibleMapLayers.selectedAnpZoning}
+                                        onChange={() => handleToggleLayer('selectedAnpZoning')}
+                                        size="sm"
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}
