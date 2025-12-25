@@ -79,21 +79,21 @@ const SidebarDesktop = ({
                     />
 
                     {!analysis && !isLoading && (
-                        <div className="flex flex-col items-center justify-center text-center py-20 px-6 animate-in fade-in zoom-in duration-500 select-none">
+                        <div className="flex flex-col items-center justify-center text-center py-10 px-6 animate-in fade-in zoom-in duration-500 select-none">
                             {/* Ilustración Hero */}
-                            <div className="relative mb-6 group">
+                            <div className="relative mb-4 group">
                                 <div className="absolute inset-0 bg-[#9d2148] rounded-full blur-2xl opacity-5 group-hover:opacity-10 transition-opacity duration-700"></div>
-                                <div className="relative w-24 h-24 bg-gradient-to-tr from-white to-gray-50 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex items-center justify-center transform group-hover:-translate-y-1 transition-transform duration-500">
-                                    <Icons.MapIcon className="h-10 w-10 text-[#9d2148] opacity-80" strokeWidth={1.5} />
+                                <div className="relative w-20 h-20 bg-gradient-to-tr from-white to-gray-50 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex items-center justify-center transform group-hover:-translate-y-1 transition-transform duration-500">
+                                    <Icons.MapIcon className="h-9 w-9 text-[#9d2148] opacity-80" strokeWidth={1.5} />
 
                                     {/* Badge Flotante */}
-                                    <div className="absolute -bottom-2 -right-2 bg-white p-2 rounded-xl shadow-sm border border-gray-50 text-[#BC955C]">
-                                        <Icons.Navigation className="h-4 w-4" />
+                                    <div className="absolute -bottom-2 -right-2 bg-white p-1.5 rounded-xl shadow-sm border border-gray-50 text-[#BC955C]">
+                                        <Icons.Navigation className="h-3.5 w-3.5" />
                                     </div>
                                 </div>
                             </div>
 
-                            <h3 className="text-base font-bold text-gray-800 mb-2">
+                            <h3 className="text-base font-bold text-gray-800 mb-1.5">
                                 Bienvenido al Visor Ciudadano
                             </h3>
                             <p className="text-sm text-gray-500 leading-relaxed max-w-[260px] mx-auto">
@@ -101,7 +101,7 @@ const SidebarDesktop = ({
                             </p>
 
                             {/* Decorative dots */}
-                            <div className="flex gap-2 justify-center mt-6 opacity-30">
+                            <div className="flex gap-2 justify-center mt-5 opacity-30">
                                 <div className="w-1 h-1 rounded-full bg-[#9d2148]"></div>
                                 <div className="w-1 h-1 rounded-full bg-[#9d2148]"></div>
                                 <div className="w-1 h-1 rounded-full bg-[#9d2148]"></div>

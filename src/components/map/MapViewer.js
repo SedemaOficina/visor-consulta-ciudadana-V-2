@@ -95,7 +95,9 @@ const MapViewer = ({
     useEffect(() => {
         if (!mapRef.current || mapInstance.current || !window.L) return;
 
-        const bounds = window.L.latLngBounds([18.7, -99.6], [19.9, -98.7]);
+        // Expanded bounds to allow visualization of 'Outside' points (Central Mexico approx)
+        // or just generous enough to not lock the view too tight
+        const bounds = window.L.latLngBounds([14.0, -106.0], [24.0, -93.0]);
 
         const map = window.L.map(mapRef.current, {
             zoomControl: false,
@@ -104,7 +106,7 @@ const MapViewer = ({
             maxZoom: 18,
             preferCanvas: true,
             maxBounds: bounds,
-            maxBoundsViscosity: 0.9
+            maxBoundsViscosity: 0.5 // Less rigid bounce back
         }).setView(INITIAL_CENTER, INITIAL_ZOOM);
 
         window.L.control.attribution({ position: 'topleft', prefix: false }).addTo(map);
