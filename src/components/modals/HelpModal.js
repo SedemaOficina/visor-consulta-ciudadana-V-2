@@ -45,33 +45,75 @@ const HelpModal = ({ isOpen, onClose }) => {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-                    <div className="space-y-8">
-                        {/* Sección 1 */}
+                    <div className="space-y-6">
+
+                        {/* Intro Evita Fraudes */}
+                        <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-center">
+                            <p className="text-sm text-gray-800 leading-relaxed">
+                                Verifica si un predio se encuentra en <br />
+                                <strong>Suelo de Conservación</strong> o <strong>Área Natural Protegida</strong>.
+                            </p>
+                        </div>
+
+                        {/* Sección 1: Cómo Consultar */}
                         <section>
-                            <h3 className="flex items-center gap-2 text-lg font-bold text-[#9d2148] mb-3">
-                                <MapPinnedIcon className="h-5 w-5" />
-                                ¿Cómo realizar una consulta?
+                            <h3 className="flex items-center gap-2 text-base font-bold text-[#9d2148] mb-3 uppercase tracking-wide">
+                                <MapPinnedIcon className="h-4 w-4" />
+                                ¿Cómo ubicar un predio?
                             </h3>
-                            <ul className="space-y-3 pl-2">
+                            <ul className="space-y-3 pl-1">
                                 <li className="flex gap-3 text-sm text-gray-700">
-                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2148] font-bold flex items-center justify-center text-xs border border-red-100">1</span>
+                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 text-gray-600 font-bold flex items-center justify-center text-[10px] border border-gray-200">1</span>
                                     <span>
                                         <strong>Búsqueda por dirección:</strong> Escribe la calle y número en el buscador lateral (ej. "Av. Insurgentes Sur 100").
                                     </span>
                                 </li>
                                 <li className="flex gap-3 text-sm text-gray-700">
-                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2148] font-bold flex items-center justify-center text-xs border border-red-100">2</span>
+                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 text-gray-600 font-bold flex items-center justify-center text-[10px] border border-gray-200">2</span>
                                     <span>
                                         <strong>Búsqueda por coordenadas:</strong> Ingresa latitud y longitud (ej. "19.4326, -99.1332").
                                     </span>
                                 </li>
                                 <li className="flex gap-3 text-sm text-gray-700">
-                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-[#9d2148] font-bold flex items-center justify-center text-xs border border-red-100">3</span>
+                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 text-gray-600 font-bold flex items-center justify-center text-[10px] border border-gray-200">3</span>
                                     <span>
                                         <strong>Navegación manual:</strong> Navega por el mapa y haz clic directamente sobre el predio de interés.
                                     </span>
                                 </li>
+                                <li className="flex gap-3 text-sm text-gray-700">
+                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 text-gray-600 font-bold flex items-center justify-center text-[10px] border border-gray-200">4</span>
+                                    <span>
+                                        <strong>Mi ubicación:</strong> Utiliza el botón de geolocalización para ubicarte automáticamente.
+                                    </span>
+                                </li>
                             </ul>
+                        </section>
+
+                        <hr className="border-gray-100" />
+
+                        {/* Sección 2: Qué puedes hacer */}
+                        <section>
+                            <h3 className="flex items-center gap-2 text-base font-bold text-[#9d2148] mb-3 uppercase tracking-wide">
+                                <Icons.CheckCircle className="h-4 w-4" />
+                                Acciones Disponibles
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
+                                    <Icons.Pdf className="h-5 w-5 text-[#9d2148] mx-auto mb-2" />
+                                    <span className="text-xs font-semibold text-gray-700 block">Descargar Ficha</span>
+                                    <span className="text-[10px] text-gray-500 block leading-tight mt-1">Obtén un reporte oficial en PDF</span>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
+                                    <Icons.MapIcon className="h-5 w-5 text-[#9d2148] mx-auto mb-2" />
+                                    <span className="text-xs font-semibold text-gray-700 block">Google Maps</span>
+                                    <span className="text-[10px] text-gray-500 block leading-tight mt-1">Ver la ubicación en Google Maps</span>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
+                                    <Icons.Share className="h-5 w-5 text-[#9d2148] mx-auto mb-2" />
+                                    <span className="text-xs font-semibold text-gray-700 block">Compartir</span>
+                                    <span className="text-[10px] text-gray-500 block leading-tight mt-1">Comparte el resultado por enlace</span>
+                                </div>
+                            </div>
                         </section>
 
                         <hr className="border-gray-100" />
