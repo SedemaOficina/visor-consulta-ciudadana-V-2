@@ -295,7 +295,9 @@
                                     <Box title="Dirección Aproximada / Lugar">{direccion}</Box>
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '20px' }}>
-                                    <Box title="Alcaldía">{analysis.alcaldia || 'Ciudad de México'}</Box>
+                                    {!isOutside && (
+                                        <Box title="Alcaldía">{analysis.alcaldia || 'Ciudad de México'}</Box>
+                                    )}
                                     <Box title="Coordenadas Geográficas">
                                         <span style={{ fontFamily: T.mono, fontSize: '11px', background: '#f3f4f6', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
                                             {coordText}
@@ -668,10 +670,27 @@
                 const M = 12; // Margin
 
                 const imgProps = pdf.getImageProperties(imgData);
-                const usableW = pdfWidth - (M * 2);
-                const imgH = (imgProps.height * usableW) / imgProps.width;
+                const usableW = pdfWidth; // Full width (margins handled by HTML padding)
+                const imgHeight = (imgProps.height * usableW) / imgProps.width;
 
-                pdf.addImage(imgData, 'PNG', M, M, usableW, imgH);
+                let heightLeft = imgHeight;
+                let position = 0;
+                let pageNum = 0;
+
+                // Support Multi-page Only if strictly necessary
+                if (heightLeft <= pdfHeight) {
+                    pdf.addImage(imgData, 'PNG', 0, 0, usableW, imgHeight);
+                } else {
+                    while (heightLeft > 0) {
+                        pdf.addImage(imgData, 'PNG', 0, position, usableW, imgHeight);
+                        heightLeft -= pdfHeight;
+                        position -= pdfHeight; // Move image up
+                        if (heightLeft > 0) {
+                            pdf.addPage();
+                            pageNum++;
+                        }
+                    }
+                }
 
                 const cleanAlcaldia = (analysis.alcaldia || 'CDMX').replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
                 pdf.save(`FICHA_${cleanAlcaldia}.pdf`);
