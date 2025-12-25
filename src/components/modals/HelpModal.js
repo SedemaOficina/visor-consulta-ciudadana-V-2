@@ -25,12 +25,16 @@ const HelpModal = ({ isOpen, onClose }) => {
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-gray-50">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#9d2148] flex items-center justify-center text-white shadow-sm">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#9d2148] flex items-center justify-center text-white shadow-sm">
                             <span className="font-bold text-xl">?</span>
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-800">Ayuda y Soporte</h2>
-                            <p className="text-xs text-gray-500">Consulta Ciudadana de Zonificación</p>
+                            <h2 className="text-base font-bold text-gray-800 leading-tight">
+                                Verifica si un predio se encuentra en
+                            </h2>
+                            <p className="text-sm text-[#9d2148] font-semibold">
+                                Suelo de Conservación o Área Natural Protegida
+                            </p>
                         </div>
                     </div>
                     <button
@@ -46,14 +50,6 @@ const HelpModal = ({ isOpen, onClose }) => {
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
                     <div className="space-y-6">
-
-                        {/* Intro Evita Fraudes */}
-                        <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-center">
-                            <p className="text-sm text-gray-800 leading-relaxed">
-                                Verifica si un predio se encuentra en <br />
-                                <strong>Suelo de Conservación</strong> o <strong>Área Natural Protegida</strong>.
-                            </p>
-                        </div>
 
                         {/* Sección 1: Cómo Consultar */}
                         <section>
