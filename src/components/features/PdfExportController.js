@@ -453,148 +453,149 @@
                     </div>
 
                 </div>
-                );
+            </div>
+        );
     });
 
-                const PdfExportController = ({analysis, onExportReady, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats}) => {
+    const PdfExportController = ({ analysis, onExportReady, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats }) => {
         // Safe Lazy Access
-        const {ZONING_ORDER, LAYER_STYLES, ZONING_CAT_INFO} = getConstants();
-                const {getBaseLayerUrl, getZoningColor} = getUtils();
+        const { ZONING_ORDER, LAYER_STYLES, ZONING_CAT_INFO } = getConstants();
+        const { getBaseLayerUrl, getZoningColor } = getUtils();
 
-                const [mapImage, setMapImage] = useState(null);
-                const pdfRef = useRef(null);
-                const exportArmedRef = useRef(false);
+        const [mapImage, setMapImage] = useState(null);
+        const pdfRef = useRef(null);
+        const exportArmedRef = useRef(false);
 
-                const buildExportMapImage = ({lat, lng, zoom = 14, analysisStatus}) => {
+        const buildExportMapImage = ({ lat, lng, zoom = 14, analysisStatus }) => {
             return new Promise((resolve) => {
                 try {
                     const L = window.L;
-                const leafletImageFn = window.leafletImage || window.leafletImage?.default;
+                    const leafletImageFn = window.leafletImage || window.leafletImage?.default;
 
-                if (!L || typeof leafletImageFn !== 'function') {
+                    if (!L || typeof leafletImageFn !== 'function') {
                         return resolve(null);
                     }
 
-                const el = document.getElementById('export-map');
-                if (!el) return resolve(null);
+                    const el = document.getElementById('export-map');
+                    if (!el) return resolve(null);
 
-                el.innerHTML = '';
-                const m = L.map(el, {
-                    zoomControl: false,
-                attributionControl: false,
-                preferCanvas: true,
-                // Fix: Evitar animaciones que pueden causar race conditions
-                fadeAnimation: false,
-                zoomAnimation: false,
-                markerZoomAnimation: false
+                    el.innerHTML = '';
+                    const m = L.map(el, {
+                        zoomControl: false,
+                        attributionControl: false,
+                        preferCanvas: true,
+                        // Fix: Evitar animaciones que pueden causar race conditions
+                        fadeAnimation: false,
+                        zoomAnimation: false,
+                        markerZoomAnimation: false
                     }).setView([lat, lng], zoom);
 
-                // Definir base layer
-                const baseLayerUrl = (typeof getBaseLayerUrl === 'function')
-                ? getBaseLayerUrl(activeBaseLayer || 'SATELLITE')
-                : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+                    // Definir base layer
+                    const baseLayerUrl = (typeof getBaseLayerUrl === 'function')
+                        ? getBaseLayerUrl(activeBaseLayer || 'SATELLITE')
+                        : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
-                const base = L.tileLayer(baseLayerUrl, {
-                    crossOrigin: 'anonymous',
-                maxZoom: 19
+                    const base = L.tileLayer(baseLayerUrl, {
+                        crossOrigin: 'anonymous',
+                        maxZoom: 19
                     });
 
-                base.addTo(m);
+                    base.addTo(m);
 
                     // GeoJSON Helper
                     const addGeoJson = (fc, style, paneZ = 400) => {
                         try {
                             if (!fc?.features?.length) return null;
-                const paneName = `p${paneZ}`;
-                if (!m.getPane(paneName)) m.createPane(paneName);
-                m.getPane(paneName).style.zIndex = paneZ;
-                return L.geoJSON(fc, {pane: paneName, style, interactive: false }).addTo(m);
+                            const paneName = `p${paneZ}`;
+                            if (!m.getPane(paneName)) m.createPane(paneName);
+                            m.getPane(paneName).style.zIndex = paneZ;
+                            return L.geoJSON(fc, { pane: paneName, style, interactive: false }).addTo(m);
                         } catch (err) {
                             return null;
                         }
                     };
 
-                // Add Layers
-                if (visibleMapLayers?.sc && dataCache?.sc) {
-                    addGeoJson(dataCache.sc, { color: LAYER_STYLES?.sc?.color || 'green', weight: 1.8, opacity: 0.9, fillColor: LAYER_STYLES?.sc?.fill, fillOpacity: 0.18 }, 410);
+                    // Add Layers
+                    if (visibleMapLayers?.sc && dataCache?.sc) {
+                        addGeoJson(dataCache.sc, { color: LAYER_STYLES?.sc?.color || 'green', weight: 1.8, opacity: 0.9, fillColor: LAYER_STYLES?.sc?.fill, fillOpacity: 0.18 }, 410);
                     }
-                if (visibleMapLayers?.alcaldias && dataCache?.alcaldias) {
-                    addGeoJson(dataCache.alcaldias, { color: '#ffffff', weight: 3, dashArray: '8,4', opacity: 0.9, fillOpacity: 0 }, 420);
+                    if (visibleMapLayers?.alcaldias && dataCache?.alcaldias) {
+                        addGeoJson(dataCache.alcaldias, { color: '#ffffff', weight: 3, dashArray: '8,4', opacity: 0.9, fillOpacity: 0 }, 420);
                     }
 
-                // Zoning logic
-                if (visibleMapLayers?.zoning && dataCache?.zoning?.features?.length) {
-                        const byKey = { };
+                    // Zoning logic
+                    if (visibleMapLayers?.zoning && dataCache?.zoning?.features?.length) {
+                        const byKey = {};
                         (ZONING_ORDER || []).forEach(k => (byKey[k] = []));
                         dataCache.zoning.features.forEach(f => {
-                    let k = (f.properties?.CLAVE || '').toString().trim().toUpperCase();
-                if (k === 'PDU' || k === 'PROGRAMAS' || k === 'ZONA URBANA') {
+                            let k = (f.properties?.CLAVE || '').toString().trim().toUpperCase();
+                            if (k === 'PDU' || k === 'PROGRAMAS' || k === 'ZONA URBANA') {
                                 const desc = (f.properties?.PGOEDF || '').toLowerCase();
-                if (desc.includes('equipamiento')) k = 'PDU_ER';
-                else if (desc.includes('parcial')) k = 'PDU_PP';
-                else if (desc.includes('poblad') || desc.includes('rural') || desc.includes('habitacional')) k = 'PDU_PR';
-                else if (desc.includes('urbana') || desc.includes('urbano') || desc.includes('barrio')) k = 'PDU_ZU';
+                                if (desc.includes('equipamiento')) k = 'PDU_ER';
+                                else if (desc.includes('parcial')) k = 'PDU_PP';
+                                else if (desc.includes('poblad') || desc.includes('rural') || desc.includes('habitacional')) k = 'PDU_PR';
+                                else if (desc.includes('urbana') || desc.includes('urbano') || desc.includes('barrio')) k = 'PDU_ZU';
                             }
-                if (byKey[k]) byKey[k].push(f);
+                            if (byKey[k]) byKey[k].push(f);
                         });
 
                         (ZONING_ORDER || []).forEach((k, idx) => {
                             const isOn = (visibleZoningCats?.[k] !== false);
-                if (!isOn) return;
-                const feats = byKey[k];
-                if (!feats?.length) return;
-                const color = ZONING_CAT_INFO?.[k]?.color || '#9ca3af';
-                addGeoJson({type: 'FeatureCollection', features: feats }, {
-                    color, weight: 1.5, opacity: 0.9, fillColor: color, fillOpacity: 0.2, interactive: false
+                            if (!isOn) return;
+                            const feats = byKey[k];
+                            if (!feats?.length) return;
+                            const color = ZONING_CAT_INFO?.[k]?.color || '#9ca3af';
+                            addGeoJson({ type: 'FeatureCollection', features: feats }, {
+                                color, weight: 1.5, opacity: 0.9, fillColor: color, fillOpacity: 0.2, interactive: false
                             }, 430 + idx);
                         });
                     }
 
-                // Pin
-                const isSC = (analysisStatus === 'CONSERVATION_SOIL');
-                const isSU = (analysisStatus === 'URBAN_SOIL');
-                const pinFill = isSC ? (LAYER_STYLES?.sc?.color || 'green') : isSU ? '#3b82f6' : '#9d2148';
+                    // Pin
+                    const isSC = (analysisStatus === 'CONSERVATION_SOIL');
+                    const isSU = (analysisStatus === 'URBAN_SOIL');
+                    const pinFill = isSC ? (LAYER_STYLES?.sc?.color || 'green') : isSU ? '#3b82f6' : '#9d2148';
 
-                if (!m.getPane('pointPane')) {
-                    m.createPane('pointPane');
-                m.getPane('pointPane').style.zIndex = 600;
+                    if (!m.getPane('pointPane')) {
+                        m.createPane('pointPane');
+                        m.getPane('pointPane').style.zIndex = 600;
                     }
 
-                L.circleMarker([lat, lng], {
-                    radius: 8, color: '#ffffff', weight: 3, fillColor: pinFill, fillOpacity: 1, pane: 'pointPane'
+                    L.circleMarker([lat, lng], {
+                        radius: 8, color: '#ffffff', weight: 3, fillColor: pinFill, fillOpacity: 1, pane: 'pointPane'
                     }).addTo(m);
 
-                /* Capture Logic Segura */
-                let settled = false;
+                    /* Capture Logic Segura */
+                    let settled = false;
                     const done = (img) => {
                         if (settled) return;
-                settled = true;
-                try {m.remove(); } catch { }
-                resolve(img || null);
+                        settled = true;
+                        try { m.remove(); } catch { }
+                        resolve(img || null);
                     };
 
                     const capture = () => {
                         try {
-                    leafletImageFn(m, (err, canvas) => {
-                        if (err || !canvas) return done(null);
-                        done(canvas.toDataURL('image/png'));
-                    });
+                            leafletImageFn(m, (err, canvas) => {
+                                if (err || !canvas) return done(null);
+                                done(canvas.toDataURL('image/png'));
+                            });
                         } catch (err) {
-                    done(null);
+                            done(null);
                         }
                     };
 
                     const safetyTimeout = setTimeout(() => {
-                    console.warn('Capture timeout');
-                capture();
+                        console.warn('Capture timeout');
+                        capture();
                     }, 4000); // Dar más tiempo (4s)
 
                     // Esperar a que tiles carguen un poco
                     base.once('load', () => {
-                    setTimeout(() => {
-                        clearTimeout(safetyTimeout);
-                        capture();
-                    }, 500);
+                        setTimeout(() => {
+                            clearTimeout(safetyTimeout);
+                            capture();
+                        }, 500);
                     });
 
                     // Failsafe por si load nunca dispara
@@ -605,29 +606,29 @@
                 } catch (e) {
                     // Critical catch para evitar crash de hilo
                     console.error('Error crítico en buildExportMapImage', e);
-                resolve(null);
+                    resolve(null);
                 }
             });
         };
 
         const handleExportPDF = React.useCallback(async () => {
             if (!exportArmedRef.current) return;
-                exportArmedRef.current = false;
+            exportArmedRef.current = false;
 
-                if (!analysis || !pdfRef.current) return;
+            if (!analysis || !pdfRef.current) return;
 
-                if (!window.jspdf?.jsPDF || typeof window.html2canvas !== 'function') {
-                    alert('Error: Librerías PDF/Canvas no cargadas.');
+            if (!window.jspdf?.jsPDF || typeof window.html2canvas !== 'function') {
+                alert('Error: Librerías PDF/Canvas no cargadas.');
                 return;
             }
-                const {jsPDF} = window.jspdf;
+            const { jsPDF } = window.jspdf;
 
-                try {
+            try {
                 // 1) Intentar Mapbox Static primero (Estrategia Prioritaria)
                 const staticUrl = getStaticMapUrl({
                     lat: analysis.coordinate.lat,
-                lng: analysis.coordinate.lng,
-                zoom: 14
+                    lng: analysis.coordinate.lng,
+                    zoom: 14
                 });
 
                 let img = null;
@@ -639,27 +640,27 @@
                     // 2) Fallback: leaflet-image (Opción Secundaria)
                     // Solo si falló el estático intentamos el render cliente
                     console.warn('Mapbox Static falló, intentando leaflet-image fallback...');
-                img = await buildExportMapImage({
-                    lat: analysis.coordinate.lat,
-                lng: analysis.coordinate.lng,
-                zoom: 14,
-                analysisStatus: analysis.status
+                    img = await buildExportMapImage({
+                        lat: analysis.coordinate.lat,
+                        lng: analysis.coordinate.lng,
+                        zoom: 14,
+                        analysisStatus: analysis.status
                     });
                 }
 
                 setMapImage(img); // Puede ser null, no pasa nada
                 await new Promise(r => setTimeout(r, 150)); // Render wait
             } catch (e) {
-                    console.error('Error generando imagen de mapa', e);
+                console.error('Error generando imagen de mapa', e);
                 setMapImage(null);
             }
 
-                const element = pdfRef.current;
-                const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-                const scale = isMobile ? 1.8 : 2.2;
+            const element = pdfRef.current;
+            const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+            const scale = isMobile ? 1.8 : 2.2;
 
-                try {
-                const canvas = await html2canvas(element, {scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
+            try {
+                const canvas = await html2canvas(element, { scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -676,15 +677,15 @@
                 pdf.save(`FICHA_${cleanAlcaldia}.pdf`);
 
             } catch (e) {
-                    console.error("PDF Fail", e);
+                console.error("PDF Fail", e);
                 alert("Error al generar PDF.");
             }
         }, [analysis, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats]);
 
         const requestExportPDF = React.useCallback((e) => {
             if (!e || !e.isTrusted) return;
-                exportArmedRef.current = true;
-                handleExportPDF();
+            exportArmedRef.current = true;
+            handleExportPDF();
         }, [handleExportPDF]);
 
         useEffect(() => {
@@ -694,19 +695,19 @@
             return () => onExportReady(null);
         }, [onExportReady, requestExportPDF]);
 
-                if (!analysis) return null;
+        if (!analysis) return null;
 
-                return (
-                <>
-                    <div id="export-map" style={{ width: '900px', height: '520px', position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}></div>
-                    <div style={{ position: 'absolute', top: -9999, left: -9999, width: '794px', zIndex: -1 }}>
-                        <div style={{ background: '#ffffff' }}>
-                            <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} />
-                        </div>
+        return (
+            <>
+                <div id="export-map" style={{ width: '900px', height: '520px', position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}></div>
+                <div style={{ position: 'absolute', top: -9999, left: -9999, width: '794px', zIndex: -1 }}>
+                    <div style={{ background: '#ffffff' }}>
+                        <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} />
                     </div>
-                </>
-                );
+                </div>
+            </>
+        );
     };
 
-                window.App.Components.PdfExportController = PdfExportController;
+    window.App.Components.PdfExportController = PdfExportController;
 })();
