@@ -84,13 +84,13 @@ const Legend = ({
             {/* Content with Scroll */}
             <div className="overflow-y-auto p-3 space-y-4 custom-scrollbar">
 
-                {/* MAPA BASE (New Section) */}
-                <div className="space-y-2">
+                {/* MAPA BASE (Compact) */}
+                <div className="space-y-1.5">
                     <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Mapa Base</h4>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="flex gap-2">
                         <button
                             onClick={() => setActiveBaseLayer && setActiveBaseLayer('SATELLITE')}
-                            className={`px-2 py-1.5 rounded-md text-[10px] font-semibold border transition-all ${activeBaseLayer === 'SATELLITE'
+                            className={`flex-1 py-1 px-2 rounded text-[10px] font-semibold border transition-all ${activeBaseLayer === 'SATELLITE'
                                 ? 'bg-[#9d2148] text-white border-[#9d2148]'
                                 : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
                         >
@@ -98,20 +98,20 @@ const Legend = ({
                         </button>
                         <button
                             onClick={() => setActiveBaseLayer && setActiveBaseLayer('STREETS')}
-                            className={`px-2 py-1.5 rounded-md text-[10px] font-semibold border transition-all ${activeBaseLayer === 'STREETS'
+                            className={`flex-1 py-1 px-2 rounded text-[10px] font-semibold border transition-all ${activeBaseLayer === 'STREETS'
                                 ? 'bg-[#9d2148] text-white border-[#9d2148]'
                                 : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
                         >
-                            Callejero
+                            Calles Claras
                         </button>
                     </div>
                 </div>
 
                 <hr className="border-gray-100" />
 
-                {/* ESTRUCTURA URBANA (Capas Base) */}
+                {/* ZONIFICACIÓN PRIMARIA (Solo SC) */}
                 <div className="space-y-2">
-                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Estructura</h4>
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Zonificación Primaria</h4>
 
                     {/* SC Toggle */}
                     <div className="flex items-center justify-between group">
@@ -130,35 +130,21 @@ const Legend = ({
                             size="sm"
                         />
                     </div>
-
-                    {/* ANP Toggle */}
-                    <div className="flex items-center justify-between group">
-                        <div className="flex items-center gap-2">
-                            <span
-                                className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
-                                style={{ backgroundColor: styles.anp?.color }}
-                            />
-                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900">
-                                Áreas Naturales Protegidas
-                            </span>
-                        </div>
-                        <ToggleSwitch
-                            checked={!!visibleMapLayers.anp}
-                            onChange={() => handleToggleLayer('anp')}
-                            size="sm"
-                        />
-                    </div>
                 </div>
 
-                {/* ZONIFICACIÓN */}
+                {/* ZONIFICACIÓN PGOEDF 2000 */}
                 <div className="space-y-2">
-                    <div className="flex items-center justify-between mb-1">
-                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Zonificación CDMX</h4>
-                        <ToggleSwitch
-                            checked={!!visibleMapLayers.zoning}
-                            onChange={() => handleToggleLayer('zoning')}
-                            size="sm"
-                        />
+                    <div className="flex items-start justify-between mb-1 gap-2">
+                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">
+                            Zonificación Programa General de Ordenamiento Ecológico del Distrito Federal (2000)
+                        </h4>
+                        <div className="flex-shrink-0 pt-0.5">
+                            <ToggleSwitch
+                                checked={!!visibleMapLayers.zoning}
+                                onChange={() => handleToggleLayer('zoning')}
+                                size="sm"
+                            />
+                        </div>
                     </div>
 
                     {/* Lista de Categorías de Zonificación */}
@@ -196,22 +182,45 @@ const Legend = ({
                     )}
                 </div>
 
-                {/* ANP SELECTED ZONING (Dynamic Info) */}
-                {selectedAnpId && (
-                    <div className="pt-2 border-t border-gray-100 mt-2">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                {Icons.Info ? <Icons.Info className="h-3 w-3 text-blue-500" /> : <span>i</span>}
-                                <span className="text-[10px] font-semibold text-blue-700">Zonificación Interna ANP</span>
-                            </div>
-                            <ToggleSwitch
-                                checked={!!visibleMapLayers.selectedAnpZoning}
-                                onChange={() => handleToggleLayer('selectedAnpZoning')}
-                                size="sm"
+                {/* ANP SECTION (Separate) */}
+                <div className="space-y-2 pt-2 border-t border-gray-100">
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Áreas Naturales Protegidas</h4>
+
+                    {/* ANP General Toggle */}
+                    <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-2">
+                            <span
+                                className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
+                                style={{ backgroundColor: styles.anp?.color }}
                             />
+                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900">
+                                Polígonos ANP
+                            </span>
                         </div>
+                        <ToggleSwitch
+                            checked={!!visibleMapLayers.anp}
+                            onChange={() => handleToggleLayer('anp')}
+                            size="sm"
+                        />
                     </div>
-                )}
+
+                    {/* ANP SELECTED ZONING (Dynamic Info) */}
+                    {selectedAnpId && (
+                        <div className="pl-4 mt-2">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    {Icons.Info ? <Icons.Info className="h-3 w-3 text-blue-500" /> : <span>i</span>}
+                                    <span className="text-[10px] font-semibold text-blue-700">Zonificación Interna ANP</span>
+                                </div>
+                                <ToggleSwitch
+                                    checked={!!visibleMapLayers.selectedAnpZoning}
+                                    onChange={() => handleToggleLayer('selectedAnpZoning')}
+                                    size="sm"
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
 
 
                 {/* CONTEXTO REGIONAL (Locked/Info only) */}
