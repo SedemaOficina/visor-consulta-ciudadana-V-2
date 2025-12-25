@@ -523,25 +523,25 @@ const MapViewer = ({
                 </div>
             )}
 
-            {/* Custom Zoom Control - Dark Theme */}
-            <div className="absolute bottom-6 right-4 flex flex-col z-[1000] bg-black/90 rounded-full shadow-xl overflow-hidden border border-gray-700 select-none">
+            {/* Custom Zoom Control - Light Theme Consolidado */}
+            <div className="absolute bottom-6 right-4 flex flex-col z-[1000] bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 select-none">
                 <button
                     onClick={() => mapInstance.current?.zoomIn()}
-                    className="w-10 h-10 flex items-center justify-center text-white hover:bg-gray-800 active:bg-gray-700 transition cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center text-[#9d2148] hover:bg-gray-50 active:bg-gray-100 transition cursor-pointer"
                     title="Acercar"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                 </button>
-                <div className="h-[1px] bg-gray-700 w-full" />
+                <div className="h-[1px] bg-gray-200 w-full" />
                 <button
                     onClick={() => mapInstance.current?.zoomOut()}
-                    className="w-10 h-10 flex items-center justify-center text-white hover:bg-gray-800 active:bg-gray-700 transition cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center text-[#9d2148] hover:bg-gray-50 active:bg-gray-100 transition cursor-pointer"
                     title="Alejar"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                 </button>

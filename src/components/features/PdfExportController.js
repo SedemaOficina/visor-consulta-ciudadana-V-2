@@ -247,7 +247,6 @@
             });
 
             return (
-            return (
                 <div
                     ref={ref}
                     style={{
