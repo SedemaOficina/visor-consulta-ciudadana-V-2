@@ -52,8 +52,8 @@ const Legend = ({
 
     return (
         <div
-            className="absolute top-24 right-20 z-[1000] w-64 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 flex flex-col transition-all animate-slide-left pointer-events-auto"
-            style={{ maxHeight: 'calc(100% - 8rem)' }}
+            className="absolute top-16 md:top-24 right-4 md:right-20 z-[1110] w-[calc(100%-2rem)] md:w-64 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 flex flex-col transition-all animate-slide-left pointer-events-auto"
+            style={{ maxHeight: 'calc(100% - 6rem)' }}
         >
             {/* Header */}
             <div className="flex items-center justify-between p-3 border-b border-gray-100 bg-white/50 rounded-t-lg">
