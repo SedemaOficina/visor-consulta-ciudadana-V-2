@@ -95,7 +95,7 @@ const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef, initialValue 
     };
 
     return (
-        <div className="md:hidden fixed top-3 left-3 right-3 z-[2000] flex flex-col gap-2 pointer-events-none">
+        <div className="w-full flex flex-col gap-2 pointer-events-none">
             <div className="pointer-events-auto">
                 <form
                     onSubmit={handleSubmit}

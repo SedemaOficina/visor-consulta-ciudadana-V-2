@@ -2,7 +2,7 @@ window.App = window.App || {};
 window.App.Components = window.App.Components || {};
 
 window.App.Components.InstitutionalHeader = () => (
-    <header className="bg-white shadow-sm z-[1100] relative border-b border-gray-200">
+    <header className="hidden md:block bg-white shadow-sm z-[1100] relative border-b border-gray-200">
         <div className="h-16 md:h-20 flex items-center justify-between px-4 max-w-7xl mx-auto">
 
             {/* Left Section: Branding */}
