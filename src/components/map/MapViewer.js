@@ -244,7 +244,7 @@ const MapViewer = ({
             'alcaldias',
             alcaldias,
             {
-                color: styles.alcaldias?.color || '#FFFFFF',
+                color: activeBaseLayer === 'SATELLITE' ? '#FFFFFF' : '#374151', // White on dark, dark gray on light
                 weight: 2,
                 opacity: 0.9,
                 fillOpacity: 0
@@ -440,6 +440,12 @@ const MapViewer = ({
         if (!mapInstance.current || !layersRef.current.base) return;
         setTilesLoading(true);
         layersRef.current.base.setUrl(getBaseLayerUrl(activeBaseLayer));
+
+        // Update Alcaldias Color
+        if (layersRef.current.alcaldias) {
+            const newColor = activeBaseLayer === 'SATELLITE' ? '#FFFFFF' : '#374151';
+            layersRef.current.alcaldias.setStyle({ color: newColor });
+        }
     }, [activeBaseLayer]);
 
     // VISIBILITY TOGGLE (Core + Extra)

@@ -287,7 +287,8 @@ const LocationSummary = ({ analysis, zoningDisplay }) => {
 
     return (
         <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 mb-4 animate-slide-up">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+                {/* Badge Suelo */}
                 <span
                     className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm leading-none"
                     style={{
@@ -297,6 +298,19 @@ const LocationSummary = ({ analysis, zoningDisplay }) => {
                 >
                     {isSC ? 'Suelo de Conservación' : 'Suelo Urbano'}
                 </span>
+
+                {/* Badge ANP */}
+                {analysis.isANP && (
+                    <span
+                        className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm leading-none"
+                        style={{
+                            backgroundColor: '#9333ea', // Morado Institucional ANP
+                            color: '#ffffff'
+                        }}
+                    >
+                        ANP
+                    </span>
+                )}
             </div>
 
             <StatusMessage analysis={analysis} />
