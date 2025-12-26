@@ -195,10 +195,18 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
                 RESULTADO DE CONSULTA
               </h3>
             ) : (
-              <>
-                <h3 className="font-bold text-gray-900 text-sm truncate">Visor de Consulta Ciudadana</h3>
-                <p className="text-[18px] text-gray-900 line-clamp-2 mt-0.5">{statusLabel}</p>
-              </>
+              <div className="flex flex-col items-center justify-center pt-2 pb-1 w-full">
+                <img
+                  src="./assets/logo-sedema.png"
+                  alt="SEDEMA"
+                  className="h-10 object-contain mb-2 opacity-90"
+                />
+                <div className="w-12 h-1 bg-[#bc955c] rounded-full mb-3"></div>
+                <h3 className="font-bold text-[#9d2148] text-sm mb-1 uppercase tracking-wide">Visor de Consulta</h3>
+                <p className="text-sm text-gray-600 text-center px-4 leading-relaxed font-medium">
+                  {statusLabel}
+                </p>
+              </div>
             )}
           </div>
 
@@ -473,13 +481,15 @@ const VisorApp = () => {
 
       <div className="flex-1 relative flex flex-col md:flex-row overflow-hidden">
 
-        <div className="md:hidden absolute top-0 left-0 right-0 z-[1045] p-3 pointer-events-none">
-          <MobileSearchBar
-            onLocationSelect={handleLocationSelect}
-            onReset={handleReset}
-            setInputRef={mobileSearchInputRef}
-            initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
-          />
+        <div className="md:hidden absolute top-4 left-0 right-0 z-[2000] px-4 pointer-events-none flex justify-center">
+          <div className="w-full max-w-lg pointer-events-auto">
+            <MobileSearchBar
+              onLocationSelect={handleLocationSelect}
+              onReset={handleReset}
+              setInputRef={mobileSearchInputRef}
+              initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
+            />
+          </div>
         </div>
 
         <SidebarDesktop
