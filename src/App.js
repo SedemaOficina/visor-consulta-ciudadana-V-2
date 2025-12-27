@@ -112,7 +112,7 @@ const ToastContainer = () => {
 
 /* 7.3 Bottom Sheet Móvil */
 /* ------------------------------------------------ */
-const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onStateChange, onExportPDF }) => {
+const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onStateChange, onExportPDF, isExporting }) => {
   const [sheetState, setSheetState] = useState('collapsed'); // 'collapsed' | 'mid' | 'full'
   const sheetRef = useRef(null);
   const startY = useRef(0);
@@ -230,7 +230,7 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
 
       {(sheetState === 'mid' || sheetState === 'full') && (
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-gray-50/50 mobile-upscale">
-          <ResultsContent analysis={analysis} onExportPDF={onExportPDF} />
+          <ResultsContent analysis={analysis} onExportPDF={onExportPDF} isExporting={isExporting} />
         </div>
       )}
 
@@ -271,13 +271,24 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
           <button
             type="button"
             onClick={(e) => {
+              if (isExporting) return;
               if (onExportPDF) onExportPDF(e);
               else alert('No se pudo generar el PDF. Intenta recargar la página.');
             }}
-            className="flex-1 min-w-[110px] flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-gray-50"
+            disabled={isExporting}
+            className={`flex-1 min-w-[110px] flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2.5 px-4 rounded-full text-xs font-bold shadow-sm hover:bg-gray-50 ${isExporting ? 'opacity-75 cursor-not-allowed' : ''}`}
             title="Descargar ficha técnica en PDF"
           >
-            <Icons.Pdf className="h-4 w-4" /> Exportar PDF
+            {isExporting ? (
+              <>
+                {Icons.Loader2 ? <Icons.Loader2 className="h-4 w-4 animate-spin text-[#9d2148]" /> : <span className="h-4 w-4 rounded-full border-2 border-t-[#9d2148] animate-spin" />}
+                Generando...
+              </>
+            ) : (
+              <>
+                <Icons.Pdf className="h-4 w-4" /> Exportar PDF
+              </>
+            )}
           </button>
         </div>
       )}
@@ -347,14 +358,28 @@ const VisorApp = () => {
 
   const [exportHandler, setExportHandler] = useState(null);
 
-  const handleExportClick = React.useCallback((e) => {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportClick = React.useCallback(async (e) => {
     if (typeof exportHandler === 'function') {
-      addToast('Generando documento PDF, por favor espere...', 'info');
-      exportHandler(e);
+      if (isExporting) return; // Prevent double click
+
+      setIsExporting(true);
+      // addToast('Generando documento PDF, por favor espere...', 'info'); // Handled by button state now
+
+      try {
+        await exportHandler(e);
+        addToast('Documento PDF generado exitosamente', 'success');
+      } catch (err) {
+        console.error("Export Error", err);
+        addToast('Error al generar PDF', 'error');
+      } finally {
+        setIsExporting(false);
+      }
     } else {
       alert('Aún no se puede exportar. Intenta recargar la página.');
     }
-  }, [exportHandler]);
+  }, [exportHandler, isExporting, addToast]);
 
   const invalidateMapRef = useRef(null);
   const resetMapViewRef = useRef(null);
@@ -504,6 +529,7 @@ const VisorApp = () => {
           onExportPDF={handleExportClick}
           desktopSearchSetRef={desktopSearchInputRef}
           isLoading={analyzing}
+          isExporting={isExporting}
           onOpenHelp={() => setIsHelpOpen(true)}
         />
 
@@ -606,6 +632,7 @@ const VisorApp = () => {
           onStateChange={setMobileSheetState}
           onClose={handleReset}
           onExportPDF={handleExportClick}
+          isExporting={isExporting}
         />
 
         <HelpModal

@@ -12,6 +12,7 @@ const SidebarDesktop = ({
     onExportPDF,
     desktopSearchSetRef,
     isLoading,
+    isExporting,
     onOpenHelp
 }) => (
     <div className="hidden md:flex h-full z-[1020] relative">
@@ -120,7 +121,7 @@ const SidebarDesktop = ({
                                 </span>
                                 <div className="h-px bg-gray-200 flex-1"></div>
                             </div>
-                            <ResultsContent analysis={analysis} onExportPDF={onExportPDF} />
+                            <ResultsContent analysis={analysis} onExportPDF={onExportPDF} isExporting={isExporting} />
                         </>
                     )}
                 </div>

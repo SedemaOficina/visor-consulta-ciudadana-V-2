@@ -436,20 +436,31 @@ const ActionButtons = ({ analysis, onExportPDF }) => {
             )}
 
             {/* Exportar PDF */}
+            {/* Exportar PDF */}
             <button
                 type="button"
-                onClick={(e) => onExportPDF?.(e)}
-                className={btnClass}
+                onClick={(e) => !isExporting && onExportPDF?.(e)}
+                disabled={isExporting}
+                className={`${btnClass} ${isExporting ? 'opacity-75 cursor-not-allowed bg-gray-50' : ''}`}
                 title="Generar Ficha PDF"
             >
-                {Icons.Pdf && <Icons.Pdf className="h-5 w-5 mb-1.5 text-[#9d2449]" />}
-                <span className="text-[11px] font-bold">Descargar Ficha</span>
+                {isExporting ? (
+                    <>
+                        {Icons.Loader2 ? <Icons.Loader2 className="h-5 w-5 mb-1.5 text-[#9d2449] animate-spin" /> : <span className="h-5 w-5 mb-1.5 block rounded-full border-2 border-t-[#9d2449] animate-spin" />}
+                        <span className="text-[11px] font-bold text-[#9d2449]">Generando...</span>
+                    </>
+                ) : (
+                    <>
+                        {Icons.Pdf && <Icons.Pdf className="h-5 w-5 mb-1.5 text-[#9d2449]" />}
+                        <span className="text-[11px] font-bold">Descargar Ficha</span>
+                    </>
+                )}
             </button>
         </div>
     );
 };
 
-const ResultsContent = ({ analysis, onExportPDF }) => {
+const ResultsContent = ({ analysis, onExportPDF, isExporting }) => {
     if (!analysis) return null;
 
     const [activeTab, setActiveTab] = useState('prohibidas');
@@ -599,7 +610,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
             )}
 
             {/* 8. Action Buttons (Mobile & Desktop) */}
-            <ActionButtons analysis={analysis} onExportPDF={onExportPDF} />
+            <ActionButtons analysis={analysis} onExportPDF={onExportPDF} isExporting={isExporting} />
 
             {/* 9. Disclaimer */}
             <LegalDisclaimer />
