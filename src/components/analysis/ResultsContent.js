@@ -1,12 +1,6 @@
 const { useState } = window.React;
 
-/**
- * Safe Lazy Access Helpers
- */
-const getIcons = () => window.App?.Components?.Icons || new Proxy({}, { get: () => () => null });
-const getColors = () => window.App?.Constants?.COLORS || {};
-const getUtils = () => window.App?.Utils || {};
-const getConstants = () => window.App?.Constants || {};
+const { getIcons, getConstants, getZoningColor, getSectorStyle } = window.App?.Utils || {};
 
 /* Helper de Zonificación Display */
 const getZoningDisplay = (analysis) => {
@@ -154,15 +148,14 @@ const NormativeInstrumentCard = ({ analysis }) => {
 };
 
 const ZoningResultCard = ({ analysis, zoningDisplay }) => {
-    const Utils = getUtils();
     const { status, zoningKey } = analysis;
     const isSC = status === 'CONSERVATION_SOIL';
 
     if (!isSC || !zoningKey || zoningKey === 'NODATA' || zoningKey === 'ANP') return null;
 
     let zoningColor = '#9ca3af';
-    if (analysis.zoningKey && Utils.getZoningColor) {
-        zoningColor = Utils.getZoningColor(analysis.zoningKey);
+    if (analysis.zoningKey && getZoningColor) {
+        zoningColor = getZoningColor(analysis.zoningKey);
     }
 
     return (
@@ -250,8 +243,7 @@ const AnpInternalCard = ({ analysis }) => {
 
 const LocationSummary = ({ analysis }) => {
     const Icons = getIcons();
-    const COLORS = getColors();
-    const Utils = getUtils();
+    const COLORS = getConstants().COLORS || {};
 
     const { status } = analysis;
     const isSC = status === 'CONSERVATION_SOIL';
@@ -262,8 +254,8 @@ const LocationSummary = ({ analysis }) => {
         zoningColor = COLORS.anp || '#9333ea';
     } else if (analysis.zoningKey === 'NODATA') {
         zoningColor = '#9ca3af';
-    } else if (analysis.zoningKey && Utils.getZoningColor) {
-        zoningColor = Utils.getZoningColor(analysis.zoningKey);
+    } else if (analysis.zoningKey && getZoningColor) {
+        zoningColor = getZoningColor(analysis.zoningKey);
     }
 
     // Short zoning badge: Just the key (FC, FPE, etc)
@@ -325,7 +317,6 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
     if (!activities || activities.length === 0) return null;
 
     const Icons = getIcons();
-    const Utils = getUtils();
 
     // 1. Grouping
     const groups = {};
@@ -359,7 +350,7 @@ const GroupedActivities = ({ title, activities, icon, headerClass, bgClass, acce
                 {sortedSectors.map((sector, i) => {
                     const generalsMap = groups[sector];
                     const sortedGenerals = Object.keys(generalsMap).sort((a, b) => a.localeCompare(b));
-                    const st = Utils.getSectorStyle ? Utils.getSectorStyle(sector) : { border: '#ccc', text: '#333' };
+                    const st = getSectorStyle ? getSectorStyle(sector) : { border: '#ccc', text: '#333' };
 
                     return (
                         <div key={i} className="mb-2 rounded overflow-hidden border border-gray-100">
@@ -425,7 +416,6 @@ const LegalDisclaimer = () => (
 );
 
 const ActionButtons = ({ analysis, onExportPDF }) => {
-    const COLORS = getColors();
     const Icons = getIcons();
     const btnClass = "flex flex-col items-center justify-center p-3 bg-white border border-gray-200 rounded-lg text-gray-700 transition-all active:scale-[0.98] hover:border-gray-300 hover:bg-gray-50";
 
@@ -468,7 +458,7 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
 
     // Globals access for Main Component
     const Icons = getIcons();
-    const COLORS = getColors();
+    const COLORS = getConstants().COLORS || {};
     const Constants = getConstants();
 
     const zoningDisplay = getZoningDisplay(analysis);

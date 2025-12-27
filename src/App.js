@@ -13,9 +13,7 @@ const Analysis = AppGlobals.Analysis || {};
 
 /* ------------------------------------------------ */
 /* BUNDLED CONFIGURATION (Audit Phase 1 Fix) */
-/* ------------------------------------------------ */
-/* ------------------------------------------------ */
-/* BUNDLED CONFIGURATION REMOVED - NOW IN useAppData */
+/* MOVED TO useAppData - Legacy block removed */
 /* ------------------------------------------------ */
 
 
@@ -39,19 +37,9 @@ const SidebarDesktop = Components.SidebarDesktop || (() => null);
 const PdfExportController = Components.PdfExportController || (() => null);
 
 /* ------------------------------------------------ */
-/* 3. LÓGICA GEOESPACIAL (GEOJSON & DATOS) */
-/* ------------------------------------------------ */
-
-
-
-
-/* ------------------------------------------------ */
 /* 4. LÓGICA GEOESPACIAL (GEOJSON & DATOS) */
+/* Data Loading Logic moved to useAppData hook */
 /* ------------------------------------------------ */
-
-// Data Loading Logic moved to useAppData hook
-
-/* ===== FIN BLOQUE NUEVO (MERGE + loadExtraData) ===== */
 
 
 

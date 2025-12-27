@@ -1,10 +1,10 @@
 // Safe Lazy Access
-const Icons = window.App.Components.Icons;
+const { getIcons, getConstants } = window.App?.Utils || {};
 
 const HelpModal = ({ isOpen, onClose }) => {
     // Safe Lazy Access at Render Time
-    const Icons = window.App?.Components?.Icons || {};
-    const { CONTACT_INFO } = window.App?.Constants || {};
+    const Icons = getIcons ? getIcons() : {};
+    const { CONTACT_INFO } = (getConstants ? getConstants() : {}) || {};
 
     if (!CONTACT_INFO) return null;
     if (!isOpen) return null;

@@ -80,7 +80,7 @@
     // Replaces constants.js functionality
     window.App = window.App || {};
     window.App.Constants = BUNDLED_CONSTANTS;
-    console.log('✅ Constants initialized from useAppData.js');
+    // console.log('✅ Constants initialized from useAppData.js');
 
     const useAppData = () => {
         const [loading, setLoading] = useState(true);
@@ -173,5 +173,5 @@
 
     window.App.Hooks = window.App.Hooks || {};
     window.App.Hooks.useAppData = useAppData;
-    console.log('✅ Hook loaded (useAppData.js)');
+    // console.log('✅ Hook loaded (useAppData.js)');
 })();

@@ -9,6 +9,21 @@
     // const Constants = window.App.Constants; // REMOVED: Unsafe immediate access
 
     /* ------------------------------------------------ */
+    /* HELPERS GENERALES (SAFE ACCESS CONSOLIDATION) */
+    /* ------------------------------------------------ */
+
+    const getConstants = () => window.App?.Constants || {};
+
+    // Component Accessor (Safe Proxy Fallback)
+    const getComponent = (name) => {
+        const comp = window.App?.Components?.[name];
+        return comp || new Proxy({}, { get: () => () => null });
+    };
+
+    // Shortcut for Icons (most common)
+    const getIcons = () => getComponent('Icons');
+
+    /* ------------------------------------------------ */
     /* HELPERS GEOESPACIALES (DEFINER LOCALES) */
     /* ------------------------------------------------ */
 
@@ -270,8 +285,11 @@
         isStrictNumber,
         parseCoordinateInput,
         searchMapboxPlaces,
-        getBaseLayerUrl
+        getBaseLayerUrl,
+        getConstants,
+        getComponent,
+        getIcons
     });
-    console.log('✅ Utils loaded (geoUtils.js)');
+    // console.log('✅ Utils loaded (geoUtils.js)');
 
 })();

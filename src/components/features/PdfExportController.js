@@ -4,8 +4,8 @@
     /* ------------------------------------------------ */
     /* HELPERS INTERNOS SAFE ACCESS */
     /* ------------------------------------------------ */
-    const getConstants = () => window.App?.Constants || {};
-    const getUtils = () => window.App?.Utils || {};
+    // Safe Access imported from Utils
+    const { getConstants, getUtils, getIcons } = window.App?.Utils || {};
 
     const getStaticMapUrl = ({ lat, lng, zoom = 14, width = 900, height = 520 }) => {
         const clampedW = Math.min(Math.max(width, 300), 1280);
@@ -142,7 +142,7 @@
             zoningColor = COLORS?.anp || '#9d2148';
         } else if (analysis.zoningKey === 'NODATA') {
             zoningColor = '#9ca3af';
-        } else if (analysis.zoningKey && typeof getZoningColor === 'function') {
+        } else if (analysis.zoningKey && getZoningColor) {
             zoningColor = getZoningColor(analysis.zoningKey);
         }
 
@@ -483,8 +483,8 @@
 
     const PdfExportController = ({ analysis, onExportReady, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats, currentZoom = 14 }) => {
         // Safe Lazy Access
-        const { ZONING_ORDER, LAYER_STYLES, ZONING_CAT_INFO } = getConstants();
-        const { getBaseLayerUrl, getZoningColor } = getUtils();
+        const { getConstants, getBaseLayerUrl, getZoningColor } = window.App?.Utils || {};
+        const { ZONING_ORDER, LAYER_STYLES, ZONING_CAT_INFO } = getConstants ? getConstants() : {};
 
         const [mapImage, setMapImage] = useState(null);
         // HYBRID MODE STATE: Controls if tables are shown in DOM for capture
@@ -545,9 +545,11 @@
                     const L = window.L;
                     const leafletImageFn = window.leafletImage || window.leafletImage?.default;
 
-                    console.log('--- EXPORT MAP DIAGNOSTICS ---');
-                    console.log('Leaflet available:', !!L);
-                    console.log('leafletImage available:', typeof leafletImageFn === 'function');
+                    if (window.App?.debug) {
+                        console.log('--- EXPORT MAP DIAGNOSTICS ---');
+                        console.log('Leaflet available:', !!L);
+                        console.log('leafletImage available:', typeof leafletImageFn === 'function');
+                    }
 
                     if (!L || typeof leafletImageFn !== 'function') return resolve(null);
 

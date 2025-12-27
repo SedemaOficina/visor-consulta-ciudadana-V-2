@@ -3,9 +3,11 @@ const { useState, useEffect } = window.React;
 /**
  * Safe Lazy Access Helpers
  */
-const getIcons = () => window.App?.Components?.Icons || new Proxy({}, { get: () => () => null });
-const getToggleSwitch = () => window.App?.Components?.ToggleSwitch || (() => null);
-const getConstants = () => window.App?.Constants || {};
+/**
+ * Safe Lazy Access Helpers
+ */
+const { getComponent, getConstants, getIcons } = window.App?.Utils || {};
+const getToggleSwitch = () => getComponent('ToggleSwitch');
 
 const Legend = ({
     visibleMapLayers,
@@ -44,7 +46,7 @@ const Legend = ({
         // Prevent toggling locked layers if UI somehow exposes them
         if (layerKey === 'edomex' || layerKey === 'morelos') return;
 
-        console.log('Toggling layer:', layerKey);
+        // console.log('Toggling layer:', layerKey);
         if (toggleLayer) {
             toggleLayer(layerKey);
         }
@@ -76,7 +78,7 @@ const Legend = ({
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        console.log('Close legend clicked');
+                        // console.log('Close legend clicked');
                         setIsOpen(false);
                     }}
                     className="p-1 hover:bg-gray-100 rounded-md transition-colors"

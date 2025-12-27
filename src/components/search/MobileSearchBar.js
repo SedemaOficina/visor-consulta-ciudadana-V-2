@@ -1,12 +1,12 @@
 const { useState, useEffect, useRef } = window.React;
 // Safe Lazy Access
 // Safe Lazy Access
-const Icons = window.App?.Components?.Icons || new Proxy({}, { get: () => () => null });
+const { getIcons, searchMapboxPlaces, parseCoordinateInput } = window.App?.Utils || {};
+const Icons = getIcons ? getIcons() : new Proxy({}, { get: () => () => null });
 
 const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef, initialValue }) => {
-    // Safe Lazy Access with Wrappers
-    const { searchMapboxPlaces, parseCoordinateInput } = window.App.Utils || {};
 
+    // Direct usage since they are destructured from Utils above
     const safeSearch = async (q) => (typeof searchMapboxPlaces === 'function' ? await searchMapboxPlaces(q) : []);
     const safeParse = (q) => (typeof parseCoordinateInput === 'function' ? parseCoordinateInput(q) : null);
 
