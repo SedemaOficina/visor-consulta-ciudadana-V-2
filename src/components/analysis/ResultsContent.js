@@ -415,7 +415,7 @@ const LegalDisclaimer = () => (
     </div>
 );
 
-const ActionButtons = ({ analysis, onExportPDF }) => {
+const ActionButtons = ({ analysis, onExportPDF, isExporting }) => {
     const Icons = getIcons();
     const btnClass = "flex flex-col items-center justify-center p-3 bg-white border border-gray-200 rounded-lg text-gray-700 transition-all active:scale-[0.98] hover:border-gray-300 hover:bg-gray-50";
 
