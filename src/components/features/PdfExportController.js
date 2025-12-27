@@ -85,7 +85,7 @@
         );
     };
 
-    const PdfFicha = window.React.forwardRef(({ analysis, mapImage }, ref) => {
+    const PdfFicha = window.React.forwardRef(({ analysis, mapImage, includeActivities = true }, ref) => {
         if (!analysis) return null;
 
         // Safe Access within Render
@@ -381,7 +381,8 @@
                     </div>
 
                     {/* --- SECTION 3: ACTIVIDADES (Solo SC) --- */}
-                    {isSC && !isANP && !analysis.isPDU && !analysis.noActivitiesCatalog && (
+                    {/* CONDITIONAL RENDER: Only if includeActivities is TRUE */}
+                    {includeActivities && isSC && !isANP && !analysis.isPDU && !analysis.noActivitiesCatalog && (
                         <div>
                             <div style={styleH2}>Catálogo de Actividades (Suelo de Conservación)</div>
 
@@ -466,6 +467,9 @@
         const { getBaseLayerUrl, getZoningColor } = getUtils();
 
         const [mapImage, setMapImage] = useState(null);
+        // HYBRID MODE STATE: Controls if tables are shown in DOM for capture
+        const [includeActivities, setIncludeActivities] = useState(true);
+
         const pdfRef = useRef(null);
         const exportArmedRef = useRef(false);
         const exportMapInstance = useRef(null);
@@ -475,27 +479,13 @@
         const waitForMapReady = (map) => {
             return new Promise((resolve) => {
                 let tilesLoaded = false;
-
-                // 1. Wait for tiles
                 map.on('load', () => { tilesLoaded = true; });
-
-                // Fallback check if already loaded
                 if (map._loaded) tilesLoaded = true;
-
-                // 2. Wait function
                 const check = () => {
-                    // Force size update
                     map.invalidateSize(true);
-
-                    if (tilesLoaded) {
-                        // Wait extra 800ms for heavy overlays/canvas rendering
-                        setTimeout(() => resolve(true), 800);
-                    } else {
-                        setTimeout(check, 200);
-                    }
+                    if (tilesLoaded) setTimeout(() => resolve(true), 800);
+                    else setTimeout(check, 200);
                 };
-
-                // Safety timeout 4s
                 setTimeout(() => resolve(true), 4000);
                 check();
             });
@@ -504,12 +494,28 @@
         const waitForImgLoaded = (container, selector) => {
             return new Promise((resolve) => {
                 const img = container.querySelector(selector);
-                if (!img) return resolve(true); // No map img present
+                if (!img) return resolve(true);
                 if (img.complete && img.naturalHeight !== 0) return resolve(true);
-
                 img.onload = () => resolve(true);
-                img.onerror = () => resolve(true); // Proceed anyway
-                setTimeout(() => resolve(true), 1500); // Safety
+                img.onerror = () => resolve(true);
+                setTimeout(() => resolve(true), 1500);
+            });
+        };
+
+        const loadLogoData = async () => {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => {
+                    const c = document.createElement('canvas');
+                    c.width = img.width;
+                    c.height = img.height;
+                    const ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    resolve(c.toDataURL('image/png'));
+                };
+                img.onerror = () => resolve(null);
+                img.src = './assets/logo-sedema.png'; // Local asset
             });
         };
 
@@ -522,50 +528,31 @@
                     console.log('--- EXPORT MAP DIAGNOSTICS ---');
                     console.log('Leaflet available:', !!L);
                     console.log('leafletImage available:', typeof leafletImageFn === 'function');
-                    console.log('Items in Cache:', Object.keys(dataCache || {}));
-                    console.log('Visible Layers:', visibleMapLayers);
-                    console.log('Active Base:', activeBaseLayer);
 
-                    if (!L || typeof leafletImageFn !== 'function') {
-                        console.error('Missing dependencies for map export');
-                        return resolve(null);
-                    }
+                    if (!L || typeof leafletImageFn !== 'function') return resolve(null);
 
                     const el = document.getElementById('export-map');
                     if (!el) return resolve(null);
 
-                    // FIX 1: Proper Cleanup of previous instance
                     if (exportMapInstance.current) {
-                        try {
-                            exportMapInstance.current.remove();
-                        } catch (e) { console.warn('Error removing old map', e); }
+                        try { exportMapInstance.current.remove(); } catch (e) { }
                         exportMapInstance.current = null;
                     }
-                    el.innerHTML = ''; // Double safety
+                    el.innerHTML = '';
 
-                    // Setup Map
                     const m = L.map(el, {
-                        zoomControl: false,
-                        attributionControl: false,
-                        preferCanvas: true,
-                        fadeAnimation: false,
-                        zoomAnimation: false,
-                        markerZoomAnimation: false
+                        zoomControl: false, attributionControl: false, preferCanvas: true,
+                        fadeAnimation: false, zoomAnimation: false, markerZoomAnimation: false
                     }).setView([lat, lng], zoom);
 
                     exportMapInstance.current = m;
 
-                    // Base Layer
                     const baseLayerUrl = (typeof getBaseLayerUrl === 'function')
                         ? getBaseLayerUrl(activeBaseLayer || 'SATELLITE')
                         : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
-                    const base = L.tileLayer(baseLayerUrl, {
-                        crossOrigin: 'anonymous',
-                        maxZoom: 19
-                    }).addTo(m);
+                    const base = L.tileLayer(baseLayerUrl, { crossOrigin: 'anonymous', maxZoom: 19 }).addTo(m);
 
-                    // Panes Setup (Matching Visor)
                     const createPane = (name, zIndex) => {
                         if (!m.getPane(name)) m.createPane(name);
                         m.getPane(name).style.zIndex = zIndex;
@@ -576,49 +563,26 @@
                     const overlayPane = createPane('overlayPane', 450);
                     const markerPane = createPane('markerPane', 600);
 
-                    // Helper GeoJSON
                     const addGeoJson = (fc, style, pane) => {
                         try {
                             if (!fc?.features?.length) return;
                             L.geoJSON(fc, { pane, style, interactive: false }).addTo(m);
-                        } catch (err) {
-                            console.warn('Error adding layer', err);
-                        }
+                        } catch (err) { }
                     };
 
-                    // --- ADD VISIBLE LAYERS (WYSIWYG) ---
-
-                    // 1. Context (Alcaldias/Limits)
+                    // --- LAYERS ---
                     if (visibleMapLayers?.alcaldias && dataCache?.alcaldias) {
-                        addGeoJson(dataCache.alcaldias, {
-                            color: '#ffffff', weight: 3, dashArray: '8,4', opacity: 0.9, fillOpacity: 0
-                        }, contextPane);
+                        addGeoJson(dataCache.alcaldias, { color: '#ffffff', weight: 3, dashArray: '8,4', opacity: 0.9, fillOpacity: 0 }, contextPane);
                     }
-
-                    // 2. SC (Conservation Soil)
                     if (visibleMapLayers?.sc && dataCache?.sc) {
-                        addGeoJson(dataCache.sc, {
-                            color: LAYER_STYLES?.sc?.color || 'green',
-                            weight: 1.8, opacity: 0.9,
-                            fillColor: LAYER_STYLES?.sc?.fill, fillOpacity: 0.18
-                        }, overlayPane);
+                        addGeoJson(dataCache.sc, { color: LAYER_STYLES?.sc?.color || 'green', weight: 1.8, opacity: 0.9, fillColor: LAYER_STYLES?.sc?.fill, fillOpacity: 0.18 }, overlayPane);
                     }
-
-                    // 3. ANP (Protected Areas) - PREVIOUSLY MISSING
                     if (visibleMapLayers?.anp && dataCache?.anp) {
-                        addGeoJson(dataCache.anp, {
-                            color: LAYER_STYLES?.anp?.color || '#9333ea',
-                            weight: 2, opacity: 1,
-                            fillColor: LAYER_STYLES?.anp?.fill || '#9333ea', fillOpacity: 0.2
-                        }, overlayPane);
+                        addGeoJson(dataCache.anp, { color: LAYER_STYLES?.anp?.color || '#9333ea', weight: 2, opacity: 1, fillColor: LAYER_STYLES?.anp?.fill || '#9333ea', fillOpacity: 0.2 }, overlayPane);
                     }
-
-                    // 4. Zoning
                     if (visibleMapLayers?.zoning && dataCache?.zoning?.features?.length) {
                         const byKey = {};
                         (ZONING_ORDER || []).forEach(k => (byKey[k] = []));
-
-                        // Sort features
                         dataCache.zoning.features.forEach(f => {
                             let k = (f.properties?.CLAVE || '').toString().trim().toUpperCase();
                             if (k === 'PDU' || k === 'PROGRAMAS' || k === 'ZONA URBANA') {
@@ -630,34 +594,23 @@
                             }
                             if (byKey[k]) byKey[k].push(f);
                         });
-
-                        // Add by Order
                         (ZONING_ORDER || []).forEach((k) => {
                             const isOn = (visibleZoningCats?.[k] !== false);
                             if (!isOn) return;
                             const feats = byKey[k];
                             if (!feats?.length) return;
                             const color = ZONING_CAT_INFO?.[k]?.color || '#9ca3af';
-
-                            addGeoJson({ type: 'FeatureCollection', features: feats }, {
-                                color, weight: 1.5, opacity: 0.9,
-                                fillColor: color, fillOpacity: 0.2,
-                                interactive: false
-                            }, overlayPane);
+                            addGeoJson({ type: 'FeatureCollection', features: feats }, { color, weight: 1.5, opacity: 0.9, fillColor: color, fillOpacity: 0.2, interactive: false }, overlayPane);
                         });
                     }
 
-                    // 5. Pin/Marker
-                    // FIX 3: Use Data URI SVG Icon (Image) instead of Vector/DivIcon
-                    // This is the most robust way for leaflet-image to capture it.
-                    let bgColor = '#6b7280'; // gray-500 default
+                    // --- MARKER (SVG Data URI) ---
+                    let bgColor = '#6b7280';
+                    if (analysisStatus === 'OUTSIDE_CDMX') bgColor = '#ef4444';
+                    else if (analysisStatus === 'CONSERVATION_SOIL') bgColor = LAYER_STYLES?.sc?.color || '#16a34a';
+                    else if (isANP) bgColor = '#9333ea';
+                    else if (analysisStatus === 'URBAN_SOIL') bgColor = '#3b82f6';
 
-                    if (analysisStatus === 'OUTSIDE_CDMX') bgColor = '#ef4444'; // red-500
-                    else if (analysisStatus === 'CONSERVATION_SOIL') bgColor = LAYER_STYLES?.sc?.color || '#16a34a'; // green-600
-                    else if (isANP) bgColor = '#9333ea'; // purple-600
-                    else if (analysisStatus === 'URBAN_SOIL') bgColor = '#3b82f6'; // blue-500
-
-                    // Simple pin SVG with white outline and shadow effect
                     const svgString = `
                         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24">
                             <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
@@ -667,406 +620,227 @@
                             <circle cx="12" cy="9" r="2.5" fill="white"/>
                         </svg>
                     `.trim();
-
                     const iconUrl = 'data:image/svg+xml;base64,' + btoa(svgString);
+                    const icon = L.icon({ iconUrl, iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -40] });
+                    L.marker([lat, lng], { icon, pane: markerPane, interactive: false }).addTo(m);
 
-                    const icon = L.icon({
-                        iconUrl: iconUrl,
-                        iconSize: [40, 40],
-                        iconAnchor: [20, 40], // Tip at bottom center
-                        popupAnchor: [0, -40]
-                    });
-
-                    L.marker([lat, lng], {
-                        icon: icon,
-                        pane: markerPane,
-                        interactive: false
-                    }).addTo(m);
-
-
-                    // --- CAPTURE ---
                     await waitForMapReady(m);
 
                     let settled = false;
                     const done = (img) => {
-                        if (settled) return;
-                        settled = true;
-
-                        // Cleanup
+                        if (settled) return; settled = true;
                         if (exportMapInstance.current === m) {
                             try { m.remove(); } catch { }
                             exportMapInstance.current = null;
                         }
-
                         resolve(img || null);
                     };
 
                     const capture = () => {
                         try {
                             leafletImageFn(m, (err, canvas) => {
-                                if (err || !canvas) {
-                                    console.error('LeafletImage failed:', err);
-                                    return done(null);
-                                }
+                                if (err || !canvas) return done(null);
                                 done(canvas.toDataURL('image/png'));
                             });
-                        } catch (err) {
-                            console.error('LeafletImage Exception:', err);
-                            done(null);
-                        }
+                        } catch (err) { done(null); }
                     };
 
-                    // Timeout absoluto (Safety)
-                    const safetyTimeout = setTimeout(() => {
-                        console.warn('Capture timeout reached');
-                        capture();
-                    }, 6000);
+                    const safetyTimeout = setTimeout(() => { capture(); }, 6000);
+                    base.on('load', () => { setTimeout(() => { clearTimeout(safetyTimeout); capture(); }, 1200); });
+                    setTimeout(() => { if (!settled) capture(); }, 3500);
 
-                    // Estrategia híbrida
-                    base.on('load', () => {
-                        console.log('Map base loaded, waiting for render...');
-                        setTimeout(() => {
-                            clearTimeout(safetyTimeout);
-                            capture();
-                        }, 1200);
-                    });
-
-                    // Force capture fallback
-                    setTimeout(() => {
-                        if (!settled) {
-                            console.warn('Force capture triggered');
-                            capture();
-                        }
-                    }, 3500);
-
-                } catch (e) {
-                    console.error('Critical Error in buildExportMapImage', e);
-                    resolve(null);
-                }
+                } catch (e) { resolve(null); }
             });
         };
 
         const handleExportPDF = React.useCallback(async () => {
             if (!exportArmedRef.current) return;
             exportArmedRef.current = false;
-
             if (!analysis || !pdfRef.current) return;
-
-            if (!window.jspdf?.jsPDF) {
-                alert('Error: Librería jsPDF no cargada.');
+            if (!window.jspdf?.jsPDF || typeof window.html2canvas !== 'function') {
+                alert('Error: Librería jsPDF/html2canvas no cargada.');
                 return;
             }
             const { jsPDF } = window.jspdf;
 
             try {
-                // 1. Determine Strategy
-                const hasActiveLayers = visibleMapLayers?.sc ||
-                    (visibleMapLayers?.zoning && dataCache?.zoning) ||
-                    visibleMapLayers?.anp ||
-                    visibleMapLayers?.alcaldias;
-
+                // 1. Prepare Map Image
+                const hasActiveLayers = visibleMapLayers?.sc || (visibleMapLayers?.zoning && dataCache?.zoning) || visibleMapLayers?.anp || visibleMapLayers?.alcaldias;
                 let img = null;
                 let staticUrl = null;
 
                 if (!hasActiveLayers) {
-                    staticUrl = getStaticMapUrl({
-                        lat: analysis.coordinate.lat,
-                        lng: analysis.coordinate.lng,
-                        zoom: currentZoom
-                    });
+                    staticUrl = getStaticMapUrl({ lat: analysis.coordinate.lat, lng: analysis.coordinate.lng, zoom: currentZoom });
                     const staticOk = await preloadImage(staticUrl);
                     if (staticOk) img = staticUrl;
                 }
-
                 if (!img) {
-                    img = await buildExportMapImage({
-                        lat: analysis.coordinate.lat,
-                        lng: analysis.coordinate.lng,
-                        zoom: currentZoom,
-                        analysisStatus: analysis.status,
-                        isANP: analysis.isANP
-                    });
+                    img = await buildExportMapImage({ lat: analysis.coordinate.lat, lng: analysis.coordinate.lng, zoom: currentZoom, analysisStatus: analysis.status, isANP: analysis.isANP });
                 }
-
                 setMapImage(img);
 
-                // 2. Wait for DOM Render (Map + QR)
-                await new Promise(r => setTimeout(r, 100)); // Tick
-                await waitForImgLoaded(pdfRef.current, 'img[alt="Mapa"]');
-                await waitForImgLoaded(pdfRef.current, 'img[alt="QR visor"]'); // Wait for QR too
+                // 2. Prepare View Mode (Hide Activities for Cover)
+                // We force exclude activities in DOM so we capture a clean single-page cover
+                setIncludeActivities(false);
 
-                // 3. GENERATION STRATEGY
+                // Wait for Render
+                await new Promise(r => setTimeout(r, 200));
+                await waitForImgLoaded(pdfRef.current, 'img[alt="Mapa"]');
+                await waitForImgLoaded(pdfRef.current, 'img[alt="QR visor"]');
+
+                const element = pdfRef.current;
                 const doc = new jsPDF('p', 'mm', 'a4');
                 const hasAutoTable = !!doc.autoTable;
 
+                // --- HYBRID STRATEGY ---
                 if (hasAutoTable) {
-                    /* =========================================
-                       NATIVE PDF GENERATION (PROFESSIONAL)
-                       ========================================= */
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    const pageHeight = doc.internal.pageSize.getHeight();
-                    const M = 15; // Margin
-                    const contentW = pageWidth - (M * 2);
+                    // STEP A: Capture Cover Page (DOM -> Image)
+                    const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+                    const scale = isMobile ? 1.8 : 2.5; // High Res
 
-                    // --- HELPERS ---
-                    const addBoldText = (label, value, x, y, labelWidth = 35) => {
-                        doc.setFont("helvetica", "bold");
-                        doc.setFontSize(9);
-                        doc.setTextColor(51, 65, 85);
-                        doc.text(label, x, y);
+                    const canvas = await window.html2canvas(element, { scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
+                    const coverImgData = canvas.toDataURL('image/png');
 
-                        doc.setFont("helvetica", "normal");
-                        doc.setTextColor(0, 0, 0);
-                        // Wrap text if needed
-                        const splitVal = doc.splitTextToSize(value, contentW - labelWidth);
-                        doc.text(splitVal, x + labelWidth, y);
-                        return splitVal.length * 4; // approximate height
-                    };
+                    const pdfW = doc.internal.pageSize.getWidth();
+                    const pdfH = doc.internal.pageSize.getHeight();
 
-                    let cursorY = M;
+                    // Add Cover
+                    doc.addImage(coverImgData, 'PNG', 0, 0, pdfW, pdfH);
 
-                    // --- HEADER ---
-                    // Logo Semovi/Sedema (try to grab from DOM or use fixed URL if CORS allows)
-                    // Fallback to text if no image accessible easily, but let's try grabbing the rendered one
-                    const logoImg = pdfRef.current.querySelector('img[alt="SEDEMA"]');
-                    if (logoImg && logoImg.complete && logoImg.naturalHeight > 0) {
-                        try {
-                            // Create temporary canvas to get dataURL for existing image
-                            const c = document.createElement('canvas');
-                            c.width = logoImg.naturalWidth;
-                            c.height = logoImg.naturalHeight;
-                            const ctx = c.getContext('2d');
-                            ctx.drawImage(logoImg, 0, 0);
-                            doc.addImage(c.toDataURL('image/png'), 'PNG', M, cursorY, 25, 12); // Ratio approx
-                        } catch (e) { }
-                    }
-
-                    doc.setFontSize(8);
-                    doc.setTextColor(100);
-                    doc.text("SECRETARÍA DEL MEDIO AMBIENTE", M, cursorY + 16);
-
-                    // Título / Folio Right Aligned
-                    doc.setFontSize(16);
-                    doc.setFont("helvetica", "bold");
-                    doc.setTextColor(157, 36, 73); // #9D2449
-                    doc.text("FICHA INFORMATIVA", pageWidth - M, cursorY + 5, { align: "right" });
-
-                    doc.setFontSize(9);
-                    doc.setTextColor(0);
-                    doc.setFont("courier", "normal");
-                    const folio = `F-${new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)}`;
-                    doc.text(`Folio: ${folio}`, pageWidth - M, cursorY + 12, { align: "right" });
-
-                    doc.setFont("helvetica", "normal");
-                    doc.setFontSize(8);
-                    const fecha = analysis.timestamp || new Date().toLocaleString();
-                    doc.text(`Fecha: ${fecha}`, pageWidth - M, cursorY + 17, { align: "right" });
-
-                    cursorY += 25;
-
-                    // Line separator
-                    doc.setDrawColor(212, 193, 156); // Dorado
-                    doc.setLineWidth(0.5);
-                    doc.line(M, cursorY, pageWidth - M, cursorY);
-                    cursorY += 8;
-
-                    // --- UBICACIÓN ---
-                    doc.setFontSize(11);
-                    doc.setFont("helvetica", "bold");
-                    doc.setTextColor(157, 36, 73);
-                    doc.text("UBICACIÓN DEL PREDIO", M, cursorY);
-                    cursorY += 6;
-
-                    // Map Image
-                    if (mapImage) {
-                        const mapH = 60;
-                        const mapW = 90; // Fixed width for sidebar map
-                        // Text on left, Map on right logic
-
-                        const textStart = cursorY;
-                        // Address
-                        const addr = analysis.address || analysis.placeName || 'Ubicación por coordenadas';
-                        cursorY += addBoldText("Dirección:", addr, M, cursorY);
-                        cursorY += 5;
-
-                        if (analysis.alcaldia) {
-                            cursorY += addBoldText("Alcaldía:", analysis.alcaldia, M, cursorY);
-                            cursorY += 5;
-                        }
-
-                        cursorY += addBoldText("Coords:", `${analysis.coordinate.lat.toFixed(5)}, ${analysis.coordinate.lng.toFixed(5)}`, M, cursorY);
-                        cursorY += 8;
-
-                        // Draw Map on Right
-                        try {
-                            doc.addImage(mapImage, 'PNG', pageWidth - M - mapW, textStart, mapW, mapH);
-                            doc.setDrawColor(200);
-                            doc.rect(pageWidth - M - mapW, textStart, mapW, mapH); // Border
-                        } catch (e) { }
-
-                        // Move cursor below the lowest element (Text or Map)
-                        cursorY = Math.max(cursorY, textStart + mapH + 8);
-                    } else {
-                        // No map fallback
-                        cursorY += 10;
-                    }
-
-                    // --- NORMATIVIDAD ---
-                    doc.setFontSize(11);
-                    doc.setFont("helvetica", "bold");
-                    doc.setTextColor(157, 36, 73);
-                    doc.text("NORMATIVIDAD APLICABLE", M, cursorY);
-                    cursorY += 6;
-
-                    // Status Chips
-                    doc.setFillColor(248, 250, 252);
-                    doc.rect(M, cursorY, contentW, 20, 'F');
-                    doc.setDrawColor(226, 232, 240);
-                    doc.rect(M, cursorY, contentW, 20, 'S');
-
+                    // STEP B: Append Native Table Pages (if SC)
                     const isSC = analysis.status === 'CONSERVATION_SOIL';
                     const isANP = analysis.isANP || analysis.zoningKey === 'ANP';
+                    const hasActivities = isSC && !isANP && !analysis.isPDU && !analysis.noActivitiesCatalog;
 
-                    doc.setFontSize(9);
-                    doc.setFont("helvetica", "bold");
-                    doc.setTextColor(0);
-                    doc.text("Clasificación de Suelo:", M + 4, cursorY + 6);
+                    if (hasActivities) {
+                        const M = 15;
+                        const pageWidth = pdfW;
 
-                    let statusTxt = 'Sin Información';
-                    if (isSC) statusTxt = 'SUELO DE CONSERVACIÓN';
-                    else if (analysis.status === 'URBAN_SOIL') statusTxt = 'SUELO URBANO';
-                    else if (analysis.status === 'OUTSIDE_CDMX') statusTxt = 'FUERA DE CDMX';
+                        // Pre-load Logo for headers
+                        const logoDataUrl = await loadLogoData();
 
-                    doc.setFontSize(12);
-                    if (isSC) doc.setTextColor(21, 128, 61); // Green
-                    else if (isANP) doc.setTextColor(147, 51, 234); // Purple
-                    else doc.setTextColor(59, 130, 246); // Blue
+                        // Helper for Page Header 
+                        const addHeader = (pdfDoc) => {
+                            let y = M;
+                            if (logoDataUrl) {
+                                pdfDoc.addImage(logoDataUrl, 'PNG', M, y, 20, 10);
+                            }
+                            pdfDoc.setFontSize(14);
+                            pdfDoc.setFont("helvetica", "bold");
+                            pdfDoc.setTextColor(157, 36, 73); // Guinda
+                            pdfDoc.text("FICHA INFORMATIVA", pageWidth - M, y + 8, { align: 'right' });
 
-                    doc.text(statusTxt, M + 4, cursorY + 14);
+                            const dateTitle = analysis.timestamp || new Date().toLocaleString();
+                            pdfDoc.setFontSize(8);
+                            pdfDoc.setFont("helvetica", "normal");
+                            pdfDoc.setTextColor(100);
+                            pdfDoc.text(dateTitle, pageWidth - M, y + 13, { align: 'right' });
 
-                    // Zoning Info
-                    const zoningKey = analysis.zoningKey && analysis.zoningKey !== 'NODATA' ? analysis.zoningKey : '—';
-                    doc.setFontSize(9);
-                    doc.setTextColor(0);
-                    doc.text("Zonificación:", M + 90, cursorY + 6);
-                    doc.setFontSize(12);
-                    doc.text(zoningKey, M + 90, cursorY + 14);
+                            pdfDoc.setDrawColor(212, 193, 156); // Dorado
+                            pdfDoc.setLineWidth(0.5);
+                            pdfDoc.line(M, y + 15, pageWidth - M, y + 15);
+                            return y + 25;
+                        };
 
-                    cursorY += 28;
+                        let startY = 0;
 
-                    // --- AUTO TABLES ---
-                    if (isSC && !isANP && !analysis.isPDU && !analysis.noActivitiesCatalog) {
+                        // 1. Allowed Table
+                        const allowed = (analysis.allowedActivities || []).map(a => [a.general || '', a.specific || '']);
+                        if (allowed.length > 0) {
+                            doc.addPage();
+                            startY = addHeader(doc);
 
-                        // 1. Allowed
-                        const allowedRows = (analysis.allowedActivities || []).map(a => [a.general || '', a.specific || '']);
-                        if (allowedRows.length > 0) {
-                            doc.setFontSize(10);
-                            doc.setTextColor(21, 128, 61);
-                            doc.text("ACTIVIDADES PERMITIDAS", M, cursorY);
-                            cursorY += 2;
+                            doc.setFontSize(11);
+                            doc.setTextColor(21, 128, 61); // Green
+                            doc.setFont("helvetica", "bold");
+                            doc.text("ACTIVIDADES PERMITIDAS", M, startY);
 
                             doc.autoTable({
-                                startY: cursorY,
-                                head: [['Actividad General', 'Especificaciones']],
-                                body: allowedRows,
+                                startY: startY + 3,
+                                head: [['Actividad', 'Especificaciones']],
+                                body: allowed,
                                 theme: 'grid',
                                 headStyles: { fillColor: [21, 128, 61], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                                styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
-                                columnStyles: { 0: { cellWidth: 40 } }, // General col slimmer
-                                margin: { left: M, right: M }
+                                styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
+                                columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 'auto' } },
+                                margin: { left: M, right: M, top: 35, bottom: 20 },
+                                didDrawPage: (data) => {
+                                    // Redraw header on new pages if table splits
+                                    if (data.pageNumber > 2) addHeader(doc);
+                                }
                             });
-                            cursorY = doc.lastAutoTable.finalY + 10;
                         }
 
-                        // 2. Prohibited
-                        const prohibitedRows = (analysis.prohibitedActivities || []).map(a => [a.general || '', a.specific || '']);
-                        if (prohibitedRows.length > 0) {
-                            // Check page break
-                            if (cursorY > pageHeight - 40) { doc.addPage(); cursorY = M; }
+                        // 2. Prohibited Table
+                        const prohibited = (analysis.prohibitedActivities || []).map(a => [a.general || '', a.specific || '']);
+                        if (prohibited.length > 0) {
+                            // Check if we need new page or continue
+                            let finalY = doc.lastAutoTable?.finalY || startY;
+                            if (finalY > pdfH - 50) {
+                                doc.addPage();
+                                startY = addHeader(doc);
+                            } else {
+                                startY = finalY + 15;
+                            }
 
-                            doc.setFontSize(10);
-                            doc.setTextColor(185, 28, 28);
-                            doc.text("ACTIVIDADES PROHIBIDAS", M, cursorY);
-                            cursorY += 2;
+                            // If we are on a fresh page (startY approx M+25), we don't need check, else check space
+                            if (startY > pdfH - 40) { doc.addPage(); startY = addHeader(doc); }
+
+                            doc.setFontSize(11);
+                            doc.setTextColor(185, 28, 28); // Red
+                            doc.setFont("helvetica", "bold");
+                            doc.text("ACTIVIDADES PROHIBIDAS", M, startY);
 
                             doc.autoTable({
-                                startY: cursorY,
-                                head: [['Actividad General', 'Especificaciones']],
-                                body: prohibitedRows,
+                                startY: startY + 3,
+                                head: [['Actividad', 'Especificaciones']],
+                                body: prohibited,
                                 theme: 'grid',
                                 headStyles: { fillColor: [185, 28, 28], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                                styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
-                                columnStyles: { 0: { cellWidth: 40 } },
-                                margin: { left: M, right: M }
+                                styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
+                                columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 'auto' } },
+                                margin: { left: M, right: M, top: 35, bottom: 20 },
+                                didDrawPage: (data) => {
+                                    if (data.pageNumber > 2) addHeader(doc);
+                                }
                             });
-                            cursorY = doc.lastAutoTable.finalY + 10;
                         }
                     }
-
-                    // --- FOOTER & QR ---
-                    // Prepare Footer Y (at bottom of current page or new page)
-                    if (cursorY > pageHeight - 40) { doc.addPage(); cursorY = M; }
-
-                    const footerY = pageHeight - 35; // Fixed at bottom
-                    // If we are overlapping footer, add page
-                    if (cursorY > footerY) { doc.addPage(); }
-
-                    // QR Code
-                    const qrEl = pdfRef.current.querySelector('img[alt="QR visor"]');
-                    if (qrEl) {
-                        try {
-                            const c = document.createElement('canvas');
-                            c.width = qrEl.naturalWidth;
-                            c.height = qrEl.naturalHeight;
-                            const ctx = c.getContext('2d');
-                            ctx.drawImage(qrEl, 0, 0);
-                            const qrData = c.toDataURL('image/png');
-                            doc.addImage(qrData, 'PNG', pageWidth - M - 25, footerY, 25, 25);
-                        } catch (e) { }
-                    }
-
-                    // Legal Text
-                    doc.setFontSize(7);
-                    doc.setTextColor(100);
-                    const legal = "AVISO: Este documento es de carácter informativo. La información presentada se basa en las capas geográficas vigentes. Para trámites oficiales, acuda a la Ventanilla Única de la SEDEMA.";
-                    doc.text(doc.splitTextToSize(legal, contentW - 30), M, footerY + 5);
 
                     const cleanAlcaldia = (analysis.alcaldia || 'CDMX').replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
                     doc.save(`FICHA_SC_${cleanAlcaldia}.pdf`);
 
-                } else {
-                    /* =========================================
-                       FALLBACK: HTML2CANVAS (IMAGE BASED)
-                       ========================================= */
-                    console.warn('AutoTable not found, using HTML2Canvas fallback');
-                    const element = pdfRef.current;
-                    const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-                    const scale = isMobile ? 1.8 : 2.2;
+                    // Restore Text for user view
+                    setIncludeActivities(true);
 
+                } else {
+                    // --- FALLBACK (LEGACY) ---
+                    console.warn('AutoTable not found, using Legacy Fallback');
+                    // We need activities VISIBLE for legacy capture
+                    setIncludeActivities(true);
+                    await new Promise(r => setTimeout(r, 200)); // Re-render with tables
+
+                    const scale = 2.0;
                     const canvas = await window.html2canvas(element, { scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
                     const imgData = canvas.toDataURL('image/png');
                     const pdf = new jsPDF('p', 'mm', 'a4');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = pdf.internal.pageSize.getHeight();
-
+                    const pdfW = pdf.internal.pageSize.getWidth();
+                    const pdfH = pdf.internal.pageSize.getHeight();
                     const imgProps = pdf.getImageProperties(imgData);
-                    const usableW = pdfWidth;
-                    const imgHeight = (imgProps.height * usableW) / imgProps.width;
-
+                    const imgHeight = (imgProps.height * pdfW) / imgProps.width;
                     let heightLeft = imgHeight;
                     let position = 0;
 
-                    if (heightLeft <= pdfHeight) {
-                        pdf.addImage(imgData, 'PNG', 0, 0, usableW, imgHeight);
+                    if (heightLeft <= pdfH) {
+                        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, imgHeight);
                     } else {
                         while (heightLeft > 0) {
-                            pdf.addImage(imgData, 'PNG', 0, position, usableW, imgHeight);
-                            heightLeft -= pdfHeight;
-                            position -= pdfHeight;
+                            pdf.addImage(imgData, 'PNG', 0, position, pdfW, imgHeight);
+                            heightLeft -= pdfH;
+                            position -= pdfH;
                             if (heightLeft > 0) pdf.addPage();
                         }
                     }
-
                     const cleanAlcaldia = (analysis.alcaldia || 'CDMX').replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
                     pdf.save(`FICHA_LEGACY_${cleanAlcaldia}.pdf`);
                 }
@@ -1075,6 +849,7 @@
                 console.error("PDF Fail", e);
                 alert("Error al generar PDF.");
                 setMapImage(null);
+                setIncludeActivities(true);
             }
         }, [analysis, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats, currentZoom]);
 
@@ -1094,13 +869,11 @@
 
         return (
             <>
-                {/* Oculto: Contenedor para leaflet-image */}
                 <div id="export-map" style={{ width: '900px', height: '520px', position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}></div>
-
-                {/* Oculto: DOM para html2canvas */}
                 <div style={{ position: 'absolute', top: -9999, left: -9999, width: '794px', zIndex: -1 }}>
                     <div style={{ background: '#ffffff' }}>
-                        <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} />
+                        {/* Include Activities controlled by State */}
+                        <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} includeActivities={includeActivities} />
                     </div>
                 </div>
             </>
