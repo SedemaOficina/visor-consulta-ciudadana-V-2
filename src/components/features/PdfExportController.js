@@ -468,6 +468,7 @@
         const [mapImage, setMapImage] = useState(null);
         const pdfRef = useRef(null);
         const exportArmedRef = useRef(false);
+        const exportMapInstance = useRef(null);
 
         // --- A. DIAGNOSTICS & HELPERS ---
 
@@ -533,7 +534,14 @@
                     const el = document.getElementById('export-map');
                     if (!el) return resolve(null);
 
-                    el.innerHTML = '';
+                    // FIX 1: Proper Cleanup of previous instance
+                    if (exportMapInstance.current) {
+                        try {
+                            exportMapInstance.current.remove();
+                        } catch (e) { console.warn('Error removing old map', e); }
+                        exportMapInstance.current = null;
+                    }
+                    el.innerHTML = ''; // Double safety
 
                     // Setup Map
                     const m = L.map(el, {
@@ -544,6 +552,8 @@
                         zoomAnimation: false,
                         markerZoomAnimation: false
                     }).setView([lat, lng], zoom);
+
+                    exportMapInstance.current = m;
 
                     // Base Layer
                     const baseLayerUrl = (typeof getBaseLayerUrl === 'function')
@@ -638,33 +648,31 @@
                     }
 
                     // 5. Pin/Marker
-                    let label = '';
+                    // FIX 2: Use CircleMarker (Vector) instead of DivIcon (HTML) to avoid leaflet-image crashes
                     let bgColor = '#9ca3af';
 
-                    if (analysisStatus === 'OUTSIDE_CDMX') {
-                        label = 'X'; bgColor = '#b91c1c';
-                    } else if (analysisStatus === 'CONSERVATION_SOIL') {
-                        label = 'SC'; bgColor = LAYER_STYLES?.sc?.color || '#3B7D23';
-                    } else if (isANP) {
-                        label = 'ANP'; bgColor = '#9333ea';
-                    } else if (analysisStatus === 'URBAN_SOIL') {
-                        label = 'SU'; bgColor = '#3b82f6';
-                    }
+                    if (analysisStatus === 'OUTSIDE_CDMX') bgColor = '#b91c1c';
+                    else if (analysisStatus === 'CONSERVATION_SOIL') bgColor = LAYER_STYLES?.sc?.color || '#3B7D23';
+                    else if (isANP) bgColor = '#9333ea';
+                    else if (analysisStatus === 'URBAN_SOIL') bgColor = '#3b82f6';
 
-                    const iconHtml = `
-                      <div style="
-                        width:32px;height:32px;background:${bgColor};color:#fff;
-                        border:3px solid #fff;border-radius:50%;
-                        display:flex;align-items:center;justify-content:center;
-                        font-weight:bold;font-size:10px;
-                        box-shadow:0 2px 8px rgba(0,0,0,0.25);
-                      ">
-                        ${label}
-                      </div>
-                      `;
+                    // Outer ring
+                    L.circleMarker([lat, lng], {
+                        radius: 8,
+                        color: '#ffffff',
+                        weight: 3,
+                        fillColor: bgColor,
+                        fillOpacity: 1,
+                        pane: markerPane
+                    }).addTo(m);
 
-                    L.marker([lat, lng], {
-                        icon: L.divIcon({ html: iconHtml, className: '', iconSize: [32, 32], iconAnchor: [16, 16] }),
+                    // Inner dot
+                    L.circleMarker([lat, lng], {
+                        radius: 2,
+                        color: '#ffffff',
+                        weight: 0,
+                        fillColor: '#ffffff',
+                        fillOpacity: 1,
                         pane: markerPane
                     }).addTo(m);
 
@@ -672,22 +680,57 @@
                     // --- CAPTURE ---
                     await waitForMapReady(m);
 
-                    leafletImageFn(m, (err, canvas) => {
+                    let settled = false;
+                    const done = (img) => {
+                        if (settled) return;
+                        settled = true;
+
                         // Cleanup
-                        try { m.remove(); } catch { }
-
-                        if (err || !canvas) {
-                            console.error('LeafletImage failed:', err);
-                            return resolve(null);
+                        if (exportMapInstance.current === m) {
+                            try { m.remove(); } catch { }
+                            exportMapInstance.current = null;
                         }
 
-                        const dataUrl = canvas.toDataURL('image/png');
-                        // Basic validation (white/empty check could go here)
-                        if (dataUrl.length < 1000) {
-                            console.warn('LeafletImage returned suspiciously small image');
+                        resolve(img || null);
+                    };
+
+                    const capture = () => {
+                        try {
+                            leafletImageFn(m, (err, canvas) => {
+                                if (err || !canvas) {
+                                    console.error('LeafletImage failed:', err);
+                                    return done(null);
+                                }
+                                done(canvas.toDataURL('image/png'));
+                            });
+                        } catch (err) {
+                            console.error('LeafletImage Exception:', err);
+                            done(null);
                         }
-                        resolve(dataUrl);
+                    };
+
+                    // Timeout absoluto (Safety)
+                    const safetyTimeout = setTimeout(() => {
+                        console.warn('Capture timeout reached');
+                        capture();
+                    }, 6000);
+
+                    // Estrategia híbrida
+                    base.on('load', () => {
+                        console.log('Map base loaded, waiting for render...');
+                        setTimeout(() => {
+                            clearTimeout(safetyTimeout);
+                            capture();
+                        }, 1200);
                     });
+
+                    // Force capture fallback
+                    setTimeout(() => {
+                        if (!settled) {
+                            console.warn('Force capture triggered');
+                            capture();
+                        }
+                    }, 3500);
 
                 } catch (e) {
                     console.error('Critical Error in buildExportMapImage', e);
