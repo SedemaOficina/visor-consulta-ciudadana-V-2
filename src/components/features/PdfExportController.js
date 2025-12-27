@@ -752,15 +752,14 @@
 
             if (!analysis || !pdfRef.current) return;
 
-            if (!window.jspdf?.jsPDF || typeof window.html2canvas !== 'function') {
-                alert('Error: Librerías PDF/Canvas no cargadas.');
+            if (!window.jspdf?.jsPDF) {
+                alert('Error: Librería jsPDF no cargada.');
                 return;
             }
             const { jsPDF } = window.jspdf;
 
             try {
                 // 1. Determine Strategy
-                // If ANY overlay is visible (SC, Zoning, ANP, Alcaldias), we MUST use client-render (leaflet-image)
                 const hasActiveLayers = visibleMapLayers?.sc ||
                     (visibleMapLayers?.zoning && dataCache?.zoning) ||
                     visibleMapLayers?.anp ||
@@ -770,7 +769,6 @@
                 let staticUrl = null;
 
                 if (!hasActiveLayers) {
-                    // Try Static only if strictly NO overlays
                     staticUrl = getStaticMapUrl({
                         lat: analysis.coordinate.lat,
                         lng: analysis.coordinate.lng,
@@ -781,7 +779,6 @@
                 }
 
                 if (!img) {
-                    // Fallback or Active Layers -> Leaflet Image
                     img = await buildExportMapImage({
                         lat: analysis.coordinate.lat,
                         lng: analysis.coordinate.lng,
@@ -791,65 +788,295 @@
                     });
                 }
 
-                // If both fail, img is null -> PDF will show placeholder
                 setMapImage(img);
 
-                // 2. Wait for Image in DOM
-                await new Promise(r => setTimeout(r, 50)); // Render cycle
+                // 2. Wait for DOM Render (Map + QR)
+                await new Promise(r => setTimeout(r, 100)); // Tick
                 await waitForImgLoaded(pdfRef.current, 'img[alt="Mapa"]');
+                await waitForImgLoaded(pdfRef.current, 'img[alt="QR visor"]'); // Wait for QR too
 
-                // 3. Verify DOM before capture
-                const element = pdfRef.current;
+                // 3. GENERATION STRATEGY
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const hasAutoTable = !!doc.autoTable;
 
-                // 4. Generate PDF
-                const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-                const scale = isMobile ? 1.8 : 2.2;
+                if (hasAutoTable) {
+                    /* =========================================
+                       NATIVE PDF GENERATION (PROFESSIONAL)
+                       ========================================= */
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const M = 15; // Margin
+                    const contentW = pageWidth - (M * 2);
 
-                const canvas = await html2canvas(element, {
-                    scale,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    onclone: (doc) => {
-                        // Ensure cloned images have cors
-                        const maps = doc.querySelectorAll('img[alt="Mapa"]');
-                        maps.forEach(m => m.crossOrigin = 'anonymous');
+                    // --- HELPERS ---
+                    const addBoldText = (label, value, x, y, labelWidth = 35) => {
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(9);
+                        doc.setTextColor(51, 65, 85);
+                        doc.text(label, x, y);
+
+                        doc.setFont("helvetica", "normal");
+                        doc.setTextColor(0, 0, 0);
+                        // Wrap text if needed
+                        const splitVal = doc.splitTextToSize(value, contentW - labelWidth);
+                        doc.text(splitVal, x + labelWidth, y);
+                        return splitVal.length * 4; // approximate height
+                    };
+
+                    let cursorY = M;
+
+                    // --- HEADER ---
+                    // Logo Semovi/Sedema (try to grab from DOM or use fixed URL if CORS allows)
+                    // Fallback to text if no image accessible easily, but let's try grabbing the rendered one
+                    const logoImg = pdfRef.current.querySelector('img[alt="SEDEMA"]');
+                    if (logoImg && logoImg.complete && logoImg.naturalHeight > 0) {
+                        try {
+                            // Create temporary canvas to get dataURL for existing image
+                            const c = document.createElement('canvas');
+                            c.width = logoImg.naturalWidth;
+                            c.height = logoImg.naturalHeight;
+                            const ctx = c.getContext('2d');
+                            ctx.drawImage(logoImg, 0, 0);
+                            doc.addImage(c.toDataURL('image/png'), 'PNG', M, cursorY, 25, 12); // Ratio approx
+                        } catch (e) { }
                     }
-                });
 
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
+                    doc.setFontSize(8);
+                    doc.setTextColor(100);
+                    doc.text("SECRETARÍA DEL MEDIO AMBIENTE", M, cursorY + 16);
 
-                const imgProps = pdf.getImageProperties(imgData);
-                const usableW = pdfWidth;
-                const imgHeight = (imgProps.height * usableW) / imgProps.width;
+                    // Título / Folio Right Aligned
+                    doc.setFontSize(16);
+                    doc.setFont("helvetica", "bold");
+                    doc.setTextColor(157, 36, 73); // #9D2449
+                    doc.text("FICHA INFORMATIVA", pageWidth - M, cursorY + 5, { align: "right" });
 
-                let heightLeft = imgHeight;
-                let position = 0;
+                    doc.setFontSize(9);
+                    doc.setTextColor(0);
+                    doc.setFont("courier", "normal");
+                    const folio = `F-${new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)}`;
+                    doc.text(`Folio: ${folio}`, pageWidth - M, cursorY + 12, { align: "right" });
 
-                if (heightLeft <= pdfHeight) {
-                    pdf.addImage(imgData, 'PNG', 0, 0, usableW, imgHeight);
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(8);
+                    const fecha = analysis.timestamp || new Date().toLocaleString();
+                    doc.text(`Fecha: ${fecha}`, pageWidth - M, cursorY + 17, { align: "right" });
+
+                    cursorY += 25;
+
+                    // Line separator
+                    doc.setDrawColor(212, 193, 156); // Dorado
+                    doc.setLineWidth(0.5);
+                    doc.line(M, cursorY, pageWidth - M, cursorY);
+                    cursorY += 8;
+
+                    // --- UBICACIÓN ---
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "bold");
+                    doc.setTextColor(157, 36, 73);
+                    doc.text("UBICACIÓN DEL PREDIO", M, cursorY);
+                    cursorY += 6;
+
+                    // Map Image
+                    if (mapImage) {
+                        const mapH = 60;
+                        const mapW = 90; // Fixed width for sidebar map
+                        // Text on left, Map on right logic
+
+                        const textStart = cursorY;
+                        // Address
+                        const addr = analysis.address || analysis.placeName || 'Ubicación por coordenadas';
+                        cursorY += addBoldText("Dirección:", addr, M, cursorY);
+                        cursorY += 5;
+
+                        if (analysis.alcaldia) {
+                            cursorY += addBoldText("Alcaldía:", analysis.alcaldia, M, cursorY);
+                            cursorY += 5;
+                        }
+
+                        cursorY += addBoldText("Coords:", `${analysis.coordinate.lat.toFixed(5)}, ${analysis.coordinate.lng.toFixed(5)}`, M, cursorY);
+                        cursorY += 8;
+
+                        // Draw Map on Right
+                        try {
+                            doc.addImage(mapImage, 'PNG', pageWidth - M - mapW, textStart, mapW, mapH);
+                            doc.setDrawColor(200);
+                            doc.rect(pageWidth - M - mapW, textStart, mapW, mapH); // Border
+                        } catch (e) { }
+
+                        // Move cursor below the lowest element (Text or Map)
+                        cursorY = Math.max(cursorY, textStart + mapH + 8);
+                    } else {
+                        // No map fallback
+                        cursorY += 10;
+                    }
+
+                    // --- NORMATIVIDAD ---
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "bold");
+                    doc.setTextColor(157, 36, 73);
+                    doc.text("NORMATIVIDAD APLICABLE", M, cursorY);
+                    cursorY += 6;
+
+                    // Status Chips
+                    doc.setFillColor(248, 250, 252);
+                    doc.rect(M, cursorY, contentW, 20, 'F');
+                    doc.setDrawColor(226, 232, 240);
+                    doc.rect(M, cursorY, contentW, 20, 'S');
+
+                    const isSC = analysis.status === 'CONSERVATION_SOIL';
+                    const isANP = analysis.isANP || analysis.zoningKey === 'ANP';
+
+                    doc.setFontSize(9);
+                    doc.setFont("helvetica", "bold");
+                    doc.setTextColor(0);
+                    doc.text("Clasificación de Suelo:", M + 4, cursorY + 6);
+
+                    let statusTxt = 'Sin Información';
+                    if (isSC) statusTxt = 'SUELO DE CONSERVACIÓN';
+                    else if (analysis.status === 'URBAN_SOIL') statusTxt = 'SUELO URBANO';
+                    else if (analysis.status === 'OUTSIDE_CDMX') statusTxt = 'FUERA DE CDMX';
+
+                    doc.setFontSize(12);
+                    if (isSC) doc.setTextColor(21, 128, 61); // Green
+                    else if (isANP) doc.setTextColor(147, 51, 234); // Purple
+                    else doc.setTextColor(59, 130, 246); // Blue
+
+                    doc.text(statusTxt, M + 4, cursorY + 14);
+
+                    // Zoning Info
+                    const zoningKey = analysis.zoningKey && analysis.zoningKey !== 'NODATA' ? analysis.zoningKey : '—';
+                    doc.setFontSize(9);
+                    doc.setTextColor(0);
+                    doc.text("Zonificación:", M + 90, cursorY + 6);
+                    doc.setFontSize(12);
+                    doc.text(zoningKey, M + 90, cursorY + 14);
+
+                    cursorY += 28;
+
+                    // --- AUTO TABLES ---
+                    if (isSC && !isANP && !analysis.isPDU && !analysis.noActivitiesCatalog) {
+
+                        // 1. Allowed
+                        const allowedRows = (analysis.allowedActivities || []).map(a => [a.general || '', a.specific || '']);
+                        if (allowedRows.length > 0) {
+                            doc.setFontSize(10);
+                            doc.setTextColor(21, 128, 61);
+                            doc.text("ACTIVIDADES PERMITIDAS", M, cursorY);
+                            cursorY += 2;
+
+                            doc.autoTable({
+                                startY: cursorY,
+                                head: [['Actividad General', 'Especificaciones']],
+                                body: allowedRows,
+                                theme: 'grid',
+                                headStyles: { fillColor: [21, 128, 61], textColor: 255, fontSize: 9, fontStyle: 'bold' },
+                                styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+                                columnStyles: { 0: { cellWidth: 40 } }, // General col slimmer
+                                margin: { left: M, right: M }
+                            });
+                            cursorY = doc.lastAutoTable.finalY + 10;
+                        }
+
+                        // 2. Prohibited
+                        const prohibitedRows = (analysis.prohibitedActivities || []).map(a => [a.general || '', a.specific || '']);
+                        if (prohibitedRows.length > 0) {
+                            // Check page break
+                            if (cursorY > pageHeight - 40) { doc.addPage(); cursorY = M; }
+
+                            doc.setFontSize(10);
+                            doc.setTextColor(185, 28, 28);
+                            doc.text("ACTIVIDADES PROHIBIDAS", M, cursorY);
+                            cursorY += 2;
+
+                            doc.autoTable({
+                                startY: cursorY,
+                                head: [['Actividad General', 'Especificaciones']],
+                                body: prohibitedRows,
+                                theme: 'grid',
+                                headStyles: { fillColor: [185, 28, 28], textColor: 255, fontSize: 9, fontStyle: 'bold' },
+                                styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+                                columnStyles: { 0: { cellWidth: 40 } },
+                                margin: { left: M, right: M }
+                            });
+                            cursorY = doc.lastAutoTable.finalY + 10;
+                        }
+                    }
+
+                    // --- FOOTER & QR ---
+                    // Prepare Footer Y (at bottom of current page or new page)
+                    if (cursorY > pageHeight - 40) { doc.addPage(); cursorY = M; }
+
+                    const footerY = pageHeight - 35; // Fixed at bottom
+                    // If we are overlapping footer, add page
+                    if (cursorY > footerY) { doc.addPage(); }
+
+                    // QR Code
+                    const qrEl = pdfRef.current.querySelector('img[alt="QR visor"]');
+                    if (qrEl) {
+                        try {
+                            const c = document.createElement('canvas');
+                            c.width = qrEl.naturalWidth;
+                            c.height = qrEl.naturalHeight;
+                            const ctx = c.getContext('2d');
+                            ctx.drawImage(qrEl, 0, 0);
+                            const qrData = c.toDataURL('image/png');
+                            doc.addImage(qrData, 'PNG', pageWidth - M - 25, footerY, 25, 25);
+                        } catch (e) { }
+                    }
+
+                    // Legal Text
+                    doc.setFontSize(7);
+                    doc.setTextColor(100);
+                    const legal = "AVISO: Este documento es de carácter informativo. La información presentada se basa en las capas geográficas vigentes. Para trámites oficiales, acuda a la Ventanilla Única de la SEDEMA.";
+                    doc.text(doc.splitTextToSize(legal, contentW - 30), M, footerY + 5);
+
+                    const cleanAlcaldia = (analysis.alcaldia || 'CDMX').replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+                    doc.save(`FICHA_SC_${cleanAlcaldia}.pdf`);
+
                 } else {
-                    while (heightLeft > 0) {
-                        pdf.addImage(imgData, 'PNG', 0, position, usableW, imgHeight);
-                        heightLeft -= pdfHeight;
-                        position -= pdfHeight;
-                        if (heightLeft > 0) pdf.addPage();
-                    }
-                }
+                    /* =========================================
+                       FALLBACK: HTML2CANVAS (IMAGE BASED)
+                       ========================================= */
+                    console.warn('AutoTable not found, using HTML2Canvas fallback');
+                    const element = pdfRef.current;
+                    const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+                    const scale = isMobile ? 1.8 : 2.2;
 
-                const cleanAlcaldia = (analysis.alcaldia || 'CDMX').replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-                pdf.save(`FICHA_${cleanAlcaldia}.pdf`);
+                    const canvas = await window.html2canvas(element, { scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const usableW = pdfWidth;
+                    const imgHeight = (imgProps.height * usableW) / imgProps.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    if (heightLeft <= pdfHeight) {
+                        pdf.addImage(imgData, 'PNG', 0, 0, usableW, imgHeight);
+                    } else {
+                        while (heightLeft > 0) {
+                            pdf.addImage(imgData, 'PNG', 0, position, usableW, imgHeight);
+                            heightLeft -= pdfHeight;
+                            position -= pdfHeight;
+                            if (heightLeft > 0) pdf.addPage();
+                        }
+                    }
+
+                    const cleanAlcaldia = (analysis.alcaldia || 'CDMX').replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+                    pdf.save(`FICHA_LEGACY_${cleanAlcaldia}.pdf`);
+                }
 
             } catch (e) {
                 console.error("PDF Fail", e);
                 alert("Error al generar PDF.");
                 setMapImage(null);
             }
-        }, [analysis, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats]);
+        }, [analysis, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats, currentZoom]);
 
         const requestExportPDF = React.useCallback((e) => {
             if (!e || !e.isTrusted) return;
