@@ -469,13 +469,64 @@
         const pdfRef = useRef(null);
         const exportArmedRef = useRef(false);
 
-        const buildExportMapImage = ({ lat, lng, zoom, analysisStatus, isANP }) => {
+        // --- A. DIAGNOSTICS & HELPERS ---
+
+        const waitForMapReady = (map) => {
             return new Promise((resolve) => {
+                let tilesLoaded = false;
+
+                // 1. Wait for tiles
+                map.on('load', () => { tilesLoaded = true; });
+
+                // Fallback check if already loaded
+                if (map._loaded) tilesLoaded = true;
+
+                // 2. Wait function
+                const check = () => {
+                    // Force size update
+                    map.invalidateSize(true);
+
+                    if (tilesLoaded) {
+                        // Wait extra 800ms for heavy overlays/canvas rendering
+                        setTimeout(() => resolve(true), 800);
+                    } else {
+                        setTimeout(check, 200);
+                    }
+                };
+
+                // Safety timeout 4s
+                setTimeout(() => resolve(true), 4000);
+                check();
+            });
+        };
+
+        const waitForImgLoaded = (container, selector) => {
+            return new Promise((resolve) => {
+                const img = container.querySelector(selector);
+                if (!img) return resolve(true); // No map img present
+                if (img.complete && img.naturalHeight !== 0) return resolve(true);
+
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(true); // Proceed anyway
+                setTimeout(() => resolve(true), 1500); // Safety
+            });
+        };
+
+        const buildExportMapImage = ({ lat, lng, zoom, analysisStatus, isANP }) => {
+            return new Promise(async (resolve) => {
                 try {
                     const L = window.L;
                     const leafletImageFn = window.leafletImage || window.leafletImage?.default;
 
+                    console.log('--- EXPORT MAP DIAGNOSTICS ---');
+                    console.log('Leaflet available:', !!L);
+                    console.log('leafletImage available:', typeof leafletImageFn === 'function');
+                    console.log('Items in Cache:', Object.keys(dataCache || {}));
+                    console.log('Visible Layers:', visibleMapLayers);
+                    console.log('Active Base:', activeBaseLayer);
+
                     if (!L || typeof leafletImageFn !== 'function') {
+                        console.error('Missing dependencies for map export');
                         return resolve(null);
                     }
 
@@ -483,6 +534,8 @@
                     if (!el) return resolve(null);
 
                     el.innerHTML = '';
+
+                    // Setup Map
                     const m = L.map(el, {
                         zoomControl: false,
                         attributionControl: false,
@@ -492,7 +545,7 @@
                         markerZoomAnimation: false
                     }).setView([lat, lng], zoom);
 
-                    // Definir base layer
+                    // Base Layer
                     const baseLayerUrl = (typeof getBaseLayerUrl === 'function')
                         ? getBaseLayerUrl(activeBaseLayer || 'SATELLITE')
                         : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
@@ -500,46 +553,62 @@
                     const base = L.tileLayer(baseLayerUrl, {
                         crossOrigin: 'anonymous',
                         maxZoom: 19
-                    });
+                    }).addTo(m);
 
-                    base.addTo(m);
-
-                    // Helper para panes seguros
+                    // Panes Setup (Matching Visor)
                     const createPane = (name, zIndex) => {
                         if (!m.getPane(name)) m.createPane(name);
                         m.getPane(name).style.zIndex = zIndex;
                         return name;
                     };
 
-                    // GeoJSON Helper - Simplificado
-                    const addGeoJson = (fc, style, pane) => {
-                        try {
-                            if (!fc?.features?.length) return null;
-                            return L.geoJSON(fc, { pane, style, interactive: false }).addTo(m);
-                        } catch (err) {
-                            return null;
-                        }
-                    };
-
-                    // Configurar Panes en orden correcto
                     const contextPane = createPane('contextPane', 400);
                     const overlayPane = createPane('overlayPane', 450);
                     const markerPane = createPane('markerPane', 600);
 
-                    // 1. Capas de Contexto
+                    // Helper GeoJSON
+                    const addGeoJson = (fc, style, pane) => {
+                        try {
+                            if (!fc?.features?.length) return;
+                            L.geoJSON(fc, { pane, style, interactive: false }).addTo(m);
+                        } catch (err) {
+                            console.warn('Error adding layer', err);
+                        }
+                    };
+
+                    // --- ADD VISIBLE LAYERS (WYSIWYG) ---
+
+                    // 1. Context (Alcaldias/Limits)
                     if (visibleMapLayers?.alcaldias && dataCache?.alcaldias) {
-                        addGeoJson(dataCache.alcaldias, { color: '#ffffff', weight: 3, dashArray: '8,4', opacity: 0.9, fillOpacity: 0 }, contextPane);
+                        addGeoJson(dataCache.alcaldias, {
+                            color: '#ffffff', weight: 3, dashArray: '8,4', opacity: 0.9, fillOpacity: 0
+                        }, contextPane);
                     }
 
-                    // 2. Capas Principales (SC sobre todo lo demás)
+                    // 2. SC (Conservation Soil)
                     if (visibleMapLayers?.sc && dataCache?.sc) {
-                        addGeoJson(dataCache.sc, { color: LAYER_STYLES?.sc?.color || 'green', weight: 1.8, opacity: 0.9, fillColor: LAYER_STYLES?.sc?.fill, fillOpacity: 0.18 }, overlayPane);
+                        addGeoJson(dataCache.sc, {
+                            color: LAYER_STYLES?.sc?.color || 'green',
+                            weight: 1.8, opacity: 0.9,
+                            fillColor: LAYER_STYLES?.sc?.fill, fillOpacity: 0.18
+                        }, overlayPane);
                     }
 
-                    // 3. Zoning logic
+                    // 3. ANP (Protected Areas) - PREVIOUSLY MISSING
+                    if (visibleMapLayers?.anp && dataCache?.anp) {
+                        addGeoJson(dataCache.anp, {
+                            color: LAYER_STYLES?.anp?.color || '#9333ea',
+                            weight: 2, opacity: 1,
+                            fillColor: LAYER_STYLES?.anp?.fill || '#9333ea', fillOpacity: 0.2
+                        }, overlayPane);
+                    }
+
+                    // 4. Zoning
                     if (visibleMapLayers?.zoning && dataCache?.zoning?.features?.length) {
                         const byKey = {};
                         (ZONING_ORDER || []).forEach(k => (byKey[k] = []));
+
+                        // Sort features
                         dataCache.zoning.features.forEach(f => {
                             let k = (f.properties?.CLAVE || '').toString().trim().toUpperCase();
                             if (k === 'PDU' || k === 'PROGRAMAS' || k === 'ZONA URBANA') {
@@ -552,47 +621,38 @@
                             if (byKey[k]) byKey[k].push(f);
                         });
 
+                        // Add by Order
                         (ZONING_ORDER || []).forEach((k) => {
                             const isOn = (visibleZoningCats?.[k] !== false);
                             if (!isOn) return;
                             const feats = byKey[k];
                             if (!feats?.length) return;
                             const color = ZONING_CAT_INFO?.[k]?.color || '#9ca3af';
+
                             addGeoJson({ type: 'FeatureCollection', features: feats }, {
-                                color, weight: 1.5, opacity: 0.9, fillColor: color, fillOpacity: 0.2, interactive: false
+                                color, weight: 1.5, opacity: 0.9,
+                                fillColor: color, fillOpacity: 0.2,
+                                interactive: false
                             }, overlayPane);
                         });
                     }
 
-                    // 4. Pin (Encima de todo)
-                    // Configurable fill colors
-                    const styles = LAYER_STYLES || {};
-
-                    // PRIORITIZATION LOGIC:
-                    // 1. OUTSIDE CDMX -> 'X' (Red)
-                    // 2. SC -> 'SC' (Green) - Prevails over ANP
-                    // 3. ANP -> 'ANP' (Purple)
-                    // 4. SU -> 'SU' (Blue)
-
+                    // 5. Pin/Marker
                     let label = '';
                     let bgColor = '#9ca3af';
 
                     if (analysisStatus === 'OUTSIDE_CDMX') {
-                        label = 'X';
-                        bgColor = '#b91c1c';
+                        label = 'X'; bgColor = '#b91c1c';
                     } else if (analysisStatus === 'CONSERVATION_SOIL') {
-                        label = 'SC';
-                        bgColor = styles.sc?.color || '#3B7D23';
+                        label = 'SC'; bgColor = LAYER_STYLES?.sc?.color || '#3B7D23';
                     } else if (isANP) {
-                        label = 'ANP';
-                        bgColor = '#9333ea';
+                        label = 'ANP'; bgColor = '#9333ea';
                     } else if (analysisStatus === 'URBAN_SOIL') {
-                        label = 'SU';
-                        bgColor = '#3b82f6';
+                        label = 'SU'; bgColor = '#3b82f6';
                     }
 
                     const iconHtml = `
-                      <div class="marker-pop" style="
+                      <div style="
                         width:32px;height:32px;background:${bgColor};color:#fff;
                         border:3px solid #fff;border-radius:50%;
                         display:flex;align-items:center;justify-content:center;
@@ -603,60 +663,34 @@
                       </div>
                       `;
 
-                    const icon = L.divIcon({
-                        html: iconHtml,
-                        className: '',
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 16]
-                    });
+                    L.marker([lat, lng], {
+                        icon: L.divIcon({ html: iconHtml, className: '', iconSize: [32, 32], iconAnchor: [16, 16] }),
+                        pane: markerPane
+                    }).addTo(m);
 
-                    L.marker([lat, lng], { icon, pane: markerPane }).addTo(m);
 
-                    /* Capture Logic Segura */
-                    let settled = false;
-                    const done = (img) => {
-                        if (settled) return;
-                        settled = true;
+                    // --- CAPTURE ---
+                    await waitForMapReady(m);
+
+                    leafletImageFn(m, (err, canvas) => {
+                        // Cleanup
                         try { m.remove(); } catch { }
-                        resolve(img || null);
-                    };
 
-                    const capture = () => {
-                        try {
-                            leafletImageFn(m, (err, canvas) => {
-                                if (err || !canvas) return done(null);
-                                done(canvas.toDataURL('image/png'));
-                            });
-                        } catch (err) {
-                            done(null);
+                        if (err || !canvas) {
+                            console.error('LeafletImage failed:', err);
+                            return resolve(null);
                         }
-                    };
 
-                    // Timeout absoluto (Safety)
-                    const safetyTimeout = setTimeout(() => {
-                        console.warn('Capture timeout reached');
-                        capture();
-                    }, 6000);
-
-                    // Estrategia híbrida: esperar load de base + tiempo extra
-                    base.on('load', () => {
-                        console.log('Map base loaded, waiting for render...');
-                        setTimeout(() => {
-                            clearTimeout(safetyTimeout);
-                            capture();
-                        }, 1200); // 1.2s extra para capas pesadas
+                        const dataUrl = canvas.toDataURL('image/png');
+                        // Basic validation (white/empty check could go here)
+                        if (dataUrl.length < 1000) {
+                            console.warn('LeafletImage returned suspiciously small image');
+                        }
+                        resolve(dataUrl);
                     });
-
-                    // Si no carga en 3s, intentar capturar de todas formas (por si load event se pierde)
-                    setTimeout(() => {
-                        if (!settled) {
-                            console.warn('Force capture triggered');
-                            capture();
-                        }
-                    }, 3500);
 
                 } catch (e) {
-                    console.error('Error crítico en buildExportMapImage', e);
+                    console.error('Critical Error in buildExportMapImage', e);
                     resolve(null);
                 }
             });
@@ -675,35 +709,29 @@
             const { jsPDF } = window.jspdf;
 
             try {
-                // 0) Detectar si hay capas activas que requieran render local
+                // 1. Determine Strategy
+                // If ANY overlay is visible (SC, Zoning, ANP, Alcaldias), we MUST use client-render (leaflet-image)
                 const hasActiveLayers = visibleMapLayers?.sc ||
-                    visibleMapLayers?.zoning ||
+                    (visibleMapLayers?.zoning && dataCache?.zoning) ||
                     visibleMapLayers?.anp ||
                     visibleMapLayers?.alcaldias;
 
-                // 1) Intentar Mapbox Static SOLO si no hay capas complejas (Estrategia Prioritaria)
+                let img = null;
                 let staticUrl = null;
-                let staticOk = false;
 
                 if (!hasActiveLayers) {
+                    // Try Static only if strictly NO overlays
                     staticUrl = getStaticMapUrl({
                         lat: analysis.coordinate.lat,
                         lng: analysis.coordinate.lng,
                         zoom: currentZoom
                     });
-                    staticOk = await preloadImage(staticUrl);
+                    const staticOk = await preloadImage(staticUrl);
+                    if (staticOk) img = staticUrl;
                 }
 
-                let img = null;
-
-                if (staticOk) {
-                    img = staticUrl;
-                } else {
-                    // 2) Fallback / Active Layers: leaflet-image (Render Cliente)
-                    if (!staticOk && !hasActiveLayers) {
-                        console.warn('Mapbox Static falló, intentando leaflet-image fallback...');
-                    }
-
+                if (!img) {
+                    // Fallback or Active Layers -> Leaflet Image
                     img = await buildExportMapImage({
                         lat: analysis.coordinate.lat,
                         lng: analysis.coordinate.lng,
@@ -713,45 +741,53 @@
                     });
                 }
 
-                setMapImage(img); // Puede ser null, no pasa nada
-                await new Promise(r => setTimeout(r, 150)); // Render wait
-            } catch (e) {
-                console.error('Error generando imagen de mapa', e);
-                setMapImage(null);
-            }
+                // If both fail, img is null -> PDF will show placeholder
+                setMapImage(img);
 
-            const element = pdfRef.current;
-            const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-            const scale = isMobile ? 1.8 : 2.2;
+                // 2. Wait for Image in DOM
+                await new Promise(r => setTimeout(r, 50)); // Render cycle
+                await waitForImgLoaded(pdfRef.current, 'img[alt="Mapa"]');
 
-            try {
-                const canvas = await html2canvas(element, { scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
+                // 3. Verify DOM before capture
+                const element = pdfRef.current;
+
+                // 4. Generate PDF
+                const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+                const scale = isMobile ? 1.8 : 2.2;
+
+                const canvas = await html2canvas(element, {
+                    scale,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    onclone: (doc) => {
+                        // Ensure cloned images have cors
+                        const maps = doc.querySelectorAll('img[alt="Mapa"]');
+                        maps.forEach(m => m.crossOrigin = 'anonymous');
+                    }
+                });
+
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
-                const M = 12; // Margin
 
                 const imgProps = pdf.getImageProperties(imgData);
-                const usableW = pdfWidth; // Full width (margins handled by HTML padding)
+                const usableW = pdfWidth;
                 const imgHeight = (imgProps.height * usableW) / imgProps.width;
 
                 let heightLeft = imgHeight;
                 let position = 0;
-                let pageNum = 0;
 
-                // Support Multi-page Only if strictly necessary
                 if (heightLeft <= pdfHeight) {
                     pdf.addImage(imgData, 'PNG', 0, 0, usableW, imgHeight);
                 } else {
                     while (heightLeft > 0) {
                         pdf.addImage(imgData, 'PNG', 0, position, usableW, imgHeight);
                         heightLeft -= pdfHeight;
-                        position -= pdfHeight; // Move image up
-                        if (heightLeft > 0) {
-                            pdf.addPage();
-                            pageNum++;
-                        }
+                        position -= pdfHeight;
+                        if (heightLeft > 0) pdf.addPage();
                     }
                 }
 
@@ -761,6 +797,7 @@
             } catch (e) {
                 console.error("PDF Fail", e);
                 alert("Error al generar PDF.");
+                setMapImage(null);
             }
         }, [analysis, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats]);
 
@@ -772,7 +809,6 @@
 
         useEffect(() => {
             if (!onExportReady) return;
-            // FIX: Wrap in function to avoid React functional update behavior
             onExportReady(() => requestExportPDF);
             return () => onExportReady(null);
         }, [onExportReady, requestExportPDF]);
@@ -781,7 +817,10 @@
 
         return (
             <>
+                {/* Oculto: Contenedor para leaflet-image */}
                 <div id="export-map" style={{ width: '900px', height: '520px', position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}></div>
+
+                {/* Oculto: DOM para html2canvas */}
                 <div style={{ position: 'absolute', top: -9999, left: -9999, width: '794px', zIndex: -1 }}>
                     <div style={{ background: '#ffffff' }}>
                         <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} />
