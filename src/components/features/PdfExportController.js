@@ -389,12 +389,31 @@
                                 {/* COL 2: ZONIFICACION / ANP */}
                                 {isANP ? (
                                     <div style={{ background: C.panel, padding: '12px', borderRadius: '4px', border: `1px solid ${C.guinda}` }}>
-                                        <div style={{ fontSize: '10px', fontWeight: 700, color: C.guinda, textTransform: 'uppercase', marginBottom: '8px' }}>Régimen ANP</div>
-                                        <div style={{ fontSize: '13px', fontWeight: 800, color: C.ink }}>
-                                            {analysis.zoningName || 'Área Natural Protegida'}
+                                        <div style={{ fontSize: '10px', fontWeight: 700, color: C.guinda, textTransform: 'uppercase', marginBottom: '8px', borderBottom: `1px solid ${C.hair}`, paddingBottom: '4px' }}>Régimen ANP</div>
+
+                                        <div style={{ marginBottom: '6px' }}>
+                                            <div style={{ fontSize: '9px', fontWeight: 700, color: C.sub, textTransform: 'uppercase' }}>Nombre Oficial</div>
+                                            <div style={{ fontSize: '11px', fontWeight: 800, color: C.ink }}>{analysis.anpNombre || analysis.zoningName || 'Área Natural Protegida'}</div>
                                         </div>
-                                        <div style={{ fontSize: '10px', color: C.sub, marginTop: '4px', fontStyle: 'italic' }}>
-                                            Sujeto a Programa de Manejo
+
+                                        <div style={{ marginBottom: '6px' }}>
+                                            <div style={{ fontSize: '9px', fontWeight: 700, color: C.sub, textTransform: 'uppercase' }}>Categoría</div>
+                                            <div style={{ fontSize: '10px', color: C.ink }}>{analysis.anpCategoria || 'No disponible'}</div>
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px' }}>
+                                            <div>
+                                                <div style={{ fontSize: '8px', fontWeight: 700, color: C.sub, textTransform: 'uppercase' }}>Decreto</div>
+                                                <div style={{ fontSize: '10px', color: C.ink }}>{analysis.anpTipoDecreto || 'N/D'}</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '8px', fontWeight: 700, color: C.sub, textTransform: 'uppercase' }}>Fecha</div>
+                                                <div style={{ fontSize: '10px', color: C.ink }}>{analysis.anpFechaDecreto || 'N/D'}</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '8px', fontWeight: 700, color: C.sub, textTransform: 'uppercase' }}>Superficie</div>
+                                                <div style={{ fontSize: '10px', color: C.ink }}>{analysis.anpSupDecretada ? `${analysis.anpSupDecretada} ha` : 'N/D'}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 ) : (
@@ -421,9 +440,10 @@
                         {/* ANP INTERNA */}
                         {analysis.hasInternalAnpZoning && analysis.anpInternalFeature && (
                             <div style={{ marginTop: '10px', padding: '10px', border: `1px solid ${C.guinda}`, background: '#FFF5F7', borderRadius: '4px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 800, color: C.guinda, textTransform: 'uppercase' }}>Dentro de ANP: {analysis.anpNombre}</div>
-                                <div style={{ fontSize: '10px', color: C.ink, marginTop: '2px' }}>
-                                    <strong>Categoría:</strong> {analysis.anpCategoria}
+                                <div style={{ fontSize: '11px', fontWeight: 700, color: C.guinda, textTransform: 'uppercase', marginBottom: '4px' }}>Zonificación Interna ANP</div>
+                                <div style={{ fontSize: '9px', color: C.sub, textTransform: 'uppercase' }}>Zonificación Programa de Manejo</div>
+                                <div style={{ fontSize: '12px', fontWeight: 800, color: C.heading }}>
+                                    {analysis.anpInternalFeature.properties?.ZONIFICACION || analysis.anpInternalFeature.properties?.CATEGORIA_PROTECCION || 'Zonificación Específica'}
                                 </div>
                             </div>
                         )}

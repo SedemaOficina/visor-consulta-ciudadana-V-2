@@ -49,16 +49,26 @@ Se detona cuando el punto está en CDMX pero **NO** intersecta la capa de Suelo 
 *   **PDF**: Ficha Estándar Suelo Urbano (Mapa + Datos Básicos + Aviso de consultar SEDUVI).
 
 ### B.2. Suelo Urbano dentro de ANP
-*   **Condición**: CDMX + No SC + Dentro de Polígono ANP (Ej. Cerro de la Estrella, Bosque de Tlalpan parte baja).
-*   **Encabezado**:
-    *   `SUELO URBANO`
-    *   `ANP` (Morado)
+Se divide en dos casos dependiendo de si el ANP cuenta con datos de zonificación interna cargados.
+
+#### B.2.1. Suelo Urbano dentro de ANP (Estándar)
+*   **Condición**: CDMX + No SC + Dentro de Polígono ANP + Sin zonificación interna.
+*   **Encabezado**: `SUELO URBANO` + `ANP` (Morado).
 *   **Alerta UI**: Alerta Morada "Área Natural Protegida".
 *   **Tarjetas Mostradas**:
     *   **Instrumento Rector**: Programa Delegacional/Parcial.
     *   **Tarjeta ANP General**: Nombre, Decreto, Superficie, Categoría.
-    *   **Tarjeta ANP Interna** (Opcional): Si cuenta con zonificación interna (Ej. Zona de Uso Público).
-*   **PDF**: Ficha Híbrida (Info Urbana + Info ANP).
+*   **PDF**: Ficha Híbrida (Info Urbana + Info ANP General).
+
+#### B.2.2. Suelo Urbano dentro de ANP con Zonificación Interna
+*   **Condición**: CDMX + No SC + Dentro de Polígono ANP + Con zonificación interna (Ej. Cerro de la Estrella con zonas de uso público definidas).
+*   **Encabezado**: `SUELO URBANO` + `ANP` (Morado).
+*   **Alerta UI**: Alerta Morada "Área Natural Protegida".
+*   **Tarjetas Mostradas**:
+    *   **Instrumento Rector**: Programa Delegacional/Parcial.
+    *   **Tarjeta ANP General**: Dato global del ANP.
+    *   **Tarjeta ANP Interna**: Muestra la zonificación específica (Ej. "Zona de Uso Público").
+*   **PDF**: Ficha Híbrida Detallada (Incluye sección de zonificación interna del ANP).
 
 ---
 
