@@ -569,10 +569,19 @@ const ResultsContent = ({ analysis, onExportPDF }) => {
 
                                     {showNotes && (
                                         <div className="p-4 bg-white border-t border-gray-200">
-                                            <ul className="space-y-2 list-disc pl-4 marker:text-gray-400">
-                                                {(REGULATORY_NOTES || []).map((note, idx) => (
-                                                    <li key={idx} className="text-[10px] text-gray-600 leading-relaxed text-justify">
-                                                        {note}
+                                            <ul className="space-y-3">
+                                                {[
+                                                    "Adicionalmente a lo dispuesto en la tabla de usos del suelo, para cualquier obra o actividad que se pretenda desarrollar se deberán contemplar los criterios y lineamientos señalados en el programa de Ordenamiento Ecológico, así como cumplir con los permisos y autorizaciones en materia ambiental del Distrito Federal.",
+                                                    "Los usos del suelo no identificados en esta tabla deberán cumplir con los permisos y autorizaciones en materia urbana y ambiental aplicables en Suelo de Conservación.",
+                                                    "En las Areas Naturales Protegidas ANP regirá la zonificación especificada en su respectivo Programa de Manejo.",
+                                                    "La zonificación denominada PDU corresponde a las áreas normadas por los Programas Delegacionales o Parciales de Desarrollo Urbano vigentes.",
+                                                    "Las disposiciones de la presente regulación no prejuzgan sobre la propiedad de la tierra.",
+                                                    "El Suelo de Conservación definido por las barrancas estará regulado por la zonificación Forestal de Conservación FC, conforme a los límites establecidos por la Norma de Ordenación N° 21, señalada en los Programas de Desarrollo Urbano.",
+                                                    "* Se instrumentará un programa de reconversión de esta actividad por la producción de composta. Para ello, se elaborará un padrón de los productores y diseñar y ejecutar un programa de capacitación y proponer paquetes tecnológicos para transferencia y el desarrollo de estudios de mercado para la sustitución progresiva del producto y la reducción de la extracción directa."
+                                                ].map((note, idx) => (
+                                                    <li key={idx} className="flex gap-2 text-[11px] text-gray-600 leading-relaxed text-justify border-l-2 border-gray-200 pl-2">
+                                                        <span className="text-[#9d2148] font-bold">•</span>
+                                                        <span>{note}</span>
                                                     </li>
                                                 ))}
                                             </ul>
