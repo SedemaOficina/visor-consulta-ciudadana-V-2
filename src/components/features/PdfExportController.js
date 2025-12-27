@@ -5,7 +5,11 @@
     /* HELPERS INTERNOS SAFE ACCESS */
     /* ------------------------------------------------ */
     // Safe Access imported from Utils
-    const { getConstants, getUtils, getIcons } = window.App?.Utils || {};
+    // Safe Access imported from Utils
+    // FIX: Define accessors locally instead of destructuring non-existent 'getUtils' from Utils
+    const getConstants = () => window.App?.Constants || {};
+    const getUtils = () => window.App?.Utils || {};
+    const getIcons = () => window.App?.Components?.Icons || new Proxy({}, { get: () => () => null });
 
     const getStaticMapUrl = ({ lat, lng, zoom = 14, width = 900, height = 520 }) => {
         const clampedW = Math.min(Math.max(width, 300), 1280);
