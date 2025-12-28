@@ -3,11 +3,33 @@ const { useState, useEffect } = window.React;
 /**
  * Safe Lazy Access Helpers
  */
-/**
- * Safe Lazy Access Helpers
- */
 const { getComponent, getConstants, getIcons } = window.App?.Utils || {};
 const getToggleSwitch = () => getComponent('ToggleSwitch');
+
+// --- SHARED TOOLTIP COMPONENT ---
+const Tooltip = ({ content, children, placement = 'left' }) => {
+    const triggerRef = React.useRef(null);
+    const { useEffect } = React;
+
+    useEffect(() => {
+        if (triggerRef.current && window.tippy && content) {
+            const instance = window.tippy(triggerRef.current, {
+                content: content,
+                placement: placement,
+                animation: 'scale',
+                arrow: true,
+                theme: 'light-border',
+            });
+            return () => instance.destroy();
+        }
+    }, [content, placement]);
+
+    return (
+        <span ref={triggerRef} className="contents">
+            {children}
+        </span>
+    );
+};
 
 const Legend = ({
     visibleMapLayers,
@@ -75,17 +97,18 @@ const Legend = ({
                     )}
                     <span className="font-bold text-gray-800 text-xs uppercase tracking-wide">Capas y Zonificación</span>
                 </div>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // console.log('Close legend clicked');
-                        setIsOpen(false);
-                    }}
-                    className="p-1 hover:bg-gray-100 rounded-md transition-colors"
-                    title="Cerrar"
-                >
-                    {Icons.X ? <Icons.X className="h-4 w-4 text-gray-500" /> : <span>✕</span>}
-                </button>
+                <Tooltip content="Cerrar panel de capas">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            // console.log('Close legend clicked');
+                            setIsOpen(false);
+                        }}
+                        className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                    >
+                        {Icons.X ? <Icons.X className="h-4 w-4 text-gray-500" /> : <span>✕</span>}
+                    </button>
+                </Tooltip>
             </div>
 
             {/* Content with Scroll */}

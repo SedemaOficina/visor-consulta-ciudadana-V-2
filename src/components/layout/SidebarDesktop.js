@@ -3,6 +3,31 @@ const SearchLogicDesktop = window.App?.Components?.SearchLogicDesktop || (() => 
 const SkeletonAnalysis = window.App?.Components?.SkeletonAnalysis || (() => null);
 const ResultsContent = window.App?.Components?.ResultsContent || (() => null);
 
+// --- SHARED TOOLTIP COMPONENT ---
+const Tooltip = ({ content, children, placement = 'right' }) => {
+    const triggerRef = React.useRef(null);
+    const { useEffect } = React;
+
+    useEffect(() => {
+        if (triggerRef.current && window.tippy && content) {
+            const instance = window.tippy(triggerRef.current, {
+                content: content,
+                placement: placement,
+                animation: 'scale',
+                arrow: true,
+                theme: 'light-border',
+            });
+            return () => instance.destroy();
+        }
+    }, [content, placement]);
+
+    return (
+        <span ref={triggerRef} className="contents">
+            {children}
+        </span>
+    );
+};
+
 const SidebarDesktop = ({
     analysis,
     onLocationSelect,
@@ -96,25 +121,27 @@ const SidebarDesktop = ({
         </div>
 
         {/* Toggle Button Desacoplado */}
-        <button
-            onClick={onToggle}
-            className="
-                absolute top-1/2 -translate-y-1/2 left-full
-                transform -translate-x-0 z-[2050]
-                w-6 h-16 
-                bg-[#9d2148] text-white 
-                shadow-md rounded-r-lg
-                flex items-center justify-center 
-                hover:bg-[#7d1d3a] 
-                active:scale-95 
-                focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#9d2148] outline-none
-                transition-all duration-200
-            "
-            title={isOpen ? 'Ocultar panel' : 'Mostrar panel'}
-            aria-label={isOpen ? 'Ocultar panel' : 'Mostrar panel'}
-        >
-            <span className="text-sm font-bold">{isOpen ? '«' : '»'}</span>
-        </button>
+        {/* Toggle Button Desacoplado */}
+        <Tooltip content={isOpen ? 'Ocultar panel lateral' : 'Mostrar panel lateral'}>
+            <button
+                onClick={onToggle}
+                className="
+                    absolute top-1/2 -translate-y-1/2 left-full
+                    transform -translate-x-0 z-[2050]
+                    w-6 h-16 
+                    bg-[#9d2148] text-white 
+                    shadow-md rounded-r-lg
+                    flex items-center justify-center 
+                    hover:bg-[#7d1d3a] 
+                    active:scale-95 
+                    focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#9d2148] outline-none
+                    transition-all duration-200
+                "
+                aria-label={isOpen ? 'Ocultar panel' : 'Mostrar panel'}
+            >
+                <span className="text-sm font-bold">{isOpen ? '«' : '»'}</span>
+            </button>
+        </Tooltip>
     </div>
 );
 
