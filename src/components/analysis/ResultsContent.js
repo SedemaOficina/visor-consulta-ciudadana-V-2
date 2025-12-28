@@ -100,9 +100,10 @@ const Tooltip = ({ content, children, placement = 'top' }) => {
     );
 };
 
-const InlineAlert = ({ tone, children }) => {
+const NormativeInstrumentCard = ({ analysis }) => {
     const Icons = getIcons();
-    // ... existing ...
+    const { status, zoningKey } = analysis;
+    const isSC = status === 'CONSERVATION_SOIL';
     const isUrban = status === 'URBAN_SOIL';
     const hasSpecificPDU = zoningKey && zoningKey.startsWith('PDU_');
 
