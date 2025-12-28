@@ -34,21 +34,7 @@ const SidebarDesktop = ({
                     ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
                 `}
             >
-                {/* Header Institucional */}
-                <div className="flex-shrink-0 p-4 bg-gray-50 border-b border-gray-200 border-t-4 border-t-[#9d2148]">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-[#9d2148] text-white flex items-center justify-center shadow-sm">
-                            <Icons.MapIcon className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <h2 className="text-[18px] font-semibold text-gray-900 leading-tight tracking-tight">
-                                Consulta Ciudadana
-                            </h2>
-                        </div>
 
-
-                    </div>
-                </div>
 
                 {/* Contenido Scrollable */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">

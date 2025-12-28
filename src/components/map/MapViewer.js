@@ -146,7 +146,15 @@ const MapViewer = ({
             };
         }
 
+        // Bind Zoom Refs
+        if (zoomInRef) zoomInRef.current = () => map.zoomIn();
+        if (zoomOutRef) zoomOutRef.current = () => map.zoomOut();
+
         // ✅ Exponer invalidateSize a App
+        // Bind Zoom Refs
+        if (zoomInRef) zoomInRef.current = () => mapInstance.current?.zoomIn();
+        if (zoomOutRef) zoomOutRef.current = () => mapInstance.current?.zoomOut();
+
         if (invalidateMapRef) {
             invalidateMapRef.current = () => {
                 try { mapInstance.current?.invalidateSize(); } catch { }
