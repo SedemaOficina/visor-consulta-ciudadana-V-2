@@ -312,32 +312,38 @@
                         <div style={styleH2}>Ubicación del Punto</div>
                         <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
                             <div style={{ flex: '1' }}>
-                                <div style={{ marginBottom: '15px' }}>
-                                    <Box title="Dirección Aproximada / Lugar">{direccion}</Box>
-                                </div>
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                                     <tbody>
+                                        {/* Row 1: Entidad & Coordenadas */}
                                         <tr>
-                                            <td style={{ verticalAlign: 'top', width: '50%', paddingRight: '15px' }}>
-                                                {isOutside ? (
-                                                    <div style={{ marginBottom: '10px' }}>
-                                                        <Box title="Entidad Federativa">{outsideContextName || 'Otro Estado'}</Box>
-                                                    </div>
-                                                ) : (
-                                                    <div>
-                                                        <Box title="Entidad Federativa">Ciudad de México</Box>
-                                                        <div style={{ marginTop: '8px' }}>
-                                                            <Box title="Alcaldía">{analysis.alcaldia || 'Ciudad de México'}</Box>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                            <td style={{ verticalAlign: 'top', width: '50%', paddingRight: '15px', paddingBottom: '10px' }}>
+                                                <Box title="Entidad Federativa">
+                                                    {isOutside ? (outsideContextName || 'Otro Estado') : 'Ciudad de México'}
+                                                </Box>
                                             </td>
-                                            <td style={{ verticalAlign: 'top' }}>
+                                            <td style={{ verticalAlign: 'top', width: '50%', paddingBottom: '10px' }}>
                                                 <Box title="Coordenadas Geográficas">
                                                     <span style={{ fontFamily: T.mono, fontSize: '11px', background: '#f3f4f6', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
                                                         {coordText}
                                                     </span>
                                                 </Box>
+                                            </td>
+                                        </tr>
+
+                                        {/* Row 2: Alcaldia (Conditional) */}
+                                        {!isOutside && (
+                                            <tr>
+                                                <td style={{ verticalAlign: 'top', paddingRight: '15px', paddingBottom: '10px' }}>
+                                                    <Box title="Alcaldía">{analysis.alcaldia || 'N/D'}</Box>
+                                                </td>
+                                                <td style={{ verticalAlign: 'top', paddingBottom: '10px' }}></td>
+                                            </tr>
+                                        )}
+
+                                        {/* Row 3: Direccion (Full width) */}
+                                        <tr>
+                                            <td colSpan="2" style={{ verticalAlign: 'top', paddingBottom: '10px' }}>
+                                                <Box title="Dirección Aproximada / Lugar">{direccion}</Box>
                                             </td>
                                         </tr>
                                     </tbody>
