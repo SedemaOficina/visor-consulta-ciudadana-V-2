@@ -18,7 +18,11 @@ const Legend = ({
     isOpen,
     setIsOpen,
     activeBaseLayer,
-    setActiveBaseLayer
+    setIsOpen,
+    activeBaseLayer,
+    setActiveBaseLayer,
+    zoningOpacity,
+    setZoningOpacity
 }) => {
     // Access safely inside component
     const Icons = getIcons();
@@ -165,6 +169,23 @@ const Legend = ({
                     {/* Lista de Categorías de Zonificación */}
                     {visibleMapLayers.zoning && ZONING_ORDER && ZONING_CAT_INFO && (
                         <div className="pl-1 space-y-1.5">
+                            {/* New Opacity Slider */}
+                            <div className="px-2 py-2 mb-2 bg-gray-50/50 rounded flex flex-col gap-1 border border-gray-100" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[9px] font-semibold text-gray-500 uppercase">Opacidad</span>
+                                    <span className="text-[9px] text-gray-400">{Math.round((zoningOpacity || 0.5) * 100)}%</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="0.1"
+                                    max="1"
+                                    step="0.05"
+                                    value={zoningOpacity || 0.5}
+                                    onChange={(e) => setZoningOpacity && setZoningOpacity(parseFloat(e.target.value))}
+                                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#9d2148]"
+                                />
+                            </div>
+
                             {ZONING_ORDER.map(catKey => {
                                 const info = ZONING_CAT_INFO[catKey];
                                 if (!info) return null;

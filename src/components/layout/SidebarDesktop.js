@@ -112,9 +112,9 @@ const SidebarDesktop = ({
         <button
             onClick={onToggle}
             className="
-                absolute top-4 left-full
-                transform -translate-x-0 z-[1030]
-                w-8 h-12 
+                absolute top-1/2 -translate-y-1/2 left-full
+                transform -translate-x-0 z-[2050]
+                w-6 h-16 
                 bg-[#9d2148] text-white 
                 shadow-md rounded-r-lg
                 flex items-center justify-center 

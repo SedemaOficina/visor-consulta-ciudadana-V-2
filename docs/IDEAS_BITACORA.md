@@ -15,14 +15,9 @@ Este documento clasifica las ideas de mejora, deuda técnica y funcionalidades p
 Mejoras enfocadas en la facilidad de uso, estética y accesibilidad.
 
 *   Onboarding
-    *   🟡 **Tutorial Guiado (Walkthrough)**: Al abrir por primera vez, mostrar 3 globos flotantes: "1. Busca", "2. Analiza", "3. Descarga". Reduciría dudas iniciales.
-*   Accesibilidad
-    *   🟢 **Búsqueda por Voz**: Icono de micrófono en el buscador móvil para dictar direcciones (Web Speech API).
-    *   🟡 **Modo Oscuro Automático**: Detectar preferencia del sistema y ajustar el mapa a "Dark Matter" y tarjetas oscuras.
-    *   🟢 **Control de Opacidad de Capas**: Un slider simple en el panel de capas para ajustar transparencia del mapa de zonificación sobre la satelital.
+    *   🟡 **Tutorial Guiado (Walkthrough)**: Al abrir por primera vez, muestra un recorrido por los elementos clave. (Versión básica implementada como modal centralizado).
 *   Estética "Premium"
-    *   🟡 **Dashboard de "KPIs"**: Rediseñar la sección de datos para que los metros cuadrados y usos clave se vean como indicadores financieros grandes, no solo texto.
-    *   🟢 **Sello de Verificación Animado**: Animación sutil de "Sellado" al completar un análisis para dar certeza psicológica.
+    *   � **Dashboard de "KPIs"**: Rediseñar la sección de datos para que los metros cuadrados y usos clave se vean como indicadores financieros grandes, no solo texto.
 
 ## 📄 2. Generación de Reportes (PDF)
 Mejoras en la ficha descargable que se entrega al ciudadano.
@@ -32,19 +27,15 @@ Mejoras en la ficha descargable que se entrega al ciudadano.
     *   🔴 **Leyenda Incrustada en Mapa**: Generar visualmente la simbología DENTRO de la imagen del mapa capturado (complejo por limitantes de html2canvas).
 *   Seguridad y Validación
     *   🟡 **Código QR de Autenticidad**: Que el QR generado apunte a una URL de validación única con los parámetros encriptados o firmados (simulado).
-    *   🟢 **Marca de Agua Digital**: Añadir marca de agua sutil de "Documento Informativo - Sin Validez Legal" en el fondo de la página.
 
 ## 🗺️ 3. Herramientas del Mapa
 Funcionalidades geoespaciales para interacción avanzada.
 
-*   Interacción
-    *   🟡 **Herramienta de Medición (Regla)**: Botón para trazar líneas y medir distancia (ej. "Distancia a la barranca").
-    *   🟡 **Comparativo de Predios**: Opción para seleccionar dos puntos A y B y ver una tabla comparativa de sus normas lado a lado.
-    *   MEDIO **Filtro de "Solo mi Alcaldía"**: Al buscar, oscurecer todo el mapa excepto la alcaldía de interés (masking).
+*  
     *   🟢 **Enlace a Street View / Google Earth**: Un botón en la ficha para "Ver en 3D" que abra Google Earth Web en las mismas coordenadas para inspección visual del terreno.
 *   Capas
     *   🟡 **Visualización 3D**: Activar extrusión de edificios en niveles de zoom alto (requiere vector tiles).
-    *   🔴 **Capa de Atlas de Riesgos**: Sobreponer capas de grietas o inundaciones (si existen datos WMS/GeoJSON disponibles).
+ 
 
 ## ⚙️ 4. Lógica de Negocio y Datos
 Funcionalidades core del sistema y gestión de información.
@@ -78,6 +69,9 @@ Mejoras técnicas invisibles pero críticas.
     *   **Botón de Ayuda**: Tooltip integrado explicando formatos (Dirección, Coordenadas Decimales y DMS).
 *   **[UX] Botón Buscar Explícito**: Se añadió botón clicable para usuarios que no usan "Enter".
 *   **[CORE] Manejo "Fuera de CDMX"**: Lógica refinada para mostrar explicaciones claras cuando un punto cae en EDOMEX o Morelos, diferenciando estados específicos de genéricos.
+*   **[UI] Opacidad de Capas**: Se implementó un slider en el panel de Leyenda para controlar la transparencia de la zonificación sobre el satélite.
+*   **[UI] Sello de Verificación**: Ícono animado de "Verificado" al obtener resultados normativos.
+*   **[UI] Toggle Sidebar Ajustado**: Se centró verticalmente el botón de colapsar panel para mejorar visibilidad.
 
 ### 📌 Fase 1: Consolidación Normativa
 *   **[PDF] Nombres de Archivo Inteligentes**: Implementado formato `FICHA_FOLIO_TIPO_UBICACION.pdf` para fácil archivo.

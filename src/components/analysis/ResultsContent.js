@@ -635,6 +635,33 @@ const ExportProgressOverlay = ({ isExporting, progress }) => {
     );
 };
 
+// --- NEW VERIFIED SEAL ---
+const VerifiedSeal = ({ show }) => {
+    const [visible, setVisible] = useState(false);
+
+    React.useEffect(() => {
+        if (show) {
+            const timer = setTimeout(() => setVisible(true), 600);
+            return () => clearTimeout(timer);
+        }
+    }, [show]);
+
+    if (!visible) return null;
+
+    return (
+        <div className="absolute top-0 right-0 z-10 pointer-events-none overflow-hidden h-32 w-32 flex items-start justify-end p-2 opacity-90">
+            <div className="relative transform rotate-12 animate-in zoom-in duration-500 hover:scale-105 transition-transform origin-center">
+                <div className="absolute inset-0 border-4 border-green-600 rounded-full opacity-20 animate-ping"></div>
+                <div className="border-4 border-green-700 text-green-800 font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-lg border-double transform -rotate-12 bg-white/80 backdrop-blur-sm shadow-sm">
+                    Verificado
+                </div>
+                <div className="text-[8px] font-bold text-green-700 text-center uppercase tracking-tighter mt-1 -rotate-12">
+                    Normatividad CDMX
+                </div>
+            </div>
+        </div>
+    );
+};
 // --- NEW CATALOG CONTROLLER ---
 const ActivityCatalogController = ({ analysis, Icons, COLORS }) => {
     const [activeTab, setActiveTab] = useState('prohibidas');
@@ -799,6 +826,9 @@ const ResultsContent = ({ analysis, onExportPDF, isExporting, exportProgress }) 
 
             {/* 1.A Primary Actions (Desktop Static) */}
             <PrimaryActionHeader analysis={analysis} onExportPDF={onExportPDF} isExporting={isExporting} exportProgress={exportProgress} />
+
+            {/* NEW: Verified Seal Animation */}
+            <VerifiedSeal show={!!analysis} />
 
             {/* NEW: Full Screen Overlay for PDF Generation */}
             <ExportProgressOverlay isExporting={isExporting} progress={exportProgress} />

@@ -23,7 +23,8 @@ const MapViewer = ({
     resetMapViewRef,
     selectedAnpId,
     dataCache,
-    onZoomChange // New Prop
+    onZoomChange, // New Prop
+    zoningOpacity = 0.5 // New Prop
 }) => {
     // Access Constants lazily
     const Constants = getConstants();
@@ -473,9 +474,14 @@ const MapViewer = ({
 
                 if (shouldShow && !has) mapInstance.current.addLayer(zLayer);
                 if (!shouldShow && has) mapInstance.current.removeLayer(zLayer);
+
+                // Update Opacity Dynamically
+                if (shouldShow && zLayer) {
+                    zLayer.setStyle({ fillOpacity: zoningOpacity });
+                }
             });
         }
-    }, [visibleMapLayers, visibleZoningCats, extraDataLoaded]);
+    }, [visibleMapLayers, visibleZoningCats, extraDataLoaded, zoningOpacity]);
 
     // MARKER LOGIC
     useEffect(() => {
