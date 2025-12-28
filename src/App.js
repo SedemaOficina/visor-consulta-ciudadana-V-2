@@ -531,7 +531,8 @@ const VisorApp = () => {
           onExportPDF={handleExportClick}
           desktopSearchSetRef={desktopSearchInputRef}
           isLoading={analyzing}
-          isLoading={analyzing}
+
+
           isExporting={isExporting}
           exportProgress={exportProgress}
           onOpenHelp={() => setIsHelpOpen(true)}
@@ -636,7 +637,8 @@ const VisorApp = () => {
           onStateChange={setMobileSheetState}
           onClose={handleReset}
           onExportPDF={handleExportClick}
-          onExportPDF={handleExportClick}
+
+
           isExporting={isExporting}
           exportProgress={exportProgress}
         />
@@ -648,7 +650,8 @@ const VisorApp = () => {
 
         <PdfExportController
           analysis={analysis}
-          analysis={analysis}
+
+
           onExportReady={setExportHandler}
           onProgress={setExportProgress}
           dataCache={dataCache}
