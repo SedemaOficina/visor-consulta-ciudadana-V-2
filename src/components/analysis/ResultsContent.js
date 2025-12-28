@@ -526,7 +526,7 @@ const MobileActionButtons = ({ analysis, onExportPDF, isExporting, exportProgres
     // Keeps functionality intact as requested.
     const Icons = getIcons();
     return (
-        <div className="md:hidden mt-4 space-y-3">
+        <div className="hidden">
             {analysis?.coordinate && (
                 <a
                     href={`https://www.google.com/maps/search/?api=1&query=${analysis.coordinate.lat},${analysis.coordinate.lng}`}
@@ -612,8 +612,8 @@ const ExportProgressOverlay = ({ isExporting, progress }) => {
                 <div className="relative">
                     <div className="w-12 h-12 border-4 border-gray-100 rounded-full"></div>
                     <div className="absolute inset-0 w-12 h-12 border-4 border-[#9d2449] border-t-transparent rounded-full animate-spin"></div>
-                    <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-[#9d2449]">
-                        {progress}%
+                    <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-[#9d2449]">
+                        {progress || 0}%
                     </div>
                 </div>
                 <div className="text-center">
