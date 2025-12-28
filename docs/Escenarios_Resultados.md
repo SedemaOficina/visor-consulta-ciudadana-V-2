@@ -17,19 +17,19 @@ Este estado se activa cuando la coordenada consultada no intersecta con el polí
 
 ### A.1. Estado de México
 *   **Condición**: Fuera de CDMX + Dentro del polígono de "Edomex".
-*   **Mensaje UI**: Alerta Roja: "Este punto se encuentra fuera de la Ciudad de México (Estado de México)."
-*   **Tarjetas Mostradas**: Ninguna (Se oculta el resumen de ubicación).
+*   **Mensaje UI**: Alerta Roja: "La ubicación consultada se localiza en el **Estado de México**. Las regulaciones de la Ciudad de México no aplican en este territorio..."
+*   **Tarjetas Mostradas**: Ninguna.
 *   **PDF**: Genera ficha de "Ubicación Externa" (Mapa + Mensaje de error).
 
 ### A.2. Morelos
 *   **Condición**: Fuera de CDMX + Dentro del polígono de "Morelos".
-*   **Mensaje UI**: Alerta Roja: "Este punto se encuentra fuera de la Ciudad de México (Morelos)."
+*   **Mensaje UI**: Alerta Roja: "La ubicación consultada se localiza en el **Estado de Morelos**. Las regulaciones de la Ciudad de México no aplican en este territorio..."
 *   **Tarjetas Mostradas**: Ninguna.
 *   **PDF**: Genera ficha de "Ubicación Externa".
 
 ### A.3. Otro Estado / Desconocido
 *   **Condición**: Fuera de CDMX + Fuera de Edomex/Morelos.
-*   **Mensaje UI**: Alerta Roja: "Este punto se encuentra fuera de la Ciudad de México (otro estado)."
+*   **Mensaje UI**: Alerta Roja: "La ubicación consultada se localiza en **otro estado**. Las regulaciones de la Ciudad de México no aplican..."
 *   **Tarjetas Mostradas**: Ninguna.
 *   **PDF**: Genera ficha de "Ubicación Externa".
 
@@ -130,6 +130,14 @@ Se detona cuando el punto intersecta la capa de Suelo de Conservación. Aquí ap
 | **Tarjeta Detalle ANP** | ❌ | ⚠️ (Si aplica) | ❌ | ✅ | ⚠️ (Si aplica) |
 | **Tablas Actividades** | ❌ | ❌ | ✅ | ❌ (Generalmente)| ❌ |
 | **Notas Normativas** | ❌ | ❌ | ✅ | ✅ | ❌ |
+| **Sello Verificado** | ❌ | ✅ | ✅ | ✅ | ✅ |
+
+### D. Interfaz y Herramientas (Nuevas)
+Adicionalmente a los resultados, la interfaz cuenta con:
+*   **Sello de Verificación**: Animación "Premium" de validación al cargar datos normativos.
+*   **Control de Opacidad**: Slider en Leyendas para ajustar transparencia de zonificación.
+*   **Ayuda de Búsqueda**: Tooltip interactivo con ejemplos de formatos (Coords, DMS, Dirección).
+
 
 ---
 
