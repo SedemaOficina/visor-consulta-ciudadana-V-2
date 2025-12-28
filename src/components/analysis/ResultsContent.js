@@ -258,9 +258,9 @@ const LocationSummary = ({ analysis }) => {
         zoningColor = getZoningColor(analysis.zoningKey);
     }
 
-    // Short zoning badge: Just the key (FC, FPE, etc)
+    // Use full descriptive name instead of Key (Acronym)
     const zoningBadgeLabel = analysis.zoningKey && analysis.zoningKey !== 'NODATA' && analysis.zoningKey !== 'ANP'
-        ? analysis.zoningKey
+        ? getZoningDisplay(analysis)
         : null;
 
     if (status === 'OUTSIDE_CDMX') return null; // Handled by InlineAlert in main content
