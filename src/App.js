@@ -18,7 +18,7 @@ const SidebarDesktop = window.App.Components.SidebarDesktop;
 import { getReverseGeocoding } from './utils/geocodingService';
 
 // --- CONFIGURATION ---
-const MAPBOX_ACCESS_TOKEN = ""; // ⚠️ PASTE YOUR MAPBOX KEY HERE (e.g. pk.eyJ1...)
+const MAPBOX_ACCESS_TOKEN = "pk.eyJ1Ijoiam9yZ2VsaWJlcjI4IiwiYSI6ImNtajA0eHR2eTA0b2gzZnB0NnU2a2xwY2oifQ.2BDJUISBBvrm1wM8RwXusg";
 
 /* ------------------------------------------------ */
 /* 5. COMPONENTES UI COMPARTIDOS */
