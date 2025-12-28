@@ -100,20 +100,18 @@ const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef, initialValue 
                 <form
                     onSubmit={handleSubmit}
                     className={`
-    ${flash ? 'ring-2 ring-[#9d2148]/50 shadow-[0_0_0_6px_rgba(157,36,73,0.12)]' : ''}
-    bg-white rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.18)]
-    flex items-center px-2 py-1 border border-transparent
-    focus-within:border-gray-300 transition-all duration-200 ease-out
+    relative w-full
+    bg-white rounded-full shadow-md
+    flex items-center border border-gray-200
+    focus-within:ring-2 focus-within:ring-[#9d2449] focus-within:border-transparent
+    transition-all duration-200 ease-out
+    ${flash ? 'ring-2 ring-[#9d2148]/50' : ''}
   `}
                 >
-                    <button type="submit" className="p-2 text-gray-500">
-                        <Icons.Search className="h-5 w-5" />
-                    </button>
-
                     <input
                         type="text"
-                        className="flex-1 bg-transparent outline-none text-[13px] text-gray-800 placeholder-gray-400 h-10"
-                        placeholder="Buscar dirección o coordenadas (Lat/Lng o DMS)"
+                        className="flex-1 bg-transparent outline-none text-[13px] text-gray-800 placeholder-gray-400 h-11 pl-4 pr-20 rounded-full"
+                        placeholder="Buscar dirección..."
                         value={query}
                         onChange={handleChange}
                         onFocus={() => {
@@ -124,24 +122,28 @@ const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef, initialValue 
                         }}
                     />
 
-                    {query && (
+                    {/* Buttons Container */}
+                    <div className="absolute right-1 flex items-center gap-1">
+                        {query && (
+                            <button
+                                type="button"
+                                onClick={handleClear}
+                                className="p-2 text-gray-400 hover:text-gray-600 rounded-full active:bg-gray-100"
+                                title="Limpiar"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        )}
+
+                        <div className="h-5 w-px bg-gray-200"></div>
+
                         <button
-                            type="button"
-                            onClick={() => {
-                                setQuery('');
-                                setSuggestions([]);
-                                onReset(); // limpia resultados + re-encuadra mapa
-                            }}
-                            className="
-      px-3 h-10 rounded-full bg-gray-100
-      text-gray-700 text-[12px] font-semibold
-      flex items-center gap-2
-    "
+                            type="submit"
+                            className="p-2 text-[#9d2449] active:text-[#7d1d3a] rounded-full active:bg-red-50"
                         >
-                            <Icons.RotateCcw className="h-4 w-4" />
-                            Limpiar
+                            <Icons.Search className="h-5 w-5" />
                         </button>
-                    )}
+                    </div>
 
                 </form>
 

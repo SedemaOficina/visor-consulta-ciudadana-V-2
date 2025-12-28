@@ -277,25 +277,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
                         Mi ubicación
                     </button>
 
-                    {/* ✅ LIMPIAR (explícito) */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setQuery('');
-                            setSuggestions([]);
-                            onReset();
-                        }}
-                        className="
-      h-11 px-4 bg-white border border-gray-300 rounded-lg
-      text-gray-700 text-[13px] font-semibold
-      flex items-center gap-2
-      shadow-sm hover:bg-gray-50
-    "
-                        title="Limpiar búsqueda y ver toda la CDMX"
-                    >
-                        <Icons.RotateCcw className="h-4 w-4" />
-                        Limpiar
-                    </button>
+
                 </div>
 
             </div>
