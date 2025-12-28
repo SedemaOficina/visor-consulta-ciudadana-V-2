@@ -13,6 +13,7 @@ const Analysis = AppGlobals.Analysis || {};
 
 const PdfExportController = window.App.Components.PdfExportController;
 const OnboardingTour = window.App.Components.OnboardingTour;
+const InstitutionalHeader = window.App.Components.InstitutionalHeader;
 
 /* ------------------------------------------------ */
 /* 5. COMPONENTES UI COMPARTIDOS */
