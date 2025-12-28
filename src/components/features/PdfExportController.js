@@ -1000,7 +1000,7 @@
                             if (logoDataUrl) {
                                 // FIX LOGO ASPECT RATIO
                                 const logoProps = pdfDoc.getImageProperties(logoDataUrl);
-                                const desiredW = 60;
+                                const desiredW = 90; // Increased from 60 for wider logos
                                 const ratio = logoProps.height / logoProps.width;
                                 const desiredH = desiredW * ratio;
                                 pdfDoc.addImage(logoDataUrl, 'PNG', M, y, desiredW, desiredH);

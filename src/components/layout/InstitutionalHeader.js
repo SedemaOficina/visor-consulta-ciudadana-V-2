@@ -10,7 +10,7 @@ window.App.Components.InstitutionalHeader = () => (
                 <img
                     src="./assets/logo-sedema.png"
                     alt="Gobierno de la Ciudad de México - SEDEMA"
-                    className="h-10 md:h-14 w-auto max-w-[140px] md:max-w-[220px] object-contain drop-shadow-md"
+                    className="h-10 md:h-14 w-auto max-w-[200px] md:max-w-[400px] object-contain drop-shadow-md"
                     loading="eager"
                     decoding="async"
                 />
