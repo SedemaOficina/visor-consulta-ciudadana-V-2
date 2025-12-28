@@ -15,7 +15,7 @@ const PdfExportController = window.App.Components.PdfExportController;
 const OnboardingTour = window.App.Components.OnboardingTour;
 const InstitutionalHeader = window.App.Components.InstitutionalHeader;
 const SidebarDesktop = window.App.Components.SidebarDesktop;
-import { getReverseGeocoding } from './utils/geocodingService';
+// import { getReverseGeocoding } from './utils/geocodingService'; // REMOVED
 
 // --- CONFIGURATION ---
 const MAPBOX_ACCESS_TOKEN = "pk.eyJ1Ijoiam9yZ2VsaWJlcjI4IiwiYSI6ImNtajA0eHR2eTA0b2gzZnB0NnU2a2xwY2oifQ.2BDJUISBBvrm1wM8RwXusg";
@@ -749,6 +749,21 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
+// --- HELPER FUNCTIONS ---
+const getReverseGeocoding = async (lat, lng, apiKey) => {
+  if (!apiKey) return null;
+  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=address,poi&language=es&access_token=${apiKey}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.features?.[0]?.place_name || null;
+  } catch (error) {
+    console.error("Geocoding error:", error);
+    return null;
+  }
+};
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
