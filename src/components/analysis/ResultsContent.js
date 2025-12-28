@@ -601,6 +601,30 @@ const PrimaryActionHeader = ({ analysis, onExportPDF, isExporting, exportProgres
     );
 };
 
+// --- NEW OVERLAY PROGRESS ---
+const ExportProgressOverlay = ({ isExporting, progress }) => {
+    if (!isExporting) return null;
+    const Icons = getIcons();
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 flex flex-col items-center gap-4 max-w-xs w-full mx-4 animate-in zoom-in-95 duration-200">
+                <div className="relative">
+                    <div className="w-12 h-12 border-4 border-gray-100 rounded-full"></div>
+                    <div className="absolute inset-0 w-12 h-12 border-4 border-[#9d2449] border-t-transparent rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-[#9d2449]">
+                        {progress}%
+                    </div>
+                </div>
+                <div className="text-center">
+                    <h3 className="text-sm font-bold text-gray-900 mb-1">Generando PDF</h3>
+                    <p className="text-xs text-gray-500">Por favor espere un momento...</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- NEW CATALOG CONTROLLER ---
 const ActivityCatalogController = ({ analysis, Icons, COLORS }) => {
     const [activeTab, setActiveTab] = useState('prohibidas');
@@ -765,6 +789,9 @@ const ResultsContent = ({ analysis, onExportPDF, isExporting, exportProgress }) 
 
             {/* 1.A Primary Actions (Desktop Static) */}
             <PrimaryActionHeader analysis={analysis} onExportPDF={onExportPDF} isExporting={isExporting} exportProgress={exportProgress} />
+
+            {/* NEW: Full Screen Overlay for PDF Generation */}
+            <ExportProgressOverlay isExporting={isExporting} progress={exportProgress} />
 
             {/* 1.B Citizen Summary (Rule Based) */}
 
