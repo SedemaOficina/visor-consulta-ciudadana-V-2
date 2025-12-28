@@ -24,12 +24,12 @@ const SidebarDesktop = ({
                 flex flex-col h-[calc(100%-6rem)] 
                 transition-all duration-300 ease-out
                 glass-panel border-r-0 rounded-r-2xl mr-4 my-4 mt-24
-                ${isOpen ? 'w-[360px]' : 'w-0 border-none opacity-0'}
+                ${isOpen ? 'w-[420px]' : 'w-0 border-none opacity-0'}
             `}
         >
             <div
                 className={`
-                    w-[360px] flex flex-col h-full
+                    w-[420px] flex flex-col h-full
                     transition-opacity duration-200 delay-75
                     ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
                 `}

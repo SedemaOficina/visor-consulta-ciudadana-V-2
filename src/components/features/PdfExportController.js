@@ -957,17 +957,20 @@
                     if (hasAutoTable) {
                         // STEP A: Capture Cover Page (DOM -> Image)
                         const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-                        const scale = isMobile ? 1.8 : 2.5; // High Res
+                        const scale = isMobile ? 1.5 : 2.0; // Reduced to prevent freeze
 
                         const canvas = await window.html2canvas(element, { scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
-                        const coverImgData = canvas.toDataURL('image/png');
+                        const coverImgData = canvas.toDataURL('image/jpeg', 0.8); // JPEG is faster/smaller than PNG
                         if (onProgress) onProgress(70); // COVER READY
+
+                        // Yield to UI thread to prevent "Page Unresponsive"
+                        await new Promise(r => setTimeout(r, 100));
 
                         const pdfW = doc.internal.pageSize.getWidth();
                         const pdfH = doc.internal.pageSize.getHeight();
 
-                        // Add Cover
-                        doc.addImage(coverImgData, 'PNG', 0, 0, pdfW, pdfH);
+                        // Add Cover with FAST compression
+                        doc.addImage(coverImgData, 'JPEG', 0, 0, pdfW, pdfH, undefined, 'FAST');
 
                         // STEP B: Append Native Table Pages (if SC)
                         const isSC = analysis.status === 'CONSERVATION_SOIL';
