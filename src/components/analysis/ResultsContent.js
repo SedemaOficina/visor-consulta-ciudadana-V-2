@@ -269,8 +269,7 @@ const LocationSummary = ({ analysis }) => {
         ? getZoningDisplay(analysis)
         : null;
 
-    // if (status === 'OUTSIDE_CDMX') return null; // Removed check, we want LocationSummary to render "Estado de Mexico" etc if needed
-
+    if (status === 'OUTSIDE_CDMX') return null;
 
     return (
         <div className="bg-white border border-gray-100 rounded-xl p-4 mb-4 shadow-none animate-slide-up">
@@ -441,7 +440,7 @@ const CitizenSummaryCard = ({ analysis }) => {
     const getExplanation = () => {
         if (status === 'OUTSIDE_CDMX') {
             const estado = analysis.outsideContext || 'otro estado';
-            return `La ubicación consultada se localiza en el ${estado}. Las regulaciones de la Ciudad de México no aplican en este territorio. La determinación normativa corresponde a las autoridades locales del ${estado}.`;
+            return `La ubicación consultada se localiza en el **${estado}**. Las regulaciones de la Ciudad de México no aplican en este territorio. La determinación normativa corresponde a las autoridades locales del **${estado}**.`;
         }
 
         if (status === 'URBAN_SOIL') {
@@ -520,7 +519,7 @@ const CitizenSummaryCard = ({ analysis }) => {
                         </div>
                     )}
                     <p className={textClasses}>
-                        <span dangerouslySetInnerHTML={{ __html: text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-900">$1</strong>') }} />
+                        <span dangerouslySetInnerHTML={{ __html: text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>') }} />
                     </p>
                 </div>
             </div>
