@@ -630,20 +630,20 @@ const VisorApp = () => {
 
             {/* 5. Opacity Slider */}
             <div className="hidden md:flex bg-white rounded-md shadow-md border border-gray-200 p-1 flex-col items-center gap-1 w-8 h-28 opacity-90 hover:opacity-100 transition-opacity" title="Control de Opacidad">
-              <div className="text-[9px] text-gray-400 font-bold opacity-50 select-none">👁️</div>
+              <div className="text-[9px] text-gray-700 font-bold select-none">{Math.round((globalOpacity || 0.5) * 100)}%</div>
               <div className="flex-1 flex items-center justify-center w-full">
                 <input
                   type="range"
                   min="0.1"
-                  max="1"
+                  max="0.5"
                   step="0.05"
-                  value={globalOpacity || 0.7}
+                  value={globalOpacity || 0.5}
                   onChange={(e) => setGlobalOpacity && setGlobalOpacity(parseFloat(e.target.value))}
                   className="w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#9d2449]"
                   style={{
                     transform: 'rotate(-90deg)',
                     transformOrigin: 'center',
-                    width: '80px' // explicit width for rotation
+                    width: '60px' // adjust width for max 0.5 feel if needed, but 80px was fine for size
                   }}
                 />
               </div>
