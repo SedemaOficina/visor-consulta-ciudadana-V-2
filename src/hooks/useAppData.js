@@ -12,7 +12,7 @@
             warning: '#b45309',
             error: '#b91c1c',
             info: '#1d4ed8',
-            sc: '#3B7D23',
+            sc: '#5a7c47', // Suelo de Conservación (Muted/Olive Green to distinguish from FC)
             su: '#2563EB',
             anp: '#9333ea',
             text: '#111827',
@@ -22,7 +22,7 @@
             white: '#ffffff'
         },
         ZONING_CAT_INFO: {
-            FC: { color: '#15803d', label: 'Forestal Conservación' },
+            FC: { color: '#0d421d', label: 'Forestal Conservación' }, // Darker Forest Green
             FCE: { color: '#4ade80', label: 'Forestal Conservación Especial' },
             FP: { color: '#0e7490', label: 'Forestal Protección' },
             FPE: { color: '#0284c7', label: 'Forestal Protección Especial' },
