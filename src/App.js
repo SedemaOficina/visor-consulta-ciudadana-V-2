@@ -159,8 +159,8 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
         : isANP
           ? 'Área Natural Protegida — consulte el Programa de Manejo correspondiente.'
           : analysis?.status === 'NO_DATA'
-            ? 'No se encontró información disponible para esta zona.'
-            : 'Detalle normativo del punto de consulta.';
+            ? 'No encontramos información específica para esta zona. Podría ser calle o zona federal.'
+            : 'Aquí tienes la información normativa del punto.';
 
   return (
     <div
@@ -168,9 +168,9 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
       className="
         md:hidden
         fixed bottom-0 left-0 w-full
-        bg-white
-        rounded-t-2xl
-        shadow-[0_-5px_20px_rgba(0,0,0,0.2)]
+        glass-panel
+        rounded-t-[24px] border-b-0
+        shadow-[0_-5px_30px_rgba(0,0,0,0.15)]
         z-[1050]
         flex flex-col
         transition-all duration-300 ease-out
@@ -409,12 +409,12 @@ const VisorApp = () => {
       setAnalysis(res);
 
       if (res.status === 'OUTSIDE_CDMX') {
-        addToast('El punto está fuera de la CDMX', 'error');
+        addToast('El punto seleccionado está fuera de la CDMX', 'info');
       } else {
-        addToast('Análisis completado', 'success');
+        addToast('¡Información encontrada!', 'success');
       }
     } catch (err) {
-      addToast('Error al analizar la ubicación', 'error');
+      addToast('Hubo un inconveniente al consultar este punto. Intenta de nuevo.', 'error');
       console.error(err);
     } finally {
       setAnalyzing(false);
@@ -506,7 +506,7 @@ const VisorApp = () => {
 
 
   return (
-    <div className={`flex flex-col w-full h-full overflow-hidden bg-[#f3f4f6] ${loading || analyzing ? 'cursor-wait' : ''}`}>
+    <div className={`flex flex-col w-full h-full overflow-hidden ${loading || analyzing ? 'cursor-wait' : ''}`} style={{ background: 'var(--bg-soft-gradient)' }}>
 
       <InstitutionalHeader />
 

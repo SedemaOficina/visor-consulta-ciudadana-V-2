@@ -23,8 +23,8 @@ const SidebarDesktop = ({
             className={`
                 flex flex-col h-full 
                 transition-all duration-300 ease-out
-                bg-white border-r border-gray-200 shadow-lg
-                ${isOpen ? 'w-[360px]' : 'w-0 border-none'}
+                glass-panel border-r-0 rounded-r-2xl mr-4 my-4
+                ${isOpen ? 'w-[360px]' : 'w-0 border-none opacity-0'}
             `}
         >
             <div
@@ -52,9 +52,9 @@ const SidebarDesktop = ({
                         <button
                             onClick={onOpenHelp}
                             className="
-                                p-2 text-gray-500 hover:text-[#9d2148] hover:bg-[#9d2148]/10 
-                                rounded-full transition-colors 
-                                focus-visible:ring-2 focus-visible:ring-[#9d2148] outline-none
+                            p-2 text-gray-500 hover:text-[#9d2148] hover:bg-[#9d2148]/10 
+                            rounded-full transition-colors btn-press
+                            focus-visible:ring-2 focus-visible:ring-[#9d2148] outline-none
                             "
                             title="Ayuda y Soporte"
                             aria-label="Ayuda y Soporte"

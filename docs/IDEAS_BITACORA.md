@@ -96,3 +96,34 @@ Cosas que "funcionan" pero podrían estar mejor estructuradas.
 ## ✅ Implementado / Resuelto
 
 *   **Resumen Ciudadano (Versión Normativa)**: Se implementó una versión basada en reglas (sin AI costosa) que traduce las claves (RE, FC) a explicaciones claras.
+
+---
+
+## 🎨 Experiencia de Usuario y Diseño Visual (Naturalidad y Fluidez)
+
+Ideas enfocadas en mejorar la *comodidad* visual, la *naturalidad* de uso y la percepción de calidad gráfica.
+
+### 1. Sistema de "Glassmorphism" y Capas Visuales
+*   **Dificultad**: 🟡 **Medio**
+*   **Impacto**: Muy Alto (Modernidad)
+*   **Descripción**: Actualizar los paneles sólidos (blancos) por superficies semitransparentes con desenfoque (`backdrop-filter: blur(12px)`). Esto da contexto visual manteniendo la legibilidad, haciendo que la interfaz se sienta "flotando" sobre el mapa de forma natural.
+
+### 2. Transiciones Orgánicas (Motion Design)
+*   **Dificultad**: 🟡 **Medio**
+*   **Impacto**: Alto (Fluidez)
+*   **Descripción**: Suavizar todas las interacciones. Que los modales no "aparezcan" de golpe, sino que surjan (slide-up) con curvas de animación naturales (spring physics). Que los botones tengan efectos de "prensa" al tocarlos.
+
+### 3. Micro-interacciones de Retroalimentación
+*   **Dificultad**: 🟢 **Fácil**
+*   **Impacto**: Medio (Satisfacción)
+*   **Descripción**: Pequeños detalles que dan vida. Un "pulso" sutil en el punto seleccionado en el mapa. Un check animado al copiar un enlace. Hacen que el sistema se sienta vivo y responsivo.
+
+### 4. Lenguaje "Humano" en Interfaz
+*   **Dificultad**: 🟢 **Fácil**
+*   **Impacto**: Alto (Cercanía)
+*   **Descripción**: Revisar todos los textos de error ("Error 404", "No Data") y cambiarlos por frases amables ("No encontramos información de este punto, ¿quizás está muy cerca del borde?"). Eliminar tecnicismos innecesarios en la vista principal.
+
+### 5. Paleta de Colores Inspirada en Naturaleza
+*   **Dificultad**: 🟡 **Medio** (Requiere Diseño)
+*   **Impacto**: Medio (Identidad)
+*   **Descripción**: Ajustar los tonos institucionales duros (guinda/oro) con matices más suaves para fondos y acentos, reduciendo la fatiga visual. Usar degradados sutiles que evoquen el entorno (Suelo de Conservación) sin perder la identidad oficial.

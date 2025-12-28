@@ -59,7 +59,7 @@ const Legend = ({
 
     return (
         <div
-            className={`absolute top-16 md:top-24 right-4 md:right-20 z-[1110] w-[calc(100%-2rem)] md:w-64 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 flex flex-col transition-all duration-300 ease-in-out ${visibilityClasses}`}
+            className={`absolute top-16 md:top-24 right-4 md:right-20 z-[1110] w-[calc(100%-2rem)] md:w-64 glass-panel rounded-xl flex flex-col transition-all duration-300 ease-in-out ${visibilityClasses}`}
             style={{ maxHeight: 'calc(100% - 6rem)' }}
         >
             {/* Header */}

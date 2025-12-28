@@ -9,11 +9,15 @@
 
   /* Modern UI / Glassmorphism */
   --bg-app: #f0f2f5;
+  --bg-soft-gradient: radial-gradient(circle at 50% 10%, #ffffff 0%, #f3f4f6 60%, #e5e7eb 100%);
   /* Fondo general suave */
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(255, 255, 255, 0.6);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
   --glass-blur: blur(12px);
+
+  /* Primary Soft for secondary elements */
+  --color-primary-soft: rgba(157, 33, 72, 0.08);
 
   /* Texto */
   --font-main: 'Roboto', sans-serif;
@@ -272,11 +276,36 @@ textarea {
 }
 
 .animate-slide-up {
-  animation: slideUp 0.5s var(--trans-spring) forwards;
+  animation: slideUp 0.6s var(--trans-spring) forwards;
 }
 
 .animate-slide-left {
-  animation: slideInLeft 0.5s var(--trans-spring) forwards;
+  animation: slideInLeft 0.6s var(--trans-spring) forwards;
+}
+
+/* --- MOTION DESIGN 2.0 (Spring Physics) --- */
+@keyframes scaleInSoft {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleInSoft 0.5s var(--trans-spring) forwards;
+}
+
+.btn-press {
+  transition: transform 0.1s ease-out;
+}
+
+.btn-press:active {
+  transform: scale(0.96);
 }
 
 .hover-scale {

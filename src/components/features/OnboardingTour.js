@@ -65,10 +65,10 @@
 
                 <div className="
                     pointer-events-auto
-                    bg-white rounded-2xl shadow-2xl border border-gray-100
+                    glass-panel rounded-2xl
                     w-full max-w-sm
                     overflow-hidden
-                    animate-in slide-in-from-bottom-5 fade-in duration-300
+                    animate-scale-in
                     flex flex-col
                 ">
                     {/* Header Image/Icon Area */}
