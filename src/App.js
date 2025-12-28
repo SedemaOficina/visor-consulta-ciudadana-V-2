@@ -34,7 +34,8 @@ const SidebarDesktop = Components.SidebarDesktop || (() => null);
 // Analysis access moved to component scope
 
 
-const PdfExportController = Components.PdfExportController || (() => null);
+const PdfExportController = window.App.Components.PdfExportController;
+const OnboardingTour = window.App.Components.OnboardingTour;
 
 /* ------------------------------------------------ */
 /* 4. LÓGICA GEOESPACIAL (GEOJSON & DATOS) */
@@ -303,7 +304,7 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
 /* 9. APLICACIÓN PRINCIPAL */
 /* ------------------------------------------------ */
 
-const VisorApp = () => {
+const App = () => {
   // 1. DATA HOOK Integration
   // Access global directly to avoid reference issues
   const useAppData = window.App?.Hooks?.useAppData;
@@ -648,10 +649,9 @@ const VisorApp = () => {
           onClose={() => setIsHelpOpen(false)}
         />
 
+        {/* --- CONTROLLER: PDF EXPORT --- */}
         <PdfExportController
           analysis={analysis}
-
-
           onExportReady={setExportHandler}
           onProgress={setExportProgress}
           dataCache={dataCache}
@@ -660,6 +660,9 @@ const VisorApp = () => {
           visibleZoningCats={visibleZoningCats}
           currentZoom={currentZoom}
         />
+
+        {/* --- CONTROLLER: ONBOARDING TOUR --- */}
+        <OnboardingTour />
       </div>
     </div>
   );
