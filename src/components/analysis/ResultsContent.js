@@ -312,18 +312,16 @@ const LocationSummary = ({ analysis }) => {
                 )}
             </div>
 
-        </div>
-
             {
-        status !== 'OUTSIDE_CDMX' && (
-            <div className="mt-2 pt-2 border-t border-gray-100">
-                <div className="text-[10px] text-gray-500 font-semibold uppercase tracking-wide mb-0.5">Alcaldía</div>
-                <div className="text-lg font-bold text-gray-900 leading-tight">
-                    {analysis.alcaldia || 'Ciudad de México'}
-                </div>
-            </div>
-        )
-    }
+                status !== 'OUTSIDE_CDMX' && (
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                        <div className="text-[10px] text-gray-500 font-semibold uppercase tracking-wide mb-0.5">Alcaldía</div>
+                        <div className="text-lg font-bold text-gray-900 leading-tight">
+                            {analysis.alcaldia || 'Ciudad de México'}
+                        </div>
+                    </div>
+                )
+            }
         </div >
     );
 };
