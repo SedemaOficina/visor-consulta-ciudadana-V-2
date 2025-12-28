@@ -321,14 +321,7 @@
                                             <td style={{ verticalAlign: 'top', width: '50%', paddingRight: '15px' }}>
                                                 {isOutside ? (
                                                     <div style={{ marginBottom: '10px' }}>
-                                                        <Box title="Estatus">
-                                                            <div style={{ color: C.red, fontWeight: 900, textTransform: 'uppercase', fontSize: '12px' }}>
-                                                                Fuera de la Ciudad de México
-                                                            </div>
-                                                        </Box>
-                                                        <div style={{ marginTop: '8px' }}>
-                                                            <Box title="Entidad Federativa">{outsideContextName || 'Otro Estado'}</Box>
-                                                        </div>
+                                                        <Box title="Entidad Federativa">{outsideContextName || 'Otro Estado'}</Box>
                                                     </div>
                                                 ) : (
                                                     <div>
