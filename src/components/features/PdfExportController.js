@@ -246,7 +246,8 @@
         const getExplanation = () => {
             const { status, zoningKey, isANP, alcaldia } = analysis;
             if (status === 'OUTSIDE_CDMX') {
-                return `Estás consultando una ubicación fuera de la Ciudad de México. Aquí no aplican las regulaciones de la SEDEMA CDMX. Te sugerimos contactar a las autoridades locales de ${analysis.outsideContext || 'la entidad vecina'}.`;
+                const estado = analysis.outsideContext || 'otro estado';
+                return `Estás consultando una ubicación fuera de la Ciudad de México, específicamente en ${estado}. Aquí no aplican las regulaciones de la Ciudad de México. Te sugerimos contactar a las autoridades locales del Estado para más información.`;
             }
             if (status === 'URBAN_SOIL') {
                 if (isANP) return `Aunque es zona urbana, este punto está dentro de una Área Natural Protegida. Esto significa que la prioridad es el medio ambiente y aplican reglas especiales de conservación por encima de las normas urbanas comunes.`;
@@ -291,8 +292,6 @@
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '35px', borderBottom: `2px solid ${C.dorado}`, paddingBottom: '15px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <img src="./assets/logo-sedema.png" alt="SEDEMA" style={{ height: '65px', objectFit: 'contain', display: 'block', marginBottom: '10px' }} />
-                            <div style={{ fontSize: '11px', color: C.sub, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Secretaría del Medio Ambiente</div>
-                            <div style={{ fontSize: '10px', color: C.sub }}>Dirección General del Sistema de Áreas Naturales Protegidas</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                             <div style={{ fontSize: '18px', fontWeight: 900, color: C.guinda, textTransform: 'uppercase', lineHeight: 1 }}>

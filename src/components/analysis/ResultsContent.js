@@ -269,7 +269,8 @@ const LocationSummary = ({ analysis }) => {
         ? getZoningDisplay(analysis)
         : null;
 
-    if (status === 'OUTSIDE_CDMX') return null; // Handled by InlineAlert in main content
+    // if (status === 'OUTSIDE_CDMX') return null; // Removed check, we want LocationSummary to render "Estado de Mexico" etc if needed
+
 
     return (
         <div className="bg-white border border-gray-100 rounded-xl p-4 mb-4 shadow-none animate-slide-up">
@@ -432,7 +433,8 @@ const CitizenSummaryCard = ({ analysis }) => {
     // --- REGLAS DE INTERPRETACION (Determinista) ---
     const getExplanation = () => {
         if (status === 'OUTSIDE_CDMX') {
-            return `Estás consultando una ubicación fuera de la Ciudad de México. Aquí no aplican las regulaciones de la SEDEMA CDMX. Te sugerimos contactar a las autoridades locales de ${analysis.outsideContext || 'la entidad vecina'}.`;
+            const estado = analysis.outsideContext || 'otro estado';
+            return `Estás consultando una ubicación fuera de la Ciudad de México, específicamente en ${estado}. Aquí no aplican las regulaciones de la Ciudad de México. Te sugerimos contactar a las autoridades locales del Estado para más información.`;
         }
 
         if (status === 'URBAN_SOIL') {
@@ -775,11 +777,7 @@ const ResultsContent = ({ analysis, onExportPDF, isExporting, exportProgress }) 
 
 
             {/* 2. Unified Critical Alerts */}
-            {status === 'OUTSIDE_CDMX' && (
-                <InlineAlert tone="error">
-                    Este punto se encuentra <strong>fuera de la Ciudad de México</strong> ({analysis.outsideContext || 'otro estado'}).
-                </InlineAlert>
-            )}
+
 
             {(status === 'NO_DATA' || zoningKey === 'NODATA') && status !== 'URBAN_SOIL' && status !== 'OUTSIDE_CDMX' && (
                 <InlineAlert tone="nodata">
