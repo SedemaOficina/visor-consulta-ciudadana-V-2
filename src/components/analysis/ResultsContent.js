@@ -439,8 +439,12 @@ const CitizenSummaryCard = ({ analysis }) => {
     // --- REGLAS DE INTERPRETACION (Determinista) ---
     const getExplanation = () => {
         if (status === 'OUTSIDE_CDMX') {
-            const estado = analysis.outsideContext || 'otro estado';
-            return `La ubicación consultada se localiza en el **${estado}**. Las regulaciones de la Ciudad de México no aplican en este territorio. La determinación normativa corresponde a las autoridades locales del **${estado}**.`;
+            const estado = analysis.outsideContext;
+            if (estado) {
+                return `La ubicación consultada se localiza en el **${estado}**. Las regulaciones de la Ciudad de México no aplican en este territorio. La determinación normativa corresponde a las autoridades locales del **${estado}**.`;
+            } else {
+                return `La ubicación consultada se localiza en **otro estado**. Las regulaciones de la Ciudad de México no aplican en este territorio. La determinación normativa corresponde a las autoridades estatales o municipales.`;
+            }
         }
 
         if (status === 'URBAN_SOIL') {

@@ -13,6 +13,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [showInfo, setShowInfo] = useState(false); // NEW: Info Tooltip State
     const debounceRef = useRef(null);
     const localInputRef = useRef(null);
 
@@ -39,6 +40,12 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
 
         if (debounceRef.current) clearTimeout(debounceRef.current);
         if (!value.trim() || value.trim().length < 3) {
+            setSuggestions([]);
+            return;
+        }
+
+        // NEW: Suppress suggestions for Coordinates
+        if (/^-?\d+(\.\d+)?(\s*,\s*|\s+)-?\d+(\.\d+)?$/.test(value.trim())) {
             setSuggestions([]);
             return;
         }
@@ -108,9 +115,30 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
         <div className="space-y-2">
             <div className="relative shadow-sm">
                 <div className="relative mb-3">
-                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">
-                        Buscar por dirección
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                            Buscar por dirección
+                        </label>
+                        <button
+                            type="button"
+                            onClick={() => setShowInfo(!showInfo)}
+                            className="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors"
+                        >
+                            <Icons.Info className="h-3 w-3" />
+                            <span>Ayuda</span>
+                        </button>
+                    </div>
+
+                    {showInfo && (
+                        <div className="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-800 animate-in fade-in slide-in-from-top-1">
+                            <div className="font-bold mb-1">Formatos permitidos:</div>
+                            <ul className="list-disc list-inside space-y-0.5 text-[11px] opacity-90">
+                                <li><strong>Dirección:</strong> "Calle 5 de Mayo, Centro"</li>
+                                <li><strong>Coordenadas:</strong> "19.4326, -99.1332"</li>
+                                <li><strong>Colonias:</strong> "Polanco, Miguel Hidalgo"</li>
+                            </ul>
+                        </div>
+                    )}
                     <div className="flex gap-2">
                         <div className="relative w-full">
                             <input

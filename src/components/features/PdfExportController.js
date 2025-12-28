@@ -289,7 +289,7 @@
             >
                 <div>
                     {/* --- HEADER --- */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '35px', borderBottom: `2px solid ${C.dorado}`, paddingBottom: '15px' }}>
+                    <div id="pdf-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '35px', borderBottom: `2px solid ${C.dorado}`, paddingBottom: '15px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <img src="./assets/logo-sedema.png" alt="SEDEMA" style={{ height: '65px', objectFit: 'contain', display: 'block', marginBottom: '10px' }} />
                         </div>
@@ -970,15 +970,88 @@
                         const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
                         const scale = isMobile ? 1.5 : 2.0; // Reduced to prevent freeze
 
-                        const canvas = await window.html2canvas(element, { scale, useCORS: true, backgroundColor: '#ffffff', logging: false });
+                        const canvas = await window.html2canvas(element, {
+                            scale,
+                            useCORS: true,
+                            backgroundColor: '#ffffff',
+                            logging: false,
+                            onclone: (clonedDoc) => {
+                                const header = clonedDoc.getElementById('pdf-header-row');
+                                if (header) header.style.opacity = '0'; // Hide header in capture to start with whitespace
+                            }
+                        });
                         const coverImgData = canvas.toDataURL('image/jpeg', 0.8); // JPEG is faster/smaller than PNG
                         if (onProgress) onProgress(70); // COVER READY
 
                         // Yield to UI thread to prevent "Page Unresponsive"
                         await new Promise(r => setTimeout(r, 100));
 
+                        // Pre-load Logo for headers
+                        const logoDataUrl = await loadLogoData();
+                        const headersDrawn = {};
+
+                        // Helper for Page Header 
+                        const addHeader = (pdfDoc, pageNumber) => {
+                            if (headersDrawn[pageNumber]) return 15 + 35; // Already drawn
+
+                            const M = 15;
+                            let y = M;
+                            if (logoDataUrl) {
+                                // FIX LOGO ASPECT RATIO
+                                const logoProps = pdfDoc.getImageProperties(logoDataUrl);
+                                const desiredW = 20;
+                                const ratio = logoProps.height / logoProps.width;
+                                const desiredH = desiredW * ratio;
+                                pdfDoc.addImage(logoDataUrl, 'PNG', M, y, desiredW, desiredH);
+                            }
+                            pdfDoc.setFontSize(14);
+                            pdfDoc.setFont("helvetica", "bold");
+                            pdfDoc.setTextColor(157, 36, 73); // Guinda
+                            pdfDoc.text("FICHA INFORMATIVA", pdfW - M, y + 8, { align: 'right' });
+
+                            pdfDoc.setFontSize(9);
+                            pdfDoc.setFont("helvetica", "italic");
+                            pdfDoc.setTextColor(100);
+                            pdfDoc.text("Consulta Ciudadana de Zonificación", pdfW - M, y + 12, { align: 'right' });
+
+                            const dateTitle = analysis.timestamp || new Date().toLocaleString();
+                            pdfDoc.setFontSize(8);
+                            pdfDoc.setFont("helvetica", "normal");
+                            pdfDoc.setTextColor(0);
+                            pdfDoc.text(`Folio: ${folio}`, pdfW - M, y + 16, { align: 'right' });
+                            pdfDoc.text(`Fecha: ${dateTitle}`, pdfW - M, y + 20, { align: 'right' });
+
+                            // Golden Line moved BELOW Page Number area (approx y+28)
+                            pdfDoc.setDrawColor(212, 193, 156); // Dorado
+                            pdfDoc.setLineWidth(0.5);
+                            pdfDoc.line(M, y + 28, pdfW - M, y + 28);
+
+                            headersDrawn[pageNumber] = true;
+                            return y + 35; // increased top margin
+                        };
+
                         // Add Cover with FAST compression
                         doc.addImage(coverImgData, 'JPEG', 0, 0, pdfW, pdfH, undefined, 'FAST');
+
+                        // DRAW HEADER ON PAGE 1 (Standardized Vector Header)
+                        addHeader(doc, 1);
+
+                        // Wait, we need addHeader for Page 1 too now!
+                        // We must define addHeader BEFORE this or move this after definition.
+                        // The addHeader helper is defined inside the 'hasActivities' block. 
+                        // REFACTOR: definition must range up. 
+                        // However, simpler: call addHeader inside the loop for ALL pages later? 
+                        // No, autoTable needs it.
+                        // We will allow the loop at the end to add page numbers, but addHeader helper is local.
+                        // Let's rely on the final Loop to add content? 
+                        // No, addHeader has the Logo/Folio. 
+                        // We need access to addHeader here. 
+                        // Since 'addHeader' is currently defined inside `if (hasActivities)`, we can't use it for Page 1 easily if hasActivities is false.
+                        // But wait, the user's report is about consistency.
+                        // Assuming hasActivities is true (usually SC). 
+                        // If it's Urban, there's no autoTable, so no addHeader definition...
+                        // We should move addHeader definition OUT of the `if (hasActivities)` block?
+                        // Yes.
 
                         // STEP B: Append Native Table Pages (if SC)
                         const isSC = analysis.status === 'CONSERVATION_SOIL';
@@ -990,54 +1063,11 @@
                             const gap = 8;
                             const colW = (pdfW - (2 * M) - gap) / 2;
 
-                            // Pre-load Logo for headers
-                            const logoDataUrl = await loadLogoData();
-
-                            const headersDrawn = {};
-
-                            // Helper for Page Header 
-                            // Helper for Page Header 
-                            const addHeader = (pdfDoc, pageNumber) => {
-                                if (headersDrawn[pageNumber]) return M + 25; // Already drawn
-
-                                let y = M;
-                                if (logoDataUrl) {
-                                    // FIX LOGO ASPECT RATIO
-                                    const logoProps = pdfDoc.getImageProperties(logoDataUrl);
-                                    // Desired Width = 20mm
-                                    const desiredW = 20;
-                                    const ratio = logoProps.height / logoProps.width;
-                                    const desiredH = desiredW * ratio;
-
-                                    pdfDoc.addImage(logoDataUrl, 'PNG', M, y, desiredW, desiredH);
-                                }
-                                pdfDoc.setFontSize(14);
-                                pdfDoc.setFont("helvetica", "bold");
-                                pdfDoc.setTextColor(157, 36, 73); // Guinda
-                                pdfDoc.text("FICHA INFORMATIVA", pdfW - M, y + 8, { align: 'right' });
-
-                                pdfDoc.setFontSize(9);
-                                pdfDoc.setFont("helvetica", "italic");
-                                pdfDoc.setTextColor(100);
-                                pdfDoc.text("Consulta Ciudadana de Zonificación", pdfW - M, y + 12, { align: 'right' });
-
-                                const dateTitle = analysis.timestamp || new Date().toLocaleString();
-                                pdfDoc.setFontSize(8);
-                                pdfDoc.setFont("helvetica", "normal");
-                                pdfDoc.setTextColor(0);
-                                pdfDoc.text(`Folio: ${folio}`, pdfW - M, y + 16, { align: 'right' });
-                                pdfDoc.text(`Fecha: ${dateTitle}`, pdfW - M, y + 20, { align: 'right' });
-
-                                pdfDoc.setDrawColor(212, 193, 156); // Dorado
-                                pdfDoc.setLineWidth(0.5);
-                                pdfDoc.line(M, y + 15, pdfW - M, y + 15);
-
-                                headersDrawn[pageNumber] = true;
-                                return y + 25;
-                            };
-
                             doc.addPage();
                             const startPage = doc.internal.getCurrentPageInfo().pageNumber;
+                            // Removed addHeader here? No, we need it. 
+                            // Actually, table calls addHeader via didDrawPage.
+                            // But for Page 1 we must call it manually.
                             let startY = addHeader(doc, startPage);
 
                             // Data Preparation with Grouping
@@ -1136,20 +1166,20 @@
                             // M = 15. Header ends around y=35.
                             // We need to match the specific layout: Right aligned.
 
-                            const M = 15;
-                            const pdfW = doc.internal.pageSize.getWidth();
-                            // Coords need to match the HTML layout approx.
-                            // HTML Header bottom line is around 35px from top? No, HTML is different scale.
-                            // We use the same 'y' as addHeader for consistency on pages 2+
-                            // For Page 1, we assume the HTML capture represents the header, but we need to add the Page Number text 
-                            // because it wasn't in the DOM (unless we add it to DOM too, but easier here).
+                            // Page Number Position
+                            const footerY = 39; // y=15 + 24 = 39. Below Date (35), Above Line (43)
 
-                            const footerY = 34; // Approx Y position for "Página X de Y" (below Date)
+                            // Call Header for Page 1 if not done (only if drawing vector header)
+                            // But we need the definition. 
+                            // It's cleaner to just accept we moved logic. 
+                            // Let's stick to the current plan: 
+                            // 1. Move addHeader definition UP.
+                            // 2. Call addHeader(doc, 1) if Page 1.
 
                             doc.setFontSize(8);
                             doc.setTextColor(100);
                             doc.setFont("helvetica", "normal");
-                            doc.text(`Página ${i} de ${totalPages}`, pdfW - M, footerY + 4, { align: 'right' }); // Just below date
+                            doc.text(`Página ${i} de ${totalPages}`, pdfW - M, footerY, { align: 'right' });
                         }
                     } else {
                         // Fallback logic
