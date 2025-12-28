@@ -1,159 +1,72 @@
-# 📓 Bitácora de Ideas y Futuras Implementaciones
+# 📓 Bitácora de Evolución: Visor Consulta Ciudadana
 
-Este documento centraliza las ideas, mejoras y deuda técnica del proyecto.
-
----
-
-## 🏷️ Simbología
-*   🟢 **Fácil**: Implementación rápida (< 2 horas).
-*   🟡 **Medio**: Requiere diseño o cambios en varios archivos (2-5 horas).
-*   🔴 **Difícil**: Requiere arquitectura nueva o dependencias externas (> 5 horas).
-*   🏗️ **Requiere Validación**: Necesita más definición por parte del usuario.
+Este documento clasifica las ideas de mejora, deuda técnica y funcionalidades pendientes por **categoría funcional** para facilitar la planificación del desarrollo.
 
 ---
 
-## 🚀 Propuestas del Usuario
-
-Aqui se listan las ideas que TÚ has mencionado o sugerido.
-
-### 1. Botón de Búsqueda en Desktop (UI/UX)
-*   **Dificultad**: 🟢 **Fácil**
-*   **Descripción**: Agregar un botón explícito de "Buscar" junto a la barra de coordenadas en versión Desktop, para no depender solo de la tecla Enter.
-*   **Estado**: Pendiente.
-
-### 2. Enlace a Programas de Manejo ANP (PDF)
-*   **Dificultad**: 🟢 **Fácil** (Técnicamente) / 🏗️ **Alta** (Dependencia de Archivos)
-*   **Descripción**: Incluir enlace clicable en el PDF para ver el Programa de Manejo de la ANP correspondiente.
-*   **Bloqueo**: Falta que el usuario proporcione las URLs o archivos PDF oficiales.
-
-### 3. Chat con IA Normativo
-*   **Dificultad**: 🔴 **Difícil** (Requiere Backend + OpenAI/Gemini API + Costos)
-*   **Descripción**: Chatbot que responda preguntas sobre la ley basándose en documentos PDF.
-*   **Estado**: Idea Conceptual (Fuera del alcance actual).
+## 🏷️ Prioridad y Esfuerzo
+*   🟢 **FÁCIL**: Implementación rápida "Quick Win" (< 2 horas).
+*   🟡 **MEDIO**: Requiere lógica nueva o diseño UI (2-5 horas).
+*   🔴 **COMPLEJO**: Requiere arquitectura, backend o librerías externas (> 5 horas).
 
 ---
 
-## 🤖 Sugerencias Técnicas (Aportes de la IA)
+## 📂 1. Experiencia de Usuario (UX) e Interfaz Visual (UI)
+Mejoras enfocadas en la facilidad de uso, estética y accesibilidad.
 
-Mejoras que sugiero para elevar la calidad, rendimiento y usabilidad del Visor.
+*   Onboarding
+    *   � **Tutorial Guiado (Walkthrough)**: Al abrir por primera vez, mostrar 3 globos flotantes: "1. Busca", "2. Analiza", "3. Descarga". Reduciría dudas iniciales.
+*   Navegación Desktop
+    *   🟢 **Botón "Buscar" Explícito**: Añadir icono de lupa clicable junto a la barra de coordenadas para no depender solo del "Enter".
+*   Accesibilidad
+    *   🟢 **Búsqueda por Voz**: Icono de micrófono en el buscador móvil para dictar direcciones (Web Speech API).
+    *   � **Modo Oscuro Automático**: Detectar preferencia del sistema y ajustar el mapa a "Dark Matter" y tarjetas oscuras.
+*   Estética "Premium"
+    *   🟡 **Dashboard de "KPIs"**: Rediseñar la sección de datos para que los metros cuadrados y usos clave se vean como indicadores financieros grandes, no solo texto.
+    *   🟢 **Sello de Verificación Animado**: Animación sutil de "Sellado" al completar un análisis para dar certeza psicológica.
 
-### 1. Historial de Búsquedas Recientes
-*   **Dificultad**: 🟢 **Fácil**
-*   **Impacto**: Alto (Mejora UX)
-*   **Descripción**: Guardar las últimas 5 direcciones/coordenadas consultadas en `localStorage` para que el usuario pueda volver a ellas rápidamente sin re-escribir.
+## 📄 2. Generación de Reportes (PDF)
+Mejoras en la ficha descargable que se entrega al ciudadano.
 
-### 2. Aplicación Instalable (PWA)
-*   **Dificultad**: 🟡 **Medio**
-*   **Impacto**: Muy Alto
-*   **Descripción**: Convertir el Visor en una Progressive Web App. Permitiría a los ciudadanos "instalar" la app en su celular (Android/iOS) y acceder a ella desde un icono en el inicio, incluso con funcionalidades offline básicas (cache).
+*   Contenido
+    *   🟢 **Enlace Directo a Programas de Manejo**: Si es ANP, que el PDF incluya un link clicable al documento oficial del Programa de Manejo específico.
+    *   🔴 **Leyenda Incrustada en Mapa**: Generar visualmente la simbología DENTRO de la imagen del mapa capturado (complejo por limitantes de html2canvas).
+*   Seguridad y Validación
+    *   🟡 **Código QR de Autenticidad**: Que el QR generado apunte a una URL de validación única con los parámetros encriptados o firmados (simulado).
+    *   🟢 **Marca de Agua Digital**: Añadir marca de agua sutil de "Documento Informativo - Sin Validez Legal" en el fondo de la página.
 
-### 3. Modo Oscuro Automático
-*   **Dificultad**: 🟡 **Medio**
-*   **Impacto**: Medio (Estética/Accesibilidad)
-*   **Descripción**: Detectar si el dispositivo del usuario está en modo oscuro y ajustar los colores de la interfaz (mapa oscuro, tarjetas oscuras) automáticamente.
+## �️ 3. Herramientas del Mapa
+Funcionalidades geoespaciales para interacción avanzada.
 
-### 4. Filtros de Capas por Alcaldía
-*   **Dificultad**: 🔴 **Difícil** (Requiere PostGIS o Turf.js pesado)
-*   **Impacto**: Alto
-*   **Descripción**: Que al seleccionar una Alcaldía, se "apague" visualmente todo lo que está fuera de ella, para limpiar el mapa. Requiere operaciones geométricas complejas en el cliente.
+*   Interacción
+    *   🟡 **Herramienta de Medición (Regla)**: Botón para trazar líneas y medir distancia (ej. "Distancia a la barranca").
+    *   MEDIO **Filtro de "Solo mi Alcaldía"**: Al buscar, oscurecer todo el mapa excepto la alcaldía de interés (masking).
+*   Capas
+    *   🟡 **Visualización 3D**: Activar extrusión de edificios en niveles de zoom alto (requiere vector tiles).
 
-### 5. Botón "Compartir Ubicación" (Share URL)
-*   **Dificultad**: 🟡 **Medio**
-*   **Impacto**: Alto (Viralidad)
-*   **Descripción**: Generar una URL única (ej. `?lat=19.4&lng=-99.1`) que al abrirla cargue el visor directamente en ese punto y con el análisis abierto. Ideal para que vecinos se pasen la info por WhatsApp.
+## ⚙️ 4. Lógica de Negocio y Datos
+Funcionalidades core del sistema y gestión de información.
 
-### 6. Herramienta de Medición (Regla)
-*   **Dificultad**: 🟡 **Medio**
-*   **Impacto**: Medio (Utilidad Técnica)
-*   **Descripción**: Un botón para medir distancias lineales (ej. "A cuántos metros estoy de la barranca"). Mapbox tiene plugins para esto (`mapbox-gl-draw` o similar), pero hay que integrarlo con cuidado en la UI móvil.
+*   Retención
+    *   FÁCIL **Historial de Búsquedas**: Guardar las últimas 5 consultas en `localStorage` para acceso rápido.
+    *   MEDIO **Mis Ubicaciones Favoritas**: Permitir marcar puntos con estrella ("Casa", "Terreno") y guardarlos en el navegador.
+*   IA y Soporte
+    *   🔴 **Chat Normativo (IA)**: Integración futura con LLM para preguntar "¿Qué puedo construir aquí?" y responder basado en la Ley.
 
-### 7. Tutorial Guiado (Onboarding)
-*   **Dificultad**: 🟢 **Fácil** / 🟡 **Medio** (Depende de la librería)
-*   **Impacto**: Alto (Reducción de soporte)
-*   **Descripción**: Cuando un usuario entra por primera vez, mostrar 3 pasos flotantes: "1. Busca aquí", "2. Toca el mapa", "3. Descarga tu ficha PDF". Se puede usar `driver.js`.
+## � 5. Arquitectura y Mantenimiento
+Mejoras técnicas invisibles pero críticas.
 
-### 8. Reporte de Errores en Datos
-*   **Dificultad**: 🟢 **Fácil** (Link a Google Forms) / 🔴 **Difícil** (Formulario integrado)
-*   **Impacto**: Medio (Calidad de datos)
-*   **Descripción**: Si un vecino ve que su calle está mal zonificada, un botón discretito "¿Ves un error?" que abra un Google Form prellenado con la coordenada. Es la forma más barata de limpiar tus datos.
-
----
-
-## 🛠️ Deuda Técnica y Mantenimiento
-
-Cosas que "funcionan" pero podrían estar mejor estructuradas.
-
-### Validación de Dirección en PDF
-*   **Dificultad**: 🟡 **Medio**
-*   **Descripción**: Asegurar que la dirección escrita por el usuario se pase fielmente al PDF. Actualmente a veces se pierde si el usuario navega por el mapa después de buscar.
-
-### Simbología Incrustada en Mapa PDF
-*   **Dificultad**: 🔴 **Difícil**
-*   **Descripción**: Generar una leyenda dinámica DENTRO de la imagen del mapa en el PDF. Es complejo porque `html2canvas` o la API de impresión de mapas no renderizan controles HTML superpuestos fácilmente.
+*   Plataforma
+    *   🟡 **PWA (Progressive Web App)**: Permitir "instalar" el visor en iOS/Android para abrirlo sin navegador y con caché offline básico.
+*   Calidad de Datos
+    *   🟢 **Reporte de Errores Ciudadano**: Botón "¿Dato incorrecto?" que abra un form prellenado para que los usuarios reporten incongruencias en la zonificación.
 
 ---
 
-## ✅ Implementado / Resuelto
+## ✅ Histórico de Implementaciones (Ya Realizado)
 
-*   **Resumen Ciudadano (Versión Normativa)**: Se implementó una versión basada en reglas (sin AI costosa) que traduce las claves (RE, FC) a explicaciones claras.
-*   **Diseño UI/UX (Glassmorphism)**: Se aplicaron paneles semitransparentes (`.glass-panel`) en Sidebar, Leyenda y Modales para modernizar la interfaz.
-*   **Motion Design (Animaciones Orgánicas)**: Se suavizaron las entradas de modales y botones con efectos de resorte (`spring physics`) y escala.
-*   **Lenguaje Humano**: Se reescribieron los mensajes de error y estado para ser más amables y menos técnicos.
-*   **Paleta de Colores Natural**: Se integró un fondo con degradado suave (`--bg-soft-gradient`) y se ajustaron los tonos institucionales para reducir la fatiga visual.
-
----
-
-## 🔮 Nuevas Propuestas de Innovación (Fase 2)
-
-Ideas para llevar el Visor al siguiente nivel de **interactividad** y **utilidad**.
-
-### 1. Búsqueda por Voz (Dictado) 🎤
-*   **Dificultad**: 🟢 **Fácil** (Web Speech API nativa)
-*   **Impacto**: Alto (Accesibilidad)
-*   **Descripción**: Agregar un icono de micrófono en la barra de búsqueda. Al tocarlo, el usuario dicta "Calle Reforma 222" y el sistema transcribe y busca.
-
-### 2. Guardar "Mis Puntos Favoritos" ⭐
-*   **Dificultad**: 🟡 **Medio** (LocalStorage)
-*   **Impacto**: Alto (Retención)
-*   **Descripción**: Permitir marcar ubicaciones con una estrella. Estos puntos se guardan localmente para acceso rápido ("Casa", "Oficina").
-
-### 3. Modo de Comparación (A/B) ⚖️
-*   **Dificultad**: 🔴 **Difícil** (Lógica UI compleja)
-*   **Impacto**: Muy Alto (Utilidad Profesional)
-*   **Descripción**: Pantalla dividida para seleccionar dos puntos en el mapa y comparar sus fichas normativas lado a lado.
-
-### 4. Capa de "Edificios 3D" (Visualización) 🏢
-*   **Dificultad**: 🟡 **Medio** (Plugin Leaflet/OSM)
-*   **Impacto**: Medio (Estética)
-*   **Descripción**: Usar una capa de vector tiles para levantar volúmenes simples en el mapa al hacer zoom máximo.
-
-### 5. Generador de "Share Card" para Redes 📱
-*   **Dificultad**: 🟡 **Medio** (html2canvas)
-*   **Impacto**: Alto (Viralidad)
-*   **Descripción**: Generar una imagen cuadrada atractiva con el mapa y el resumen, lista para compartir en WhatsApp.
-
----
-
-## 🏛️ Diseño Web Institucional 2.0 (Premium & Authority)
-
-Mejoras visuales enfocadas específicamente en elevar la **seriedad**, **confianza** y **modernidad** institucional.
-
-### 1. Tipografía "Serif" para Autoridad
-*   **Dificultad**: 🟢 **Fácil**
-*   **Descripción**: Introducir una tipografía Serif moderna (ej. *Merriweather* o *Playfair Display*) exclusivamente para Títulos y Encabezados grandes. Esto connota tradición y seriedad legal, contrastando elegantemente con la *Roboto* (sans-serif) del cuerpo técnico.
-
-### 2. Micro-Patrones de Textura (Identidad Territorial)
-*   **Dificultad**: 🟡 **Medio**
-*   **Descripción**: Reemplazar fondos planos por sutiles patrones SVG de curvas de nivel (topografía) o tramas abstractas al 2% de opacidad. Refuerza que es una herramienta de *territorio* sin ensuciar la vista.
-
-### 3. Visualización de Datos "Hero" (Dashboard)
-*   **Dificultad**: 🟡 **Medio**
-*   **Descripción**: Rediseñar la Ficha Técnica para que los datos clave (Zonificación, Metros Cuadrados) se vean como "KPIs" financieros grandes y limpios, en lugar de tablas aburridas. Estilo "Dashboard Ejecutivo".
-
-### 4. Sello de Verificación Animado
-*   **Dificultad**: 🟢 **Fácil**
-*   **Descripción**: Al terminar el análisis, mostrar una animación sutil de un "Sello Oficial" o "Check Verificado" que se estampa. Da una sensación psicológica de validez y certeza jurídica al usuario.
-
-### 5. Header "App-Like" (Transiciones)
-*   **Dificultad**: 🟡 **Medio**
-*   **Descripción**: Que el encabezado superior sea transparente al inicio (mostrando el mapa completo) y se vuelva sólido/glass al hacer scroll o interactuar. Maximiza el área visible del mapa.
+### 📌 Fase 1: Consolidación Normativa
+*   **[PDF] Nombres de Archivo Inteligentes**: Implementado formato `FICHA_FOLIO_TIPO_UBICACION.pdf` para fácil archivo.
+*   **[UI] Badges Descriptivos**: Se reemplazaron las claves crudas (RE, PDU) por nombres completos (Rescate Ecológico, PDU Rural) en toda la interfaz.
+*   **[CORE] Resumen Ciudadano**: Lógica determinista para explicar "qué significa" estar en SC o SU sin tecnicismos.
+*   **[UI] Diseño Glassmorphism**: Paneles semitransparentes y tipografía oficial (Roboto) implementada.

@@ -618,8 +618,9 @@
 
 const PdfExportController = ({ analysis, onExportReady, onProgress, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats, currentZoom = 14 }) => {
     // Safe Lazy Access
-    const { getConstants, getBaseLayerUrl, getZoningColor } = window.App?.Utils || {};
-    const { ZONING_ORDER, LAYER_STYLES, ZONING_CAT_INFO } = getConstants ? getConstants() : {};
+    // Safe Lazy Access
+    const { getConstants: utilsGetConstants, getBaseLayerUrl, getZoningColor } = window.App?.Utils || {};
+    const { ZONING_ORDER, LAYER_STYLES, ZONING_CAT_INFO } = utilsGetConstants ? utilsGetConstants() : {};
 
     const [mapImage, setMapImage] = useState(null);
     // HYBRID MODE STATE: Controls if tables are shown in DOM for capture
@@ -1101,10 +1102,35 @@ const PdfExportController = ({ analysis, onExportReady, onProgress, dataCache, v
                         doc.setPage(maxPage);
                     }
 
+                    // --- WATERMARK FUNCTION ---
+                    const addWatermark = (pdfDoc, pageNum, total) => {
+                        pdfDoc.setPage(pageNum);
+                        pdfDoc.saveGraphicsState();
+                        pdfDoc.setGState(new pdfDoc.GState({ opacity: 0.1 }));
+                        pdfDoc.setFontSize(40);
+                        pdfDoc.setTextColor(150, 150, 150);
+                        pdfDoc.setFont('helvetica', 'bold');
+
+                        // Rotate 45 degrees around center
+                        // Translate to center first
+                        const cx = pdfW / 2;
+                        const cy = pdfH / 2;
+
+                        // jsPDF rotation is slightly tricky without advance API, 
+                        // but we can use text rotation parameter.
+                        pdfDoc.text('DOCUMENTO INFORMATIVO', cx, cy, { align: 'center', angle: 45 });
+                        pdfDoc.text('SIN VALIDEZ LEGAL', cx, cy + 15, { align: 'center', angle: 45 });
+
+                        pdfDoc.restoreGraphicsState();
+                    };
+
                     // --- GLOBAL FOOTER: PAGINATION & DISLAIMER ---
                     const totalPages = doc.internal.getNumberOfPages();
                     for (let i = 1; i <= totalPages; i++) {
                         doc.setPage(i);
+
+                        // Apply Watermark
+                        addWatermark(doc, i, totalPages);
 
                         // Disclaimer
                         doc.setFontSize(7);
@@ -1155,15 +1181,8 @@ const PdfExportController = ({ analysis, onExportReady, onProgress, dataCache, v
                         return `FICHA_${folio}_${cleanType}_${cleanLoc}.pdf`;
                     };
 
-                    if (hasAutoTable) {
-                        const filename = generateDetailedFilename();
-                        doc.save(filename);
-                    } else {
-                        // Fallback Legacy Name
-                        console.warn('Using Legacy Save');
-                        const filename = generateDetailedFilename().replace('.pdf', '_LEGACY.pdf');
-                        pdf.save(filename);
-                    }
+                    const filename = generateDetailedFilename();
+                    doc.save(filename);
 
                     // --- END SAVE ---
                     resolve();
