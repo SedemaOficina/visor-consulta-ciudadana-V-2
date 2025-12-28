@@ -72,10 +72,37 @@ const InlineAlert = ({ tone, children }) => {
     );
 };
 
-const NormativeInstrumentCard = ({ analysis }) => {
+// --- TOOLTIP COMPONENT (TIPPY.JS WRAPPER) ---
+const Tooltip = ({ content, children, placement = 'top' }) => {
+    const triggerRef = window.React.useRef(null);
+    const { useEffect } = window.React;
+
+    useEffect(() => {
+        if (triggerRef.current && window.tippy && content) {
+            const instance = window.tippy(triggerRef.current, {
+                content: content,
+                placement: placement,
+                animation: 'scale',
+                arrow: true,
+                theme: 'light-border',
+            });
+
+            return () => {
+                instance.destroy();
+            };
+        }
+    }, [content, placement]);
+
+    return (
+        <span ref={triggerRef} className="cursor-help inline-flex items-center">
+            {children}
+        </span>
+    );
+};
+
+const InlineAlert = ({ tone, children }) => {
     const Icons = getIcons();
-    const { status, zoningKey } = analysis;
-    const isSC = status === 'CONSERVATION_SOIL';
+    // ... existing ...
     const isUrban = status === 'URBAN_SOIL';
     const hasSpecificPDU = zoningKey && zoningKey.startsWith('PDU_');
 
@@ -166,8 +193,11 @@ const ZoningResultCard = ({ analysis, zoningDisplay }) => {
 
     return (
         <div className="bg-white border border-gray-200 rounded-lg p-3 mb-3 shadow-sm animate-slide-up">
-            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1">
+            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-1 flex items-center gap-1">
                 Zonificación PGOEDF
+                <Tooltip content="Zonificación impuesta por el Programa General de Ordenamiento Ecológico del DF">
+                    <span className="text-gray-300 hover:text-gray-500 transition-colors">ⓘ</span>
+                </Tooltip>
             </div>
             <div className="flex items-start gap-2">
                 <div
@@ -600,7 +630,9 @@ const PrimaryActionHeader = ({ analysis, approximateAddress, onExportPDF, isExpo
                 title="Ver ubicación en Google Maps"
             >
                 {Icons.MapIcon && <Icons.MapIcon className="h-4 w-4 text-blue-500" />}
-                Google Maps
+                <Tooltip content="Abrir ubicación exacta en Google Maps">
+                    <span>Google Maps</span>
+                </Tooltip>
             </a>
 
             <button
@@ -618,7 +650,9 @@ const PrimaryActionHeader = ({ analysis, approximateAddress, onExportPDF, isExpo
                 ) : (
                     <div className="flex items-center gap-2">
                         {Icons.Pdf && <Icons.Pdf className="h-4 w-4" />}
-                        <span>Descargar Ficha</span>
+                        <Tooltip content="Generar ficha PDF con información oficial preliminar">
+                            <span>Descargar Ficha</span>
+                        </Tooltip>
                     </div>
                 )}
             </button>
@@ -665,11 +699,42 @@ const ActivityCatalogController = ({ analysis, Icons, COLORS }) => {
     const allSectors = Array.from(new Set(sourceList.map(item => item.sector))).sort();
 
     // 3. Filter
-    const filteredList = sourceList.filter(item => {
-        // Search removed
-        const matchSector = selectedSectors.size === 0 || selectedSectors.has(item.sector);
-        return matchSector;
-    });
+    // 3. Filter with Fuse.js
+    const { useMemo } = window.React;
+
+    // Fuse Instance
+    const fuse = useMemo(() => {
+        if (!window.Fuse) return null;
+        return new window.Fuse(sourceList, {
+            keys: ['sector', 'general', 'specific'],
+            threshold: 0.3,
+            ignoreLocation: true
+        });
+    }, [sourceList]);
+
+    const filteredList = useMemo(() => {
+        let results = sourceList;
+
+        // A) Search Filter
+        if (searchTerm.trim() && fuse) {
+            results = fuse.search(searchTerm).map(r => r.item);
+        } else if (searchTerm.trim()) {
+            // Fallback simple filter if Fuse fails
+            const lower = searchTerm.toLowerCase();
+            results = sourceList.filter(item =>
+                item.general.toLowerCase().includes(lower) ||
+                item.specific.toLowerCase().includes(lower) ||
+                item.sector.toLowerCase().includes(lower)
+            );
+        }
+
+        // B) Sector Filter
+        if (selectedSectors.size > 0) {
+            results = results.filter(item => selectedSectors.has(item.sector));
+        }
+
+        return results;
+    }, [sourceList, searchTerm, selectedSectors, fuse]);
 
     // Handlers
     const toggleSector = (sec) => {
@@ -680,7 +745,7 @@ const ActivityCatalogController = ({ analysis, Icons, COLORS }) => {
     };
 
     const clearFilters = () => {
-        // setSearchTerm('');
+        setSearchTerm('');
         setSelectedSectors(new Set());
     };
 
@@ -693,7 +758,12 @@ const ActivityCatalogController = ({ analysis, Icons, COLORS }) => {
                         {Icons.List ? <Icons.List className="h-4 w-4" /> : <span>=</span>}
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide">Catálogo de Actividades</h3>
+                        <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide">
+                            Catálogo de Actividades
+                            <Tooltip content="Alcance: Estas actividades aplican específicamente a la zonificación PGOEDF del predio consultado.">
+                                <span className="ml-1 text-gray-400 hover:text-gray-600 text-xs cursor-help">ⓘ</span>
+                            </Tooltip>
+                        </h3>
                         <p className="text-[10px] text-gray-400">Consulta los usos permitidos y prohibidos</p>
                     </div>
                 </div>
@@ -705,11 +775,37 @@ const ActivityCatalogController = ({ analysis, Icons, COLORS }) => {
                 {/* Search & Tabs Row */}
                 {/* Search & Tabs Row - Refactored for Wrapper */}
                 <div className="flex flex-col gap-3 mb-4">
-                    {/* Tabs Full Width */}
-                    <div className="flex p-1 bg-gray-100 rounded-lg shrink-0">
+                    {/* Search Input */}
+                    <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                            {Icons.Search ? <Icons.Search className="h-4 w-4" /> : <span>🔍</span>}
+                        </div>
+                        <input
+                            type="text"
+                            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
+                            placeholder="Buscar actividad (ej. vivienda, comercio, abarrotes)..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Accessible Tabs (Headless UI Pattern) */}
+                    <div className="flex p-1 bg-gray-100 rounded-lg shrink-0" role="tablist" aria-label="Filtro de actividades">
                         <button
+                            role="tab"
+                            aria-selected={activeTab === 'prohibidas'}
+                            aria-controls="panel-prohibidas"
+                            id="tab-prohibidas"
                             onClick={() => setActiveTab('prohibidas')}
-                            className={`flex-1 px-4 py-2 text-[10px] font-bold uppercase tracking-wide rounded-md transition-all ${activeTab === 'prohibidas'
+                            className={`flex-1 px-4 py-2 text-[10px] font-bold uppercase tracking-wide rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-[#9d2449] ${activeTab === 'prohibidas'
                                 ? 'bg-white text-red-700 shadow-sm ring-1 ring-black/5'
                                 : 'text-gray-500 hover:text-gray-700'
                                 }`}
@@ -717,8 +813,12 @@ const ActivityCatalogController = ({ analysis, Icons, COLORS }) => {
                             Prohibidas ({analysis.prohibitedActivities?.length || 0})
                         </button>
                         <button
+                            role="tab"
+                            aria-selected={activeTab === 'permitidas'}
+                            aria-controls="panel-permitidas"
+                            id="tab-permitidas"
                             onClick={() => setActiveTab('permitidas')}
-                            className={`flex-1 px-4 py-2 text-[10px] font-bold uppercase tracking-wide rounded-md transition-all ${activeTab === 'permitidas'
+                            className={`flex-1 px-4 py-2 text-[10px] font-bold uppercase tracking-wide rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-[#9d2449] ${activeTab === 'permitidas'
                                 ? 'bg-white text-green-700 shadow-sm ring-1 ring-black/5'
                                 : 'text-gray-500 hover:text-gray-700'
                                 }`}
@@ -760,8 +860,14 @@ const ActivityCatalogController = ({ analysis, Icons, COLORS }) => {
                 )}
             </div>
 
-            {/* Results List */}
-            <div className="animate-in fade-in slide-in-from-bottom-2">
+            {/* Results List (Tab Panel) */}
+            <div
+                role="tabpanel"
+                id={`panel-${activeTab}`}
+                aria-labelledby={`tab-${activeTab}`}
+                className="animate-in fade-in slide-in-from-bottom-2 focus:outline-none"
+                tabIndex={0}
+            >
                 <div className="text-[10px] text-gray-400 font-medium mb-2 text-right">
                     Mostrando {filteredList.length} de {sourceList.length} resultados
                 </div>
@@ -795,6 +901,13 @@ const ActivityCatalogController = ({ analysis, Icons, COLORS }) => {
 
 const ResultsContent = ({ analysis, approximateAddress, onExportPDF, isExporting, exportProgress }) => {
     const [showNotes, setShowNotes] = useState(false);
+    const [activeSection, setActiveSection] = useState('Resumen');
+
+    // Safety check for Library
+    const InView = window.ReactIntersectionObserver?.InView || (({ children }) => children);
+    // Safety check for StickyBox (assuming named export or default - usually default for CDN)
+    const StickyBox = window.ReactStickyBox?.default || window.ReactStickyBox || (({ children }) => children);
+
     const Icons = getIcons();
     const COLORS = getConstants().COLORS || {};
 
@@ -808,11 +921,25 @@ const ResultsContent = ({ analysis, approximateAddress, onExportPDF, isExporting
         <div className="space-y-3 animate-in pb-4">
 
 
+            {/* Active Section Indicator (Sticky) */}
+            <div className={`sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-gray-100 py-2 px-1 mb-2 transition-all ${activeSection ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#9d2449]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#9d2449] animate-pulse"></span>
+                    Viendo: {activeSection}
+                </div>
+            </div>
+
             {/* 1. Location and basic context */}
-            <LocationSummary analysis={analysis} approximateAddress={approximateAddress} />
+            <InView as="div" onChange={(inView) => inView && setActiveSection('Resumen Contextual')} threshold={0.5}>
+                <LocationSummary analysis={analysis} approximateAddress={approximateAddress} />
+            </InView>
 
             {/* 1.A Primary Actions (Desktop Static) */}
-            <PrimaryActionHeader analysis={analysis} approximateAddress={approximateAddress} onExportPDF={onExportPDF} isExporting={isExporting} exportProgress={exportProgress} />
+            <div className="hidden md:block z-20">
+                <StickyBox offsetTop={45} offsetBottom={20}>
+                    <PrimaryActionHeader analysis={analysis} approximateAddress={approximateAddress} onExportPDF={onExportPDF} isExporting={isExporting} exportProgress={exportProgress} />
+                </StickyBox>
+            </div>
 
 
 
@@ -859,54 +986,64 @@ const ResultsContent = ({ analysis, approximateAddress, onExportPDF, isExporting
             {analysis.status === 'CONSERVATION_SOIL' &&
                 !analysis.isPDU &&
                 !analysis.noActivitiesCatalog && (
-                    <ActivityCatalogController analysis={analysis} Icons={Icons} COLORS={COLORS} />
+                    <InView as="div" onChange={(inView) => inView && setActiveSection('Catálogo de Actividades')} threshold={0.2} rootMargin="-20% 0px -50% 0px">
+                        <ActivityCatalogController analysis={analysis} Icons={Icons} COLORS={COLORS} />
+                    </InView>
                 )}
 
-            {/* 7. Notas Normativas (Solo si hay zonificación PGOEDF válida) */}
-            {status === 'CONSERVATION_SOIL' && zoningKey && zoningKey !== 'NODATA' && zoningKey !== 'ANP' && (
-                <div className="mt-4 mb-4">
-                    {/* Reduced visual weight for Notes */}
-                    <button
-                        onClick={() => setShowNotes(!showNotes)}
-                        className="w-full flex items-center gap-2 p-2 hover:bg-gray-50 rounded transition-colors text-left group"
-                    >
-                        <div className="p-1 bg-gray-100 rounded text-gray-500 group-hover:text-gray-700">
-                            {showNotes ? (Icons.ChevronUp ? <Icons.ChevronUp className="h-3 w-3" /> : <span>-</span>) : (Icons.ChevronDown ? <Icons.ChevronDown className="h-3 w-3" /> : <span>+</span>)}
+            {/* 7. Notas Normativas, Instrumentos, Disclaimers (Soporte) */}
+            <InView as="div" onChange={(inView) => inView && setActiveSection('Soporte Normativo')} threshold={0.3}>
+                {/* 7. NOTAS moved here logic wise for grouping */}
+                {status === 'CONSERVATION_SOIL' && zoningKey && zoningKey !== 'NODATA' && zoningKey !== 'ANP' && (
+                    <div className="mt-4 mb-4 border border-gray-100 rounded-lg overflow-hidden">
+                        <button
+                            type="button"
+                            aria-expanded={showNotes}
+                            aria-controls="notes-panel"
+                            onClick={() => setShowNotes(!showNotes)}
+                            className="w-full flex items-center gap-2 p-3 bg-white hover:bg-gray-50 transition-colors text-left group focus:outline-none focus:bg-gray-50"
+                        >
+                            <div className="p-1 bg-gray-100 rounded text-gray-500 group-hover:text-gray-700 transition-colors">
+                                {showNotes ? (Icons.ChevronUp ? <Icons.ChevronUp className="h-3 w-3" /> : <span>-</span>) : (Icons.ChevronDown ? <Icons.ChevronDown className="h-3 w-3" /> : <span>+</span>)}
+                            </div>
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide group-hover:text-gray-700">
+                                Notas Normativas y Criterios
+                            </span>
+                        </button>
+
+                        <div
+                            id="notes-panel"
+                            hidden={!showNotes}
+                            className={`bg-gray-50/50 border-t border-gray-100 ${showNotes ? 'block animate-in slide-in-from-top-1 fade-in' : 'hidden'}`}
+                        >
+                            <div className="p-3 pl-4">
+                                <ul className="space-y-2">
+                                    {[
+                                        "Adicionalmente a lo dispuesto en la tabla de usos del suelo, para cualquier obra o actividad que se pretenda desarrollar se deberán contemplar los criterios y lineamientos señalados en el programa de Ordenamiento Ecológico, así como cumplir con los permisos y autorizaciones en materia ambiental del Distrito Federal.",
+                                        "Los usos del suelo no identificados en esta tabla deberán cumplir con los permisos y autorizaciones en materia urbana y ambiental aplicables en Suelo de Conservación.",
+                                        "En las Areas Naturales Protegidas ANP regirá la zonificación especificada en su respectivo Programa de Manejo.",
+                                        "La zonificación denominada PDU corresponde a las áreas normadas por los Programas Delegacionales o Parciales de Desarrollo Urbano vigentes.",
+                                        "Las disposiciones de la presente regulación no prejuzgan sobre la propiedad de la tierra.",
+                                        "El Suelo de Conservación definido por las barrancas estará regulado por la zonificación Forestal de Conservación FC, conforme a los límites establecidos por la Norma de Ordenación N° 21, señalada en los Programas de Desarrollo Urbano.",
+                                        "* Se instrumentará un programa de reconversión de esta actividad por la producción de composta. Para ello, se elaborará un padrón de los productores y diseñar y ejecutar un programa de capacitación y proponer paquetes tecnológicos para transferencia y el desarrollo de estudios de mercado para la sustitución progresiva del producto y la reducción de la extracción directa."
+                                    ].map((note, idx) => (
+                                        <li key={idx} className="text-[10px] text-gray-500 leading-relaxed text-justify relative pl-3">
+                                            <span className="absolute left-0 top-1.5 w-1 h-1 rounded-full bg-gray-300"></span>
+                                            {note}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         </div>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide group-hover:text-gray-600">
-                            Notas Normativas y Criterios
-                        </span>
-                    </button>
+                    </div>
+                )}
 
-                    {showNotes && (
-                        <div className="pl-8 pr-2 py-2 animate-in slide-in-from-top-1 fade-in">
-                            <ul className="space-y-2">
-                                {[
-                                    "Adicionalmente a lo dispuesto en la tabla de usos del suelo, para cualquier obra o actividad que se pretenda desarrollar se deberán contemplar los criterios y lineamientos señalados en el programa de Ordenamiento Ecológico, así como cumplir con los permisos y autorizaciones en materia ambiental del Distrito Federal.",
-                                    "Los usos del suelo no identificados en esta tabla deberán cumplir con los permisos y autorizaciones en materia urbana y ambiental aplicables en Suelo de Conservación.",
-                                    "En las Areas Naturales Protegidas ANP regirá la zonificación especificada en su respectivo Programa de Manejo.",
-                                    "La zonificación denominada PDU corresponde a las áreas normadas por los Programas Delegacionales o Parciales de Desarrollo Urbano vigentes.",
-                                    "Las disposiciones de la presente regulación no prejuzgan sobre la propiedad de la tierra.",
-                                    "El Suelo de Conservación definido por las barrancas estará regulado por la zonificación Forestal de Conservación FC, conforme a los límites establecidos por la Norma de Ordenación N° 21, señalada en los Programas de Desarrollo Urbano.",
-                                    "* Se instrumentará un programa de reconversión de esta actividad por la producción de composta. Para ello, se elaborará un padrón de los productores y diseñar y ejecutar un programa de capacitación y proponer paquetes tecnológicos para transferencia y el desarrollo de estudios de mercado para la sustitución progresiva del producto y la reducción de la extracción directa."
-                                ].map((note, idx) => (
-                                    <li key={idx} className="text-[10px] text-gray-500 leading-relaxed text-justify relative">
-                                        <span className="absolute -left-3 top-1 w-1 h-1 rounded-full bg-gray-300"></span>
-                                        {note}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
-            )}
+                {/* 8. Action Buttons (Refactored) */}
+                <MobileActionButtons analysis={analysis} onExportPDF={onExportPDF} isExporting={isExporting} exportProgress={exportProgress} />
 
-            {/* 8. Action Buttons (Refactored) */}
-            <MobileActionButtons analysis={analysis} onExportPDF={onExportPDF} isExporting={isExporting} exportProgress={exportProgress} />
-
-
-            {/* 9. Disclaimer */}
-            <LegalDisclaimer />
+                {/* 9. Disclaimer */}
+                <LegalDisclaimer />
+            </InView>
         </div>
     );
 };
