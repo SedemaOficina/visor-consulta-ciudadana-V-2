@@ -161,122 +161,122 @@ const Legend = ({
                             />
                         </div>
                     </div>
+                </div>
 
-    // List of zoning categories
-                    {visibleMapLayers.zoning && ZONING_ORDER && ZONING_CAT_INFO && (
-                        <div className="pl-1 space-y-1.5">
-                            {ZONING_ORDER.map(catKey => {
-                                const info = ZONING_CAT_INFO[catKey];
-                                if (!info) return null;
-                                const isVisible = visibleZoningCats[catKey] !== false;
+                {visibleMapLayers.zoning && ZONING_ORDER && ZONING_CAT_INFO && (
+                    <div className="pl-1 space-y-1.5">
+                        {ZONING_ORDER.map(catKey => {
+                            const info = ZONING_CAT_INFO[catKey];
+                            if (!info) return null;
+                            const isVisible = visibleZoningCats[catKey] !== false;
 
-                                return (
-                                    <div
-                                        key={catKey}
-                                        className="flex items-center justify-between p-1 rounded hover:bg-gray-50 transition-colors cursor-pointer"
-                                        onClick={() => toggleZoningCat(catKey)}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <div
-                                                className="w-2.5 h-2.5 rounded-sm shadow-sm flex-shrink-0"
-                                                style={{ backgroundColor: info.color }}
-                                            />
-                                            <div className="flex flex-col leading-none">
-                                                <span className="text-[10px] font-semibold text-gray-700 select-none">{info.label}</span>
-                                                <span className="text-[9px] text-gray-500 select-none">{info.desc}</span>
-                                            </div>
-                                        </div>
-                                        <div onClick={(e) => e.stopPropagation()}>
-                                            <ToggleSwitch
-                                                checked={isVisible}
-                                                onChange={() => toggleZoningCat(catKey)}
-                                                size="sm"
-                                            />
+                            return (
+                                <div
+                                    key={catKey}
+                                    className="flex items-center justify-between p-1 rounded hover:bg-gray-50 transition-colors cursor-pointer"
+                                    onClick={() => toggleZoningCat(catKey)}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className="w-2.5 h-2.5 rounded-sm shadow-sm flex-shrink-0"
+                                            style={{ backgroundColor: info.color }}
+                                        />
+                                        <div className="flex flex-col leading-none">
+                                            <span className="text-[10px] font-semibold text-gray-700 select-none">{info.label}</span>
+                                            <span className="text-[9px] text-gray-500 select-none">{info.desc}</span>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <ToggleSwitch
+                                            checked={isVisible}
+                                            onChange={() => toggleZoningCat(catKey)}
+                                            size="sm"
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* ANP SECTION (Separate) */}
+            <div className="space-y-2 pt-2 border-t border-gray-100">
+                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Áreas Naturales Protegidas</h4>
+
+                {/* ANP General Toggle */}
+                <div
+                    className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+                    onClick={() => handleToggleLayer('anp')}
+                >
+                    <div className="flex items-center gap-2">
+                        <span
+                            className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
+                            style={{ backgroundColor: styles.anp?.color }}
+                        />
+                        <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900 select-none">
+                            Polígonos ANP
+                        </span>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <ToggleSwitch
+                            checked={!!visibleMapLayers.anp}
+                            onChange={() => handleToggleLayer('anp')}
+                            size="sm"
+                        />
+                    </div>
                 </div>
 
-                {/* ANP SECTION (Separate) */}
-                <div className="space-y-2 pt-2 border-t border-gray-100">
-                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Áreas Naturales Protegidas</h4>
-
-                    {/* ANP General Toggle */}
-                    <div
-                        className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
-                        onClick={() => handleToggleLayer('anp')}
-                    >
-                        <div className="flex items-center gap-2">
-                            <span
-                                className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
-                                style={{ backgroundColor: styles.anp?.color }}
-                            />
-                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900 select-none">
-                                Polígonos ANP
-                            </span>
-                        </div>
-                        <div onClick={(e) => e.stopPropagation()}>
-                            <ToggleSwitch
-                                checked={!!visibleMapLayers.anp}
-                                onChange={() => handleToggleLayer('anp')}
-                                size="sm"
-                            />
-                        </div>
-                    </div>
-
-                    {/* ANP SELECTED ZONING (Dynamic Info) */}
-                    {selectedAnpId && (
-                        <div className="pl-4 mt-2">
+                {/* ANP SELECTED ZONING (Dynamic Info) */}
+                {selectedAnpId && (
+                    <div className="pl-4 mt-2">
+                        <div
+                            className="flex items-center justify-between cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+                            onClick={() => handleToggleLayer('selectedAnpZoning')}
+                        >
                             <div
-                                className="flex items-center justify-between cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
-                                onClick={() => handleToggleLayer('selectedAnpZoning')}
+                                className="flex items-center gap-2"
+                                title="Muestra la zonificación interna (sub-zonas) definida en el Programa de Manejo del ANP."
                             >
-                                <div
-                                    className="flex items-center gap-2"
-                                    title="Muestra la zonificación interna (sub-zonas) definida en el Programa de Manejo del ANP."
-                                >
-                                    {Icons.Info ? <Icons.Info className="h-3 w-3 text-blue-500" /> : <span>i</span>}
-                                    <span className="text-[10px] font-semibold text-blue-700 select-none">Zonificación Interna ANP</span>
-                                </div>
-                                <div onClick={(e) => e.stopPropagation()}>
-                                    <ToggleSwitch
-                                        checked={!!visibleMapLayers.selectedAnpZoning}
-                                        onChange={() => handleToggleLayer('selectedAnpZoning')}
-                                        size="sm"
-                                    />
-                                </div>
+                                {Icons.Info ? <Icons.Info className="h-3 w-3 text-blue-500" /> : <span>i</span>}
+                                <span className="text-[10px] font-semibold text-blue-700 select-none">Zonificación Interna ANP</span>
+                            </div>
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <ToggleSwitch
+                                    checked={!!visibleMapLayers.selectedAnpZoning}
+                                    onChange={() => handleToggleLayer('selectedAnpZoning')}
+                                    size="sm"
+                                />
                             </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
+            </div>
 
 
-                {/* CONTEXTO REGIONAL (Locked/Info only) */}
-                <div className="pt-3 border-t border-gray-100 mt-2">
-                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Contexto Regional</h4>
-                    <div className="flex flex-wrap gap-2">
-                        <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded border border-gray-100">
-                            <span
-                                className="w-2 h-2 rounded-full opacity-50"
-                                style={{ backgroundColor: styles.edomex?.color || '#999' }}
-                            ></span>
-                            <span className="text-[10px] text-gray-500 font-medium">Estado de México</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded border border-gray-100">
-                            <span
-                                className="w-2 h-2 rounded-full opacity-50"
-                                style={{ backgroundColor: styles.morelos?.color || '#999' }}
-                            ></span>
-                            <span className="text-[10px] text-gray-500 font-medium">Morelos</span>
-                        </div>
+            {/* CONTEXTO REGIONAL (Locked/Info only) */}
+            <div className="pt-3 border-t border-gray-100 mt-2">
+                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Contexto Regional</h4>
+                <div className="flex flex-wrap gap-2">
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                        <span
+                            className="w-2 h-2 rounded-full opacity-50"
+                            style={{ backgroundColor: styles.edomex?.color || '#999' }}
+                        ></span>
+                        <span className="text-[10px] text-gray-500 font-medium">Estado de México</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                        <span
+                            className="w-2 h-2 rounded-full opacity-50"
+                            style={{ backgroundColor: styles.morelos?.color || '#999' }}
+                        ></span>
+                        <span className="text-[10px] text-gray-500 font-medium">Morelos</span>
                     </div>
                 </div>
-
             </div>
+
         </div>
+        </div >
     );
 };
 

@@ -14,7 +14,8 @@ const SidebarDesktop = ({
     isLoading,
     isExporting,
     exportProgress,
-    onOpenHelp
+    onOpenHelp,
+    approximateAddress
 }) => (
     <div className="hidden md:flex h-full z-[1020] relative">
 
@@ -87,7 +88,7 @@ const SidebarDesktop = ({
                                 </span>
                                 <div className="h-px bg-gray-200 flex-1"></div>
                             </div>
-                            <ResultsContent analysis={analysis} onExportPDF={onExportPDF} isExporting={isExporting} exportProgress={exportProgress} />
+                            <ResultsContent analysis={analysis} approximateAddress={approximateAddress} onExportPDF={onExportPDF} isExporting={isExporting} exportProgress={exportProgress} />
                         </>
                     )}
                 </div>

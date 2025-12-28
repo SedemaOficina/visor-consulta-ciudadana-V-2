@@ -326,7 +326,8 @@ const VisorApp = () => {
   const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeBaseLayer, setActiveBaseLayer] = useState('SATELLITE');
-  const [globalOpacity, setGlobalOpacity] = useState(0.7); // Global Opacity State
+  const [globalOpacity, setGlobalOpacity] = useState(0.5); // Global Opacity State (Default 0.5)
+  const [approximateAddress, setApproximateAddress] = useState(null);
   const [mobileSheetState, setMobileSheetState] = useState('collapsed');
 
   const [exportHandler, setExportHandler] = useState(null);
@@ -373,6 +374,7 @@ const VisorApp = () => {
 
     // 1. Update Input URLs immediately with coords
     setLocation(coord);
+    setApproximateAddress(null); // Reset previous address
     desktopSearchInputRef.current?.(displayText);
     mobileSearchInputRef.current?.(displayText);
 
@@ -380,10 +382,11 @@ const VisorApp = () => {
     if (MAPBOX_ACCESS_TOKEN) {
       getReverseGeocoding(lat, lng, MAPBOX_ACCESS_TOKEN).then(address => {
         if (address) {
-          displayText = address;
-          desktopSearchInputRef.current?.(displayText);
-          mobileSearchInputRef.current?.(displayText);
-          addToast('📍 Dirección aproximada encontrada', 'success');
+          setApproximateAddress(address);
+          // Do NOT overwrite user search text
+          // desktopSearchInputRef.current?.(address);
+          // mobileSearchInputRef.current?.(address);
+          // addToast('📍 Dirección aproximada encontrada', 'success');
         }
       });
     }
@@ -410,6 +413,7 @@ const VisorApp = () => {
   const handleReset = () => {
     setLocation(null);
     setAnalysis(null);
+    setApproximateAddress(null);
     setMobileSheetState('collapsed');
     resetMapViewRef.current?.();
   };
@@ -511,6 +515,7 @@ const VisorApp = () => {
 
         <SidebarDesktop
           analysis={analysis}
+          approximateAddress={approximateAddress}
           onLocationSelect={handleLocationSelect}
           onReset={handleReset}
           isOpen={isSidebarOpen}
