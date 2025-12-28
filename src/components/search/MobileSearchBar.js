@@ -116,6 +116,12 @@ const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef, initialValue 
                         placeholder="Buscar dirección o coordenadas (Lat/Lng o DMS)"
                         value={query}
                         onChange={handleChange}
+                        onFocus={() => {
+                            if (!query.trim()) {
+                                const history = JSON.parse(localStorage.getItem('search_history') || '[]');
+                                if (history.length) setSuggestions(history.map(x => ({ ...x, _isHistory: true })));
+                            }
+                        }}
                     />
 
                     {query && (
@@ -144,11 +150,24 @@ const MobileSearchBar = ({ onLocationSelect, onReset, setInputRef, initialValue 
                         {isSearching && (
                             <div className="px-3 py-1.5 text-[11px] text-gray-500">Buscando en Mapbox…</div>
                         )}
+                        {suggestions[0]?._isHistory && (
+                            <div className="px-3 py-1.5 bg-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 flex items-center gap-2">
+                                <Icons.Clock className="h-3 w-3" /> Búsquedas recientes
+                            </div>
+                        )}
                         {suggestions.map(s => (
                             <button
                                 key={s.id}
                                 type="button"
-                                onClick={() => handleSelectSuggestion(s)}
+                                onClick={() => {
+                                    if (!s._isHistory) {
+                                        const history = JSON.parse(localStorage.getItem('search_history') || '[]');
+                                        const newEntry = { label: s.label, lat: s.lat, lng: s.lng, fullLabel: s.fullLabel };
+                                        const filtered = history.filter(h => h.label !== s.label).slice(0, 4);
+                                        localStorage.setItem('search_history', JSON.stringify([newEntry, ...filtered]));
+                                    }
+                                    handleSelectSuggestion(s);
+                                }}
                                 className="w-full text-left px-3 py-2 hover:bg-gray-50 border-t border-gray-50 flex flex-col"
                             >
                                 <span className="text-[12px] font-bold text-gray-800 leading-tight">

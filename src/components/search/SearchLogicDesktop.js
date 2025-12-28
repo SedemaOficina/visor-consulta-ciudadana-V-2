@@ -65,6 +65,13 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
 
         if (suggestions.length > 0) {
             const s = suggestions[0];
+
+            // Save to history
+            const history = JSON.parse(localStorage.getItem('search_history') || '[]');
+            const newEntry = { label: s.label, lat: s.lat, lng: s.lng, fullLabel: s.fullLabel };
+            const filtered = history.filter(h => h.label !== s.label).slice(0, 4);
+            localStorage.setItem('search_history', JSON.stringify([newEntry, ...filtered]));
+
             onLocationSelect({ lat: s.lat, lng: s.lng });
             setQuery(s.fullLabel || s.label);
             setSuggestions([]);
