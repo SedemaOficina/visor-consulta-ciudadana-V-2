@@ -957,6 +957,8 @@
 
                     const element = pdfRef.current;
                     const doc = new jsPDF('p', 'mm', 'a4');
+                    const pdfW = doc.internal.pageSize.getWidth();
+                    const pdfH = doc.internal.pageSize.getHeight();
                     const hasAutoTable = !!doc.autoTable;
 
                     // --- HYBRID STRATEGY ---
@@ -971,9 +973,6 @@
 
                         // Yield to UI thread to prevent "Page Unresponsive"
                         await new Promise(r => setTimeout(r, 100));
-
-                        const pdfW = doc.internal.pageSize.getWidth();
-                        const pdfH = doc.internal.pageSize.getHeight();
 
                         // Add Cover with FAST compression
                         doc.addImage(coverImgData, 'JPEG', 0, 0, pdfW, pdfH, undefined, 'FAST');
@@ -1153,124 +1152,123 @@
                         // Fallback logic
                         doc.text("Vista simplificada", 10, 10);
                     }
-                }
-            // --- WATERMARK FUNCTION ---
+                    // --- WATERMARK FUNCTION ---
                     const addWatermark = (pdfDoc, pageNum, total) => {
-                    pdfDoc.setPage(pageNum);
-                    pdfDoc.saveGraphicsState();
-                    pdfDoc.setGState(new pdfDoc.GState({ opacity: 0.1 }));
-                    pdfDoc.setFontSize(40);
-                    pdfDoc.setTextColor(150, 150, 150);
-                    pdfDoc.setFont('helvetica', 'bold');
+                        pdfDoc.setPage(pageNum);
+                        pdfDoc.saveGraphicsState();
+                        pdfDoc.setGState(new pdfDoc.GState({ opacity: 0.1 }));
+                        pdfDoc.setFontSize(40);
+                        pdfDoc.setTextColor(150, 150, 150);
+                        pdfDoc.setFont('helvetica', 'bold');
 
-                    // Rotate 45 degrees around center
-                    // Translate to center first
-                    const cx = pdfW / 2;
-                    const cy = pdfH / 2;
+                        // Rotate 45 degrees around center
+                        // Translate to center first
+                        const cx = pdfW / 2;
+                        const cy = pdfH / 2;
 
-                    // jsPDF rotation is slightly tricky without advance API, 
-                    // but we can use text rotation parameter.
-                    pdfDoc.text('DOCUMENTO INFORMATIVO', cx, cy, { align: 'center', angle: 45 });
-                    pdfDoc.text('SIN VALIDEZ LEGAL', cx, cy + 15, { align: 'center', angle: 45 });
+                        // jsPDF rotation is slightly tricky without advance API, 
+                        // but we can use text rotation parameter.
+                        pdfDoc.text('DOCUMENTO INFORMATIVO', cx, cy, { align: 'center', angle: 45 });
+                        pdfDoc.text('SIN VALIDEZ LEGAL', cx, cy + 15, { align: 'center', angle: 45 });
 
-                    pdfDoc.restoreGraphicsState();
-                };
+                        pdfDoc.restoreGraphicsState();
+                    };
 
-                // --- GLOBAL FOOTER: PAGINATION & DISLAIMER ---
-                const totalPages = doc.internal.getNumberOfPages();
-                for (let i = 1; i <= totalPages; i++) {
-                    doc.setPage(i);
+                    // --- GLOBAL FOOTER: PAGINATION & DISLAIMER ---
+                    const totalPages = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= totalPages; i++) {
+                        doc.setPage(i);
 
-                    // Apply Watermark
-                    addWatermark(doc, i, totalPages);
+                        // Apply Watermark
+                        addWatermark(doc, i, totalPages);
 
-                    // Disclaimer
-                    doc.setFontSize(7);
-                    doc.setTextColor(150);
-                    doc.setFont("helvetica", "italic");
-                    doc.text("Este no es un documento oficial. Consulte la Ventanilla Única de la SEDEMA para trámites oficiales.", pdfW / 2, pdfH - 14, { align: 'center' });
+                        // Disclaimer
+                        doc.setFontSize(7);
+                        doc.setTextColor(150);
+                        doc.setFont("helvetica", "italic");
+                        doc.text("Este no es un documento oficial. Consulte la Ventanilla Única de la SEDEMA para trámites oficiales.", pdfW / 2, pdfH - 14, { align: 'center' });
 
-                    // Page Number
-                    doc.setFontSize(8);
-                    doc.setTextColor(150);
-                    doc.setFont("helvetica", "normal");
-                    const pageText = `Página ${i} de ${totalPages}`;
-                    doc.text(pageText, pdfW / 2, pdfH - 10, { align: 'center' });
+                        // Page Number
+                        doc.setFontSize(8);
+                        doc.setTextColor(150);
+                        doc.setFont("helvetica", "normal");
+                        const pageText = `Página ${i} de ${totalPages}`;
+                        doc.text(pageText, pdfW / 2, pdfH - 10, { align: 'center' });
+                    }
+
+                    if (onProgress) onProgress(90); // TABLES DONE
+
+                    // --- FILENAME GENERATION HELPER ---
+                    const generateDetailedFilename = () => {
+                        const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
+                        const folio = `F${timestamp}`;
+
+                        let type = 'ND'; // No detemined
+                        const { status, zoningKey, isANP, alcaldia, outsideContext } = analysis;
+
+                        if (status === 'OUTSIDE_CDMX') {
+                            type = 'EXTERNO';
+                        } else if (status === 'URBAN_SOIL') {
+                            type = 'SU';
+                            if (isANP) type += '-ANP';
+                        } else if (status === 'CONSERVATION_SOIL') {
+                            type = 'SC';
+                            if (zoningKey) type += `-${zoningKey}`;
+                            if (isANP) type += '-ANP';
+                        }
+
+                        let location = 'CDMX';
+                        if (status === 'OUTSIDE_CDMX') {
+                            location = outsideContext || 'EDOMEX';
+                        } else {
+                            location = alcaldia || 'CDMX';
+                        }
+
+                        // Sanitize
+                        const cleanType = type.replace(/[^a-zA-Z0-9-]/g, '').toUpperCase();
+                        const cleanLoc = location.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+
+                        return `FICHA_${folio}_${cleanType}_${cleanLoc}.pdf`;
+                    };
+
+                    const filename = generateDetailedFilename();
+                    doc.save(filename);
+
+                    // --- END SAVE ---
+                    resolve();
+                } catch (error) {
+                    console.error("PDF Export failed:", error);
+                    reject(error);
                 }
+            });
+        }, [analysis, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats, currentZoom]);
 
-                if (onProgress) onProgress(90); // TABLES DONE
+        const requestExportPDF = React.useCallback(async (e) => {
+            if (!e || !e.isTrusted) return;
+            exportArmedRef.current = true;
+            return await handleExportPDF(); // Forward promise
+        }, [handleExportPDF]);
 
-                // --- FILENAME GENERATION HELPER ---
-                const generateDetailedFilename = () => {
-                    const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
-                    const folio = `F${timestamp}`;
+        useEffect(() => {
+            if (!onExportReady) return;
+            onExportReady(() => requestExportPDF);
+            return () => onExportReady(null);
+        }, [onExportReady, requestExportPDF]);
 
-                    let type = 'ND'; // No detemined
-                    const { status, zoningKey, isANP, alcaldia, outsideContext } = analysis;
+        if (!analysis) return null;
 
-                    if (status === 'OUTSIDE_CDMX') {
-                        type = 'EXTERNO';
-                    } else if (status === 'URBAN_SOIL') {
-                        type = 'SU';
-                        if (isANP) type += '-ANP';
-                    } else if (status === 'CONSERVATION_SOIL') {
-                        type = 'SC';
-                        if (zoningKey) type += `-${zoningKey}`;
-                        if (isANP) type += '-ANP';
-                    }
-
-                    let location = 'CDMX';
-                    if (status === 'OUTSIDE_CDMX') {
-                        location = outsideContext || 'EDOMEX';
-                    } else {
-                        location = alcaldia || 'CDMX';
-                    }
-
-                    // Sanitize
-                    const cleanType = type.replace(/[^a-zA-Z0-9-]/g, '').toUpperCase();
-                    const cleanLoc = location.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
-
-                    return `FICHA_${folio}_${cleanType}_${cleanLoc}.pdf`;
-                };
-
-                const filename = generateDetailedFilename();
-                doc.save(filename);
-
-                // --- END SAVE ---
-                resolve();
-            } catch (error) {
-                console.error("PDF Export failed:", error);
-                reject(error);
-            }
-        });
-    }, [analysis, dataCache, visibleMapLayers, activeBaseLayer, visibleZoningCats, currentZoom]);
-
-    const requestExportPDF = React.useCallback(async (e) => {
-        if (!e || !e.isTrusted) return;
-        exportArmedRef.current = true;
-        return await handleExportPDF(); // Forward promise
-    }, [handleExportPDF]);
-
-    useEffect(() => {
-        if (!onExportReady) return;
-        onExportReady(() => requestExportPDF);
-        return () => onExportReady(null);
-    }, [onExportReady, requestExportPDF]);
-
-    if (!analysis) return null;
-
-    return (
-        <>
-            <div id="export-map" style={{ width: '900px', height: '520px', position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}></div>
-            <div style={{ position: 'absolute', top: -9999, left: -9999, width: '794px', zIndex: -1 }}>
-                <div style={{ background: '#ffffff' }}>
-                    {/* Include Activities controlled by State */}
-                    <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} includeActivities={includeActivities} />
+        return (
+            <>
+                <div id="export-map" style={{ width: '900px', height: '520px', position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -1 }}></div>
+                <div style={{ position: 'absolute', top: -9999, left: -9999, width: '794px', zIndex: -1 }}>
+                    <div style={{ background: '#ffffff' }}>
+                        {/* Include Activities controlled by State */}
+                        <PdfFicha ref={pdfRef} analysis={analysis} mapImage={mapImage} includeActivities={includeActivities} />
+                    </div>
                 </div>
-            </div>
-        </>
-    );
-};
+            </>
+        );
+    };
 
-window.App.Components.PdfExportController = PdfExportController;
-}) ();
+    window.App.Components.PdfExportController = PdfExportController;
+})();
