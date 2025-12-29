@@ -579,29 +579,31 @@ const VisorApp = () => {
               <div className={`flex flex-col items-center gap-3 transition-all duration-300 origin-top ${isFabOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 -translate-y-4 pointer-events-none absolute top-full right-0 mt-2'}`}>
 
                 {/* Opacity Slider - Designed with Icon and Labels */}
-                <div className="flex flex-col items-center gap-1 bg-white rounded-full shadow-md border border-gray-200 py-2 w-10 h-auto animate-fade-in-up">
-                  {/* Icon */}
-                  <div className="text-[#9d2449] mb-1">
-                    {Icons.Droplet ? <Icons.Droplet className="h-4 w-4" /> : <div className="h-3 w-3 bg-[#9d2449] rounded-full" />}
-                  </div>
+                <Tooltip content="Ajustar Opacidad" placement="left">
+                  <div className="hidden md:flex flex-col items-center gap-1 bg-white rounded-full shadow-md border border-gray-200 py-2 w-10 h-auto animate-fade-in-up">
+                    {/* Icon */}
+                    <div className="text-[#9d2449] mb-1">
+                      {Icons.Droplet ? <Icons.Droplet className="h-4 w-4" /> : <div className="h-3 w-3 bg-[#9d2449] rounded-full" />}
+                    </div>
 
-                  {/* Slider */}
-                  <input
-                    type="range"
-                    min="0.1"
-                    max="0.45"
-                    step="0.05"
-                    value={globalOpacity || 0.20}
-                    onChange={(e) => updateState({ globalOpacity: parseFloat(e.target.value) })}
-                    className="w-1 h-16 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#9d2449] my-1"
-                    style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
-                  />
+                    {/* Slider */}
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="0.45"
+                      step="0.05"
+                      value={globalOpacity || 0.20}
+                      onChange={(e) => updateState({ globalOpacity: parseFloat(e.target.value) })}
+                      className="w-1 h-16 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#9d2449] my-1"
+                      style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
+                    />
 
-                  {/* Current Value */}
-                  <div className="mt-1 px-1 py-0.5 bg-gray-100 rounded text-[9px] font-bold text-[#9d2449] w-full text-center">
-                    {Math.round((globalOpacity || 0.20) * 100)}%
+                    {/* Current Value */}
+                    <div className="mt-1 px-1 py-0.5 bg-gray-100 rounded text-[9px] font-bold text-[#9d2449] w-full text-center">
+                      {Math.round((globalOpacity || 0.20) * 100)}%
+                    </div>
                   </div>
-                </div>
+                </Tooltip>
 
                 {/* Reset View */}
                 <Tooltip content="Restablecer vista" placement="left">
@@ -747,23 +749,7 @@ class ErrorBoundary extends React.Component {
 }
 
 // --- HELPER FUNCTIONS ---
-const getReverseGeocoding = async (lat, lng, apiKey) => {
-  if (!apiKey) return null;
-  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=address,poi,neighborhood,locality,place&language=es&access_token=${apiKey}`;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data.features?.[0]?.place_name || null;
-  } catch (error) {
-    console.error("Geocoding error:", error);
-    return null;
-  }
-};
 
-// Expose to App Utils if not present
-window.App.Utils = window.App.Utils || {};
-window.App.Utils.getReverseGeocoding = getReverseGeocoding;
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
