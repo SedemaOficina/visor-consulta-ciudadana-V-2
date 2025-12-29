@@ -3,7 +3,7 @@ const { useState, useEffect, useRef } = window.React;
 // Safe Lazy Access implementation
 const Icons = window.App?.Components?.Icons || new Proxy({}, { get: () => () => null });
 
-const SearchLogicDesktop = window.App?.Components?.SearchLogicDesktop || (() => null);
+
 
 // --- SHARED TOOLTIP COMPONENT ---
 const Tooltip = ({ content, children, placement = 'top' }) => {
