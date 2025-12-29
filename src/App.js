@@ -410,6 +410,11 @@ const VisorApp = () => {
     toggleLayer('zoning');
   }, [toggleLayer]);
 
+  // --- MISSING HELPERS FIX ---
+  const setVisibleZoningCats = (val) => updateState({ visibleZoningCats: typeof val === 'function' ? val(visibleZoningCats) : val });
+  const setActiveBaseLayer = (val) => updateState({ activeBaseLayer: val });
+  const setMobileSheetState = (val) => updateState({ mobileSheetState: val });
+
 
 
 
