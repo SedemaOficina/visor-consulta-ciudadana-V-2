@@ -14,12 +14,21 @@ const Analysis = AppGlobals.Analysis || {};
 const PdfExportController = window.App?.Components?.PdfExportController || (() => null);
 const OnboardingTour = window.App?.Components?.OnboardingTour || (() => null);
 const InstitutionalHeader = window.App?.Components?.InstitutionalHeader || (() => null);
-const SidebarDesktop = window.App?.Components?.SidebarDesktop || (() => null);
-const MobileSearchBar = window.App?.Components?.MobileSearchBar || (() => null);
-const MapViewer = window.App?.Components?.MapViewer || (() => null);
-const Legend = window.App?.Components?.Legend || (() => null);
-const ResultsContent = window.App?.Components?.ResultsContent || (() => null);
-const Icons = window.App?.Components?.Icons || new Proxy({}, { get: () => () => null });
+// --- SAFE COMPONENTS & ICONS ---
+// Ensure we handle partial loads gracefully (e.g. Icons object exists but keys are missing)
+const safeComponent = (comp) => comp || (() => null);
+
+const SidebarDesktop = safeComponent(window.App?.Components?.SidebarDesktop);
+const MobileSearchBar = safeComponent(window.App?.Components?.MobileSearchBar);
+const MapViewer = safeComponent(window.App?.Components?.MapViewer);
+const Legend = safeComponent(window.App?.Components?.Legend);
+const ResultsContent = safeComponent(window.App?.Components?.ResultsContent);
+
+// Safe Icon Proxy: Traps any access to undefined icons and returns a Null Component
+const RealIcons = window.App?.Components?.Icons || {};
+const Icons = new Proxy(RealIcons, {
+  get: (target, prop) => target[prop] || (() => null)
+});
 // import { getReverseGeocoding } from './utils/geocodingService'; // REMOVED
 
 // --- CONFIGURATION ---
