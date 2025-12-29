@@ -603,7 +603,17 @@ const VisorApp = () => {
             {/* Gap */}
             <div className="h-4"></div>
 
-            {/* 3. OPTIONS FAB (Groups Layers, Location, Reset, Opacity) */}
+            {/* 3. LAYERS BUTTON (Always visible) */}
+            <Tooltip content="Capas y Simbología">
+              <button
+                onClick={() => updateState({ isLegendOpen: !isLegendOpen })}
+                className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border border-gray-200 transition mb-4 ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148] hover:bg-gray-50 active:bg-gray-100'}`}
+              >
+                <Icons.Layers className="h-5 w-5" />
+              </button>
+            </Tooltip>
+
+            {/* 4. OPTIONS FAB (Groups Location, Reset, Opacity) */}
             <div className="relative flex flex-col items-end gap-3">
 
               {/* Expanded Menu Items */}
@@ -640,16 +650,6 @@ const VisorApp = () => {
                     className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 text-[#9d2148] hover:bg-gray-50"
                   >
                     <Icons.Navigation className="h-5 w-5" />
-                  </button>
-                </Tooltip>
-
-                {/* Layers Button */}
-                <Tooltip content="Capas y Simbología" placement="left">
-                  <button
-                    onClick={() => { updateState({ isLegendOpen: !isLegendOpen }); setIsFabOpen(false); }}
-                    className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border border-gray-200 hover:scale-105 transition ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148]'}`}
-                  >
-                    <Icons.Layers className="h-5 w-5" />
                   </button>
                 </Tooltip>
 

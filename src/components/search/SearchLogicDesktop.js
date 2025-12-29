@@ -286,7 +286,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
                     )}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 relative z-10">
                     {/* Mi ubicación */}
                     <Tooltip content="Usar mi ubicación actual">
                         <button
