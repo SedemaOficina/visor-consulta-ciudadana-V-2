@@ -71,7 +71,7 @@ const SidebarDesktop = ({
 
                     {analysis && !isLoading && (
                         <>
-                            <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm -mx-3 px-3 py-2 border-b border-gray-100 shadow-sm flex items-center justify-between mb-2">
+                            <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md -mx-3 px-3 py-3 border-b border-gray-100 shadow-sm flex items-center justify-between mb-2 transition-all">
                                 <span className="text-[11px] font-bold text-[#9d2449] uppercase tracking-wider flex items-center gap-2">
                                     <Icons.ChartBar className="h-3.5 w-3.5" />
                                     Resultados del Análisis
