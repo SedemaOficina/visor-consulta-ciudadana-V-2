@@ -672,7 +672,7 @@ const VisorApp = () => {
 
         <BottomSheetMobile
           analysis={analysis}
-          onLocationSelect={handleLocationSelect}
+          onLocationSelect={onLocationSelect}
           onReset={handleReset}
           onStateChange={setMobileSheetState}
           onClose={handleReset}
