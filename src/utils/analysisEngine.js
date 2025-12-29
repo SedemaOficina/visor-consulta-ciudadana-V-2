@@ -207,5 +207,4 @@
     Object.assign(window.App.Analysis, {
         analyzeLocation
     });
-    // console.log('✅ Analysis loaded (analysisEngine.js)');
 })();

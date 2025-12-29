@@ -791,9 +791,7 @@
                     const leafletImageFn = window.leafletImage || window.leafletImage?.default;
 
                     if (window.App?.debug) {
-                        console.log('--- EXPORT MAP DIAGNOSTICS ---');
-                        console.log('Leaflet available:', !!L);
-                        console.log('leafletImage available:', typeof leafletImageFn === 'function');
+                        // Debug enabled
                     }
 
                     if (!L || typeof leafletImageFn !== 'function') return resolve(null);

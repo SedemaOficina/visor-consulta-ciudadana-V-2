@@ -314,87 +314,33 @@ const BottomSheetMobile = ({ analysis, onLocationSelect, onReset, onClose, onSta
 /* ------------------------------------------------ */
 
 const VisorApp = () => {
-  // 1. DATA HOOK Integration
-  // Access global directly to avoid reference issues
-  const useAppData = window.App?.Hooks?.useAppData;
-
-  if (!useAppData) {
-    console.error("CRITICAL: useAppData Hook not found in window.App.Hooks!", window.App);
-    // Force a re-render/retry or show error? For now, let's fall back gracefully or crash visibly.
+  // --- STATE HOOK INTEGRATION (REFACTORED) ---
+  const useVisorState = window.App?.Hooks?.useVisorState;
+  if (!useVisorState) {
+    console.error("CRITICAL: useVisorState Hook missing!");
+    return <div className="p-10 text-red-600 font-bold">Error Crítico: Falta hook de estado. Recarga la página.</div>;
   }
 
-  const hookResult = useAppData ? useAppData() : { loading: true, error: "Hook Missing" };
-  const { loading, dataCache, constants, error } = hookResult;
+  const { state, actions } = useVisorState();
 
-  // Constants Access
-  const { ZONING_ORDER } = constants || {};
-  const { analyzeLocation } = window.App?.Analysis || {};
+  // Local UI State for FAB Menu
+  const [isFabOpen, setIsFabOpen] = useState(false);
 
-  // Local State
-  const [analyzing, setAnalyzing] = useState(false);
-  const [extraDataLoaded, setExtraDataLoaded] = useState(false); // Deprecated but kept for compatibility
-  const [systemError, setSystemError] = useState(null);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
-  const [location, setLocation] = useState(null);
+  // Destructure State
+  const {
+    analyzing, extraDataLoaded, systemError, isHelpOpen, analysis, location,
+    currentZoom, isLegendOpen, isSidebarOpen, activeBaseLayer, globalOpacity,
+    approximateAddress, mobileSheetState, isExporting, exportProgress,
+    visibleMapLayers, visibleZoningCats, loading, dataCache, constants, error, toasts
+  } = state;
 
-  const { addToast } = useToast();
+  // Destructure Actions
+  const {
+    updateState, handleLocationSelect: handleLocationSelectAction, handleReset: handleResetAction, toggleLayer, toggleZoningCat, addToast,
+    setExportHandler, getExportHandler
+  } = actions;
 
-  /* ZOOM TRACKING */
-  const [currentZoom, setCurrentZoom] = useState(12);
-
-  // Capas mapa
-  const [visibleMapLayers, setVisibleMapLayers] = useState({
-    sc: true,
-    anp: true,
-    zoning: true,
-    alcaldias: true,
-    edomex: true,
-    morelos: true,
-    selectedAnpZoning: true
-  });
-
-  // Categorías zonificación
-  const [visibleZoningCats, setVisibleZoningCats] = useState(() => {
-    const d = {};
-    (ZONING_ORDER || []).forEach(k => (d[k] = true));
-    return d;
-  });
-
-  const [isLegendOpen, setIsLegendOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeBaseLayer, setActiveBaseLayer] = useState('SATELLITE');
-  const [globalOpacity, setGlobalOpacity] = useState(0.25); // Global Opacity State (Default 25%)
-  const [approximateAddress, setApproximateAddress] = useState(null);
-  const [mobileSheetState, setMobileSheetState] = useState('collapsed');
-
-  const [exportHandler, setExportHandler] = useState(null);
-
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportProgress, setExportProgress] = useState(0);
-
-  const handleExportClick = React.useCallback(async (e) => {
-    if (typeof exportHandler === 'function') {
-      if (isExporting) return; // Prevent double click
-
-      setIsExporting(true);
-      // addToast('Generando documento PDF, por favor espere...', 'info'); // Handled by button state now
-
-      try {
-        await exportHandler(e);
-        addToast('Documento PDF generado exitosamente', 'success');
-      } catch (err) {
-        console.error("Export Error", err);
-        addToast('Error al generar PDF', 'error');
-      } finally {
-        setIsExporting(false);
-        setExportProgress(0);
-      }
-    } else {
-      alert('Aún no se puede exportar. Intenta recargar la página.');
-    }
-  }, [exportHandler, isExporting, addToast]);
-
+  // Refs
   const invalidateMapRef = useRef(null);
   const resetMapViewRef = useRef(null);
   const zoomInRef = useRef(null);
@@ -402,65 +348,55 @@ const VisorApp = () => {
   const desktopSearchInputRef = useRef(null);
   const mobileSearchInputRef = useRef(null);
 
-  const handleLocationSelect = async (c) => {
-    const lat = Number(c?.lat);
-    const lng = Number(c?.lng);
-    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+  // --- DERIVED HELPERS ---
+  const MAPBOX_ACCESS_TOKEN = constants?.MAPBOX_TOKEN;
+  const { getReverseGeocoding } = window.App?.Utils || {};
 
-    const coord = { lat, lng };
-    let displayText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-
-    // 1. Update Input URLs immediately with coords
-    setLocation(coord);
-    setApproximateAddress(null); // Reset previous address
-    desktopSearchInputRef.current?.(displayText);
-    mobileSearchInputRef.current?.(displayText);
-
-    // 2. Try Reverse Geocoding (if Key exists)
-    if (MAPBOX_ACCESS_TOKEN) {
-      getReverseGeocoding(lat, lng, MAPBOX_ACCESS_TOKEN).then(address => {
-        if (address) {
-          setApproximateAddress(address);
-          // Do NOT overwrite user search text
-          // desktopSearchInputRef.current?.(address);
-          // mobileSearchInputRef.current?.(address);
-          // addToast('📍 Dirección aproximada encontrada', 'success');
-        }
-      });
-    }
-
-    setAnalyzing(true);
-
-    try {
-      const res = await analyzeLocation(coord, dataCache);
-      setAnalysis(res);
-
-      if (res.status === 'OUTSIDE_CDMX') {
-        addToast('El punto seleccionado está fuera de la CDMX', 'info');
-      } else {
-        addToast('¡Información encontrada!', 'success');
-      }
-    } catch (err) {
-      addToast('Hubo un inconveniente al consultar este punto. Intenta de nuevo.', 'error');
-      console.error(err);
-    } finally {
-      setAnalyzing(false);
-    }
+  // Wrapper for Location Select to inject Refs and Dependencies
+  const onLocationSelect = (coord) => {
+    handleLocationSelectAction(
+      coord,
+      mobileSearchInputRef,
+      desktopSearchInputRef,
+      getReverseGeocoding,
+      MAPBOX_ACCESS_TOKEN
+    );
   };
 
+  // Wrapper for Reset to inject Refs
   const handleReset = () => {
-    setLocation(null);
-    setAnalysis(null);
-    setApproximateAddress(null);
-    setMobileSheetState('collapsed');
-    resetMapViewRef.current?.();
+    handleResetAction(resetMapViewRef);
   };
+
+  // Wrapper for Export to use local state
+  const handleExportClick = React.useCallback(async (e) => {
+    const exportFn = getExportHandler();
+    if (typeof exportFn === 'function') {
+      if (isExporting) return; // Prevent double click
+
+      updateState({ isExporting: true });
+      // addToast('Generando documento PDF, por favor espere...', 'info'); // Handled by button state now
+
+      try {
+        await exportFn(e);
+        addToast('Documento PDF generado exitosamente', 'success');
+      } catch (err) {
+        console.error("Export Error", err);
+        addToast('Error al generar PDF', 'error');
+      } finally {
+        updateState({ isExporting: false, exportProgress: 0 });
+      }
+    } else {
+      alert('Aún no se puede exportar. Intenta recargar la página.');
+    }
+  }, [getExportHandler, isExporting, addToast, updateState]);
+
 
   const handleUserLocation = () => {
     navigator.geolocation.getCurrentPosition(
       p => {
         const coord = { lat: p.coords.latitude, lng: p.coords.longitude };
-        handleLocationSelect(coord);
+        onLocationSelect(coord);
 
         const text = `${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}`;
         desktopSearchInputRef.current?.(text);
@@ -470,23 +406,40 @@ const VisorApp = () => {
     );
   };
 
-  const toggleLayer = React.useCallback((key) => {
-    setVisibleMapLayers(prev => ({ ...prev, [key]: !prev[key] }));
-  }, []);
-
   const toggleZoningGroup = React.useCallback(() => {
-    setVisibleMapLayers(prev => ({ ...prev, zoning: !prev.zoning }));
-  }, []);
+    toggleLayer('zoning');
+  }, [toggleLayer]);
 
-  // Initialization Effect
+  const handleExportClick = React.useCallback(async (e) => {
+    const handler = getExportHandler();
+    if (typeof handler === 'function') {
+      if (state.isExporting) return;
+      updateState({ isExporting: true });
+
+      try {
+        await handler(e);
+        addToast('Documento PDF generado exitosamente', 'success');
+      } catch (err) {
+        console.error("Export Error", err);
+        addToast('Error al generar PDF', 'error');
+      } finally {
+        updateState({ isExporting: false, exportProgress: 0 });
+      }
+    } else {
+      alert('Aún no se puede exportar. Intenta recargar la página.');
+    }
+  }, [getExportHandler, state.isExporting, addToast, updateState]);
+
+
+  // Initialization Effect: Parse URL Params
   useEffect(() => {
-    if (loading) return; // Wait for hook to finish
+    if (loading) return;
 
     // Simulate deprecated values for component compat
-    setExtraDataLoaded(true);
+    if (!extraDataLoaded) updateState({ extraDataLoaded: true });
 
     if (error) {
-      setSystemError(`Error cargando datos: ${error}`);
+      updateState({ systemError: `Error cargando datos: ${error}` });
       return;
     }
 
@@ -497,12 +450,12 @@ const VisorApp = () => {
       const hasCoords = !isNaN(lat) && !isNaN(lng);
 
       // if (!hasCoords) setIsHelpOpen(true); // Disable auto-open to favor OnboardingTour
-      if (hasCoords) handleLocationSelect({ lat, lng });
+      if (hasCoords) onLocationSelect({ lat, lng });
     };
 
     initUrlParams();
+  }, [loading, error, extraDataLoaded, updateState, onLocationSelect]); // Run once when loading finishes
 
-  }, [loading]);
 
   if (systemError) {
     return (
@@ -554,10 +507,10 @@ const VisorApp = () => {
         <SidebarDesktop
           analysis={analysis}
           approximateAddress={approximateAddress}
-          onLocationSelect={handleLocationSelect}
+          onLocationSelect={handleLocationSelectAction}
           onReset={handleReset}
           isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(v => !v)}
+          onToggle={() => updateState({ isSidebarOpen: !isSidebarOpen })}
           onExportPDF={handleExportClick}
           desktopSearchSetRef={desktopSearchInputRef}
           isLoading={analyzing}
@@ -571,18 +524,18 @@ const VisorApp = () => {
         <div className="relative flex-1 h-full w-full">
           <MapViewer
             location={location}
-            onLocationSelect={handleLocationSelect}
+            onLocationSelect={handleLocationSelectAction}
             analysisStatus={analysis?.status}
             isANP={analysis?.isANP}
             visibleMapLayers={visibleMapLayers}
-            setVisibleMapLayers={setVisibleMapLayers}
+            setVisibleMapLayers={(newVal) => updateState({ visibleMapLayers: typeof newVal === 'function' ? newVal(visibleMapLayers) : newVal })}
             visibleZoningCats={visibleZoningCats}
-            setVisibleZoningCats={setVisibleZoningCats}
+            setVisibleZoningCats={(newVal) => updateState({ visibleZoningCats: typeof newVal === 'function' ? newVal(visibleZoningCats) : newVal })}
             extraDataLoaded={extraDataLoaded}
             activeBaseLayer={activeBaseLayer}
-            setActiveBaseLayer={setActiveBaseLayer}
+            setActiveBaseLayer={(val) => updateState({ activeBaseLayer: val })}
             globalOpacity={globalOpacity}
-            setGlobalOpacity={setGlobalOpacity}
+            setGlobalOpacity={(val) => updateState({ globalOpacity: val })}
 
             invalidateMapRef={invalidateMapRef}
             resetMapViewRef={resetMapViewRef}
@@ -590,7 +543,7 @@ const VisorApp = () => {
             zoomOutRef={zoomOutRef}
             selectedAnpId={analysis?.anpId}
             dataCache={dataCache}
-            onZoomChange={setCurrentZoom}
+            onZoomChange={(z) => updateState({ currentZoom: z })}
           />
 
           <ToastContainer />
@@ -621,80 +574,21 @@ const VisorApp = () => {
 
 
           {/* CONTROLS STACK */}
-          <div className="absolute top-24 md:top-28 right-4 flex flex-col items-end gap-2 pointer-events-auto z-[1100]">
+          <div className="absolute top-24 md:top-24 right-4 flex flex-col items-end gap-2 pointer-events-auto z-[1100]">
 
-            {/* 1. Help */}
+            {/* 1. Help (Always visible, Top priority) */}
             <Tooltip content="Ayuda y Tutorial">
               <button
                 type="button"
-                onClick={() => setIsHelpOpen(true)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
+                onClick={() => updateState({ isHelpOpen: true })}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
               >
-                <span className="font-bold text-lg">?</span>
+                <span className="font-bold text-xl">?</span>
               </button>
             </Tooltip>
 
-            {/* 2. My Location */}
-            <Tooltip content="Usar mi ubicación actual">
-              <button
-                type="button"
-                onClick={handleUserLocation}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
-              >
-                <Icons.Navigation className="h-4 w-4" />
-              </button>
-            </Tooltip>
-
-            {/* 3. Reload / Reset View */}
-            <Tooltip content="Restablecer vista del mapa">
-              <button
-                type="button"
-                onClick={() => resetMapViewRef.current?.()}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 text-[#9d2148] hover:scale-105 active:scale-95 transition"
-              >
-                <Icons.RotateCcw className="h-4 w-4" />
-              </button>
-            </Tooltip>
-
-            {/* 4. Layers */}
-            <Tooltip content="Capas y Simbología">
-              <button
-                type="button"
-                onClick={() => setIsLegendOpen(v => !v)}
-                className={`w-8 h-8 flex items-center justify-center rounded-full shadow-md border border-gray-200 hover:scale-105 active:scale-95 transition ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148]'}`}
-              >
-                <Icons.Layers className="h-4 w-4" />
-              </button>
-            </Tooltip>
-
-            {/* Gap */}
-            <div className="h-2"></div>
-
-            {/* 5. Opacity Slider */}
-            <Tooltip content="Ajustar transparencia de capas">
-              <div className="hidden md:flex bg-white rounded-md shadow-md border border-gray-200 p-1 flex-col items-center gap-1 w-8 h-28 opacity-90 hover:opacity-100 transition-opacity">
-                <div className="text-[9px] text-gray-700 font-bold select-none">{Math.round((globalOpacity || 0.25) * 100)}%</div>
-                <div className="flex-1 flex items-center justify-center w-full">
-                  <input
-                    type="range"
-                    min="0.1"
-                    max="0.5"
-                    step="0.05"
-                    value={globalOpacity || 0.25}
-                    onChange={(e) => setGlobalOpacity && setGlobalOpacity(parseFloat(e.target.value))}
-                    className="w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#9d2449]"
-                    style={{
-                      transform: 'rotate(-90deg)',
-                      transformOrigin: 'center',
-                      width: '60px' // adjust width for max 0.5 feel if needed, but 80px was fine for size
-                    }}
-                  />
-                </div>
-              </div>
-            </Tooltip>
-
-            {/* 6. Zoom Controls */}
-            <div className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 select-none mt-1">
+            {/* 2. Zoom Controls (Always visible) */}
+            <div className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 select-none">
               <Tooltip content="Acercar">
                 <button
                   onClick={() => zoomInRef.current?.()}
@@ -717,6 +611,73 @@ const VisorApp = () => {
                   </svg>
                 </button>
               </Tooltip>
+            </div>
+
+            {/* Gap */}
+            <div className="h-4"></div>
+
+            {/* 3. OPTIONS FAB (Groups Layers, Location, Reset, Opacity) */}
+            <div className="relative flex flex-col items-end gap-3">
+
+              {/* Expanded Menu Items */}
+              <div className={`flex flex-col items-end gap-3 transition-all duration-300 origin-bottom ${isFabOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-8 pointer-events-none absolute bottom-2 right-0'}`}>
+
+                {/* Opacity Slider */}
+                <div className="flex items-center gap-2 bg-white rounded-full shadow-md border border-gray-200 px-3 h-10 animate-fade-in-up">
+                  <span className="text-[10px] font-bold text-gray-500 w-8 text-right pr-1">Opacidad</span>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="0.5"
+                    step="0.05"
+                    value={globalOpacity || 0.25}
+                    onChange={(e) => setGlobalOpacity && setGlobalOpacity(parseFloat(e.target.value))}
+                    className="w-16 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#9d2449]"
+                  />
+                </div>
+
+                {/* Reset View */}
+                <Tooltip content="Restablecer vista" placement="left">
+                  <button
+                    onClick={() => { resetMapViewRef.current?.(); setIsFabOpen(false); }}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 text-[#9d2148] hover:bg-gray-50"
+                  >
+                    <Icons.RotateCcw className="h-5 w-5" />
+                  </button>
+                </Tooltip>
+
+                {/* My Location */}
+                <Tooltip content="Mi Ubicación" placement="left">
+                  <button
+                    onClick={() => { handleUserLocation(); setIsFabOpen(false); }}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 text-[#9d2148] hover:bg-gray-50"
+                  >
+                    <Icons.Navigation className="h-5 w-5" />
+                  </button>
+                </Tooltip>
+
+                {/* Layers Button */}
+                <Tooltip content="Capas y Simbología" placement="left">
+                  <button
+                    onClick={() => { updateState({ isLegendOpen: !isLegendOpen }); setIsFabOpen(false); }}
+                    className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border border-gray-200 hover:scale-105 transition ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148]'}`}
+                  >
+                    <Icons.Layers className="h-5 w-5" />
+                  </button>
+                </Tooltip>
+
+              </div>
+
+              {/* FAB Trigger */}
+              <Tooltip content={isFabOpen ? "Cerrar menú" : "Más opciones"} placement="left">
+                <button
+                  onClick={() => setIsFabOpen(!isFabOpen)}
+                  className={`w-12 h-12 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 z-10 ${isFabOpen ? 'bg-gray-700 rotate-90 text-white' : 'bg-[#9d2148] text-white hover:bg-[#8a1c3b] hover:scale-105'}`}
+                >
+                  {isFabOpen ? <Icons.X className="h-6 w-6" /> : <Icons.Menu className="h-6 w-6" />}
+                </button>
+              </Tooltip>
+
             </div>
 
           </div>

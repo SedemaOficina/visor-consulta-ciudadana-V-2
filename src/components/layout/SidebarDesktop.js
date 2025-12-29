@@ -47,10 +47,10 @@ const SidebarDesktop = ({
         <div
             id="sidebar-desktop"
             className={window.clsx(
-                "flex flex-col fixed top-[84px] bottom-4 left-0 transition-all duration-300 ease-out glass-panel border-l-0 rounded-r-2xl mr-4 z-[1020]",
+                "flex flex-col fixed top-[60px] bottom-4 left-0 transition-all duration-300 ease-out glass-panel border-l-0 rounded-r-2xl mr-4 z-[1020]",
                 isOpen ? "w-[420px]" : "w-0 border-none opacity-0"
             )}
-            style={{ height: 'calc(100vh - 84px - 16px)' }}
+            style={{ height: 'calc(100vh - 60px - 16px)' }}
         >
             <div
                 className={`
@@ -62,7 +62,7 @@ const SidebarDesktop = ({
 
 
                 {/* Fixed Search Section */}
-                <div className="p-4 pb-2 z-20 relative">
+                <div className="p-3 pb-2 z-20 relative">
                     <SearchLogicDesktop
                         onLocationSelect={onLocationSelect}
                         onReset={onReset}
@@ -72,22 +72,19 @@ const SidebarDesktop = ({
                 </div>
 
                 {/* Contenido Scrollable */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-4 space-y-4 relative">
+                <div className="flex-1 overflow-y-auto custom-scrollbar px-3 pb-3 space-y-3 relative">
 
                     {!analysis && !isLoading && (
-                        <div className="flex flex-col items-center justify-center text-center py-6 px-4 animate-in fade-in zoom-in duration-500 select-none opacity-80 mt-4">
+                        <div className="flex flex-col items-center justify-center text-center py-4 px-4 animate-in fade-in zoom-in duration-500 select-none opacity-80 mt-2">
                             {/* Ilustración Hero Compacta */}
-                            <div className="relative mb-3 group">
+                            <div className="relative mb-2 group">
                                 <div className="absolute inset-0 bg-[#9d2148] rounded-full blur-xl opacity-5 group-hover:opacity-10 transition-opacity duration-700"></div>
-                                <div className="relative w-14 h-14 bg-gradient-to-tr from-white to-gray-50 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center">
-                                    <Icons.MapIcon className="h-6 w-6 text-[#9d2148] opacity-80" strokeWidth={1.5} />
+                                <div className="relative w-10 h-10 bg-gradient-to-tr from-white to-gray-50 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center">
+                                    <Icons.MapIcon className="h-5 w-5 text-[#9d2148] opacity-80" strokeWidth={1.5} />
                                 </div>
                             </div>
 
-                            <h3 className="text-sm font-bold text-gray-700 mb-1">
-                                Visor Ciudadano
-                            </h3>
-                            <p className="text-xs text-gray-500 leading-snug max-w-[200px] mx-auto">
+                            <p className="text-xs text-gray-500 font-medium">
                                 Selecciona un punto o busca una dirección.
                             </p>
                         </div>
@@ -97,9 +94,9 @@ const SidebarDesktop = ({
 
                     {analysis && !isLoading && (
                         <>
-                            <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm -mx-4 px-4 py-3 border-b border-gray-100 shadow-sm flex items-center justify-between mb-2">
-                                <span className="text-xs font-bold text-[#9d2449] uppercase tracking-wider flex items-center gap-2">
-                                    <Icons.ChartBar className="h-4 w-4" />
+                            <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm -mx-3 px-3 py-2 border-b border-gray-100 shadow-sm flex items-center justify-between mb-2">
+                                <span className="text-[11px] font-bold text-[#9d2449] uppercase tracking-wider flex items-center gap-2">
+                                    <Icons.ChartBar className="h-3.5 w-3.5" />
                                     Resultados del Análisis
                                 </span>
                             </div>
@@ -111,12 +108,11 @@ const SidebarDesktop = ({
         </div>
 
         {/* Toggle Button Desacoplado */}
-        {/* Toggle Button Desacoplado */}
         <Tooltip content={isOpen ? 'Ocultar panel lateral' : 'Mostrar panel lateral'}>
             <button
                 onClick={onToggle}
                 className={`
-                    fixed top-24
+                    fixed top-[72px]
                     ${isOpen ? 'left-[420px]' : 'left-0'}
                     z-[1030]
                     w-6 h-12
