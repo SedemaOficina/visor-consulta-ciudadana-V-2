@@ -24,9 +24,9 @@ const Tooltip = ({ content, children, placement = 'top' }) => {
     }, [content, placement]);
 
     return (
-        <span ref={triggerRef} className="flex-1">
+        <div ref={triggerRef} className="flex-1 relative">
             {children}
-        </span>
+        </div>
     );
 };
 
@@ -140,7 +140,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
 
     return (
         <div className="space-y-2">
-            <div className="relative shadow-sm">
+            <div className="relative">
                 <div className="relative mb-3">
                     <div className="flex items-center justify-between mb-1">
                         <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">

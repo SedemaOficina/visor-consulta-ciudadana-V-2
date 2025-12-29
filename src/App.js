@@ -561,7 +561,7 @@ const VisorApp = () => {
 
 
           {/* CONTROLS STACK */}
-          <div className="absolute top-24 md:top-24 right-4 flex flex-col items-end gap-2 pointer-events-auto z-[1100]">
+          <div className="absolute top-24 md:top-24 right-4 flex flex-col items-center gap-2 pointer-events-auto z-[1100]">
 
             {/* 1. Help (Always visible, Top priority) */}
             <Tooltip content="Ayuda y Tutorial">
@@ -574,8 +574,21 @@ const VisorApp = () => {
               </button>
             </Tooltip>
 
-            {/* 2. Zoom Controls (Always visible) */}
-            <div className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 select-none">
+            {/* 2. LAYERS BUTTON (Moved up) */}
+            <Tooltip content="Capas y Simbología">
+              <button
+                onClick={() => updateState({ isLegendOpen: !isLegendOpen })}
+                className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border border-gray-200 transition mb-2 ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148] hover:bg-gray-50 active:bg-gray-100'}`}
+              >
+                <Icons.Layers className="h-5 w-5" />
+              </button>
+            </Tooltip>
+
+            {/* Gap */}
+            <div className="h-2"></div>
+
+            {/* 3. Zoom Controls (Moved down) */}
+            <div className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 select-none mb-4">
               <Tooltip content="Acercar">
                 <button
                   onClick={() => zoomInRef.current?.()}
@@ -599,19 +612,6 @@ const VisorApp = () => {
                 </button>
               </Tooltip>
             </div>
-
-            {/* Gap */}
-            <div className="h-4"></div>
-
-            {/* 3. LAYERS BUTTON (Always visible) */}
-            <Tooltip content="Capas y Simbología">
-              <button
-                onClick={() => updateState({ isLegendOpen: !isLegendOpen })}
-                className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border border-gray-200 transition mb-4 ${isLegendOpen ? 'bg-[#9d2148] text-white' : 'bg-white text-[#9d2148] hover:bg-gray-50 active:bg-gray-100'}`}
-              >
-                <Icons.Layers className="h-5 w-5" />
-              </button>
-            </Tooltip>
 
             {/* 4. OPTIONS FAB (Groups Location, Reset, Opacity) */}
             <div className="relative flex flex-col items-end gap-3">
@@ -764,6 +764,10 @@ const getReverseGeocoding = async (lat, lng, apiKey) => {
     return null;
   }
 };
+
+// Expose to App Utils if not present
+window.App.Utils = window.App.Utils || {};
+window.App.Utils.getReverseGeocoding = getReverseGeocoding;
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
