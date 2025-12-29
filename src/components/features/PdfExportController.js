@@ -94,11 +94,11 @@
 
         // Safe Access within Render
         const { COLORS, REGULATORY_NOTES, ZONING_CAT_INFO } = getConstants();
-        const { getZoningColor } = getUtils();
+        const { getZoningColor, formatDateTime, generateFolio } = getUtils();
 
-        const fecha = analysis.timestamp || new Date().toLocaleString();
+        const fecha = formatDateTime(analysis.timestamp || new Date());
         // Folio includes seconds now (14 chars: YYYYMMDDHHmmss)
-        const folio = `F-${new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)}`;
+        const folio = generateFolio ? generateFolio() : `F-${new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)}`;
 
         const isUrban = analysis.status === 'URBAN_SOIL';
         const isSC = analysis.status === 'CONSERVATION_SOIL';

@@ -489,48 +489,48 @@ const CitizenSummaryCard = ({ analysis }) => {
         if (status === 'OUTSIDE_CDMX') {
             const estado = analysis.outsideContext;
             if (estado) {
-                return `La ubicación consultada se localiza en el **${estado}**. Las regulaciones de la Ciudad de México no aplican en este territorio. La determinación normativa corresponde a las autoridades locales del **${estado}**.`;
+                return `La ubicación consultada se localiza en el **${estado}**. La presente herramienta corresponde a normatividad de la **Ciudad de México**, por lo que **no aplica** en este territorio. La determinación normativa corresponde a las **autoridades competentes del ${estado}**.`;
             } else {
-                return `La ubicación consultada se localiza en **otro estado**. Las regulaciones de la Ciudad de México no aplican en este territorio. La determinación normativa corresponde a las autoridades estatales o municipales.`;
+                return `La ubicación consultada se localiza **fuera de la Ciudad de México**. La normatividad consultada en este visor **no es aplicable** en este territorio. La determinación normativa corresponde a las **autoridades estatales o municipales competentes**.`;
             }
         }
 
         if (status === 'URBAN_SOIL') {
             if (isANP) {
-                return `Aunque es zona urbana, este punto está dentro de una Área Natural Protegida. Esto significa que la prioridad es el medio ambiente y aplican reglas especiales de conservación por encima de las normas urbanas comunes.`;
+                return `Aunque el punto se ubica en **Suelo Urbano**, se localiza dentro de un **Área Natural Protegida (ANP)**. En estos casos, la regulación específica de usos y destinos del suelo se determina por el **Programa de Manejo** correspondiente, conforme al PGOEDF.`;
             }
-            return `Te encuentras en Suelo Urbano. Aquí predominan las actividades residenciales, comerciales y de servicios. Las reglas de construcción dependen de la SEDUVI y del Plan de Desarrollo Urbano de ${alcaldia || 'la alcaldía'}.`;
+            return `El punto se ubica en **Suelo Urbano**. La regulación aplicable en materia de usos del suelo se determina mediante los **Programas de Desarrollo Urbano** (Delegacionales o Parciales) y la autoridad competente en la demarcación correspondiente (**${alcaldia || 'la alcaldía'}**).`;
         }
 
         if (status === 'CONSERVATION_SOIL') {
             // ANP CASE
             if (isANP) {
-                return `¡Estás en una zona muy importante! Este punto es parte de una Área Natural Protegida (ANP). Su objetivo principal es preservar la biodiversidad. Aquí las construcciones están muy restringidas y se sigue un Plan de Manejo específico.`;
+                return `El punto se ubica en **Suelo de Conservación** y dentro de un **Área Natural Protegida (ANP)**. Conforme al PGOEDF, la regulación específica de usos y destinos del suelo se define por el **Programa de Manejo** correspondiente.`;
             }
 
             // ZONING CASES (PGOEDF)
             switch (zoningKey) {
                 case 'RE':
-                    return `Estás en una zona de **Rescate Ecológico**. Estas áreas han sido afectadas por actividades humanas pero buscamos restaurarlas. La prioridad es reforestar y evitar que la mancha urbana crezca más.`;
+                    return `Zona orientada a la **restauración ecológica** de áreas con afectación. En el marco del PGOEDF, la gestión ambiental se enfoca en **recuperar la cobertura y funcionalidad** del territorio, priorizando acciones compatibles con la conservación de bienes y servicios ambientales.`;
                 case 'FC':
                 case 'FCE':
                 case 'FP':
                 case 'FPE':
-                    return `Estás en una zona **Forestal**. Es el pulmón de la ciudad. Aquí la prioridad absoluta es mantener el bosque sano. Prácticamente no se permite construir viviendas ni comercios para proteger el agua y el aire de todos.`;
+                    return `Zona con **altos valores ambientales** asociados a vegetación natural y funciones clave como **recarga del acuífero** y **conservación de biodiversidad**. El PGOEDF establece que su uso debe ser **planificado y regulado** para evitar deterioro, frenar el cambio de cobertura natural y asegurar la permanencia de los ecosistemas.`;
                 case 'PR':
                 case 'PRA':
-                    return `Estás en una zona de **Producción Rural**. Aquí se fomenta la agricultura y la agroindustria tradicional. Se permiten actividades del campo, pero no fraccionamientos residenciales urbanos.`;
+                    return `Zona con aptitud para **actividades productivas rurales**. El PGOEDF orienta estas actividades para que sean **compatibles con la conservación de recursos naturales** y para minimizar conflictos ambientales, promoviendo el aprovechamiento sustentable en función de la capacidad del territorio.`;
                 case 'AE':
                 case 'AEE':
                 case 'AF':
                 case 'AFE':
-                    return `Estás en una zona **Agroecológica**. Se busca un equilibrio entre la agricultura tradicional y el cuidado de la naturaleza. Puedes cultivar la tierra, siempre y cuando uses técnicas amigables con el medio ambiente.`;
+                    return `Zona con **alto potencial para actividades agrícolas y pecuarias**. El PGOEDF señala que deben evitarse prácticas que alteren la **capacidad física y productiva del suelo**, aplicar **técnicas de conservación de suelo y agua**, y promover el uso de **composta y abonos orgánicos**, reduciendo al máximo productos químicos.`;
                 case 'PDU_ER':
-                    return `Estás en una zona de **Equipamiento Rural**. Aquí se permiten instalaciones necesarias para la comunidad rural, como escuelas, centros de salud o deportivos, siempre bajo reglas estrictas.`;
+                    return `Zona identificada por Programas de Desarrollo Urbano (PDU) para **equipamientos** en territorio rural. Conforme al PGOEDF, estos polígonos se regulan por los **Programas Delegacionales o Parciales** aplicables y deben considerarse en congruencia con la gestión del Suelo de Conservación.`;
                 case 'PDU_PR':
-                    return `Estás en un **Poblado Rural**. Es una comunidad histórica dentro del suelo de conservación. Tienen reglas especiales que permiten vivienda y comercio local, pero siempre limitando el crecimiento hacia el bosque.`;
+                    return `Zona identificada como **Poblado Rural** dentro de los Programas de Desarrollo Urbano (PDU). Conforme al PGOEDF, estos polígonos se regulan por los **Programas Delegacionales o Parciales** aplicables, al tratarse de asentamientos y áreas normadas por planeación urbana vigente.`;
                 default:
-                    return `Te encuentras en **Suelo de Conservación**. Es la reserva ecológica de la ciudad (bosques, humedales, zonas agrícolas). Aquí no aplican las normas urbanas comunes y el objetivo es evitar la urbanización para proteger los servicios ambientales.`;
+                    return `El punto se ubica en **Suelo de Conservación**. El PGOEDF define una zonificación para delinear un patrón de usos del suelo que **maximice servicios ambientales** (incluida la **recarga del acuífero**) y la capacidad productiva, y que **minimice conflictos ambientales**, asignando actividades conforme a la capacidad del territorio para sostenerlas y frenar el cambio de cobertura natural.`;
             }
         }
         return null;
@@ -1016,7 +1016,7 @@ const ResultsContent = ({ analysis, approximateAddress, onExportPDF, isExporting
                             hidden={!showNotes}
                             className={`bg-gray-50/50 border-t border-gray-100 ${showNotes ? 'block animate-in slide-in-from-top-1 fade-in' : 'hidden'}`}
                         >
-                            <div className="p-3 pl-4">
+                            <div className="p-3 pl-4 prose prose-sm max-w-none">
                                 <ul className="space-y-2">
                                     {[
                                         "Adicionalmente a lo dispuesto en la tabla de usos del suelo, para cualquier obra o actividad que se pretenda desarrollar se deberán contemplar los criterios y lineamientos señalados en el programa de Ordenamiento Ecológico, así como cumplir con los permisos y autorizaciones en materia ambiental del Distrito Federal.",
