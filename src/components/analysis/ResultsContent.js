@@ -925,13 +925,7 @@ const ResultsContent = ({ analysis, approximateAddress, onExportPDF, isExporting
         <div className="space-y-3 animate-in pb-4">
 
 
-            {/* Active Section Indicator (Sticky) */}
-            <div className={`sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-gray-100 py-2 px-1 mb-2 transition-all ${activeSection ? 'opacity-100' : 'opacity-0'}`}>
-                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#9d2449]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#9d2449] animate-pulse"></span>
-                    Viendo: {activeSection}
-                </div>
-            </div>
+
 
             {/* 1. Location and basic context */}
             <InView as="div" onChange={(inView) => inView && setActiveSection('Resumen Contextual')} threshold={0.5}>
