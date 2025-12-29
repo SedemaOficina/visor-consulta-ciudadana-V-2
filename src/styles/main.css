@@ -1,63 +1,45 @@
 :root {
-  /* --- PALETA INSTITUCIONAL PREMIUM (2024-2030) --- */
-  /* Base */
+  /* --- PALETA INSTITUCIONAL (2024-2030) --- */
   --color-primary: #9d2148;
   /* Guinda Oficial */
   --color-primary-dark: #7d1d3a;
+  --color-primary-soft: rgba(157, 33, 72, 0.08);
   --color-accent: #b28e5c;
   /* Dorado Institucional */
 
-  /* Modern UI / Glassmorphism (Refined P1.1) */
+  /* --- UI / Glassmorphism --- */
   --bg-app: #f0f2f5;
   --bg-soft-gradient: radial-gradient(circle at 50% 10%, #ffffff 0%, #f3f4f6 60%, #e5e7eb 100%);
-
-  /* Fondo más sólido y limpio */
   --glass-bg: rgba(255, 255, 255, 0.96);
   --glass-border: rgba(0, 0, 0, 0.05);
-  /* Borde sutil gris en lugar de blanco */
   --glass-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.08);
-  /* Sombra más suave */
   --glass-blur: blur(8px);
-  /* Menos blur necesario con más opacidad */
 
-  /* Primary Soft for secondary elements */
-  --color-primary-soft: rgba(157, 33, 72, 0.08);
-
-  /* Texto */
+  /* --- TIPOGRAFÍA --- */
   --font-main: 'Roboto', sans-serif;
-  /* Tipografía Oficial */
   --text-main: #1e293b;
   --text-sub: #64748b;
   --text-light: #94a3b8;
 
-  /* Bordes y Radios */
+  /* --- RADIOS --- */
   --radius-xl: 24px;
   --radius-lg: 16px;
   --radius-md: 12px;
   --radius-sm: 8px;
 
-  /* Animaciones */
+  /* --- ANIMACIONES --- */
   --trans-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --trans-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* BASE RESET handled by Tailwind Preflight */
-
+/* --- BASE RESET --- */
 html,
 body {
   height: 100%;
-  /* margin/padding handled by Tailwind */
   overflow: hidden;
   /* App-like feel */
   overscroll-behavior: none;
-  /* Prevent pull-to-refresh on mobile */
-}
-
-.cursor-wait {
-  cursor: wait !important;
-}
-
-body {
+  /* Prevent pull-to-refresh */
   font-family: var(--font-main);
   color: var(--text-main);
   background: var(--bg-app);
@@ -72,34 +54,19 @@ body {
   flex-direction: column;
 }
 
-/* --- ALIGNMENT FIXES (Global) --- */
-td,
-th {
-  vertical-align: middle;
-  line-height: 1.25;
-  /* Tighten line height for data */
-}
-
+/* --- ELEMENT DEFAULTS --- */
 input,
 button,
 select,
 textarea {
   line-height: 1.5;
-  /* Consistent line height for inputs */
 }
 
-.badge,
-.tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  /* Reset line-height for badges to allow flex centering */
-  padding-bottom: 1px;
-  /* Optical adjustment */
+.cursor-wait {
+  cursor: wait !important;
 }
 
-/* --- UTILS --- */
+/* --- UTILITIES --- */
 .glass-panel {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
@@ -112,12 +79,11 @@ textarea {
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
 }
 
-/* Scrollbar fina */
+/* --- SCROLLBAR CUSTOMIZATION --- */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
   overscroll-behavior: contain;
-  /* Prevent map movement when scrolling panels */
 }
 
 ::-webkit-scrollbar-track {
@@ -133,12 +99,12 @@ textarea {
   background: #94a3b8;
 }
 
-/* --- LEAFLET OVERRIDES (Modernizados) --- */
+/* --- LEAFLET CUSTOMIZATION --- */
 .leaflet-container {
   font-family: var(--font-main) !important;
 }
 
-/* Tooltips */
+/* Custom Dark Tooltips */
 .leaflet-tooltip.custom-tooltip {
   background: rgba(15, 23, 42, 0.95);
   color: #fff;
@@ -151,25 +117,11 @@ textarea {
   backdrop-filter: blur(4px);
 }
 
-/* Allow click-through on specific overlay panes (like Alcaldias borders) */
-.leaflet-paneContext-pane {
-  pointer-events: none;
-  z-index: 450;
-  /* Ensure z-index is respected visually */
-}
-
-/* Permitir interacción en los elementos vectoriales dentro del panel */
-.leaflet-paneContext-pane path,
-.leaflet-paneContext-pane polyline,
-.leaflet-paneContext-pane img {
-  pointer-events: auto;
-}
-
 .leaflet-tooltip.custom-tooltip::before {
   border-top-color: rgba(15, 23, 42, 0.95) !important;
 }
 
-/* Tooltip transparente para contenido coloreado dinámico */
+/* Invisible Container for Rich HTML Tooltips */
 .leaflet-tooltip.colored-tooltip-container {
   background: transparent !important;
   border: none !important;
@@ -181,39 +133,19 @@ textarea {
   display: none !important;
 }
 
-/* Controles de Zoom más elegantes */
-.leaflet-bar {
-  border: none !important;
-  box-shadow: var(--glass-shadow) !important;
+/* Interaction Panes */
+.leaflet-paneContext-pane {
+  pointer-events: none;
+  z-index: 450;
 }
 
-.leaflet-bar a {
-  background: rgba(255, 255, 255, 0.95) !important;
-  color: var(--text-main) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-  transition: all 0.2s ease;
-  width: 36px !important;
-  height: 36px !important;
-  line-height: 36px !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
+.leaflet-paneContext-pane path,
+.leaflet-paneContext-pane polyline,
+.leaflet-paneContext-pane img {
+  pointer-events: auto;
 }
 
-.leaflet-bar a:hover {
-  background: #fff !important;
-  color: var(--color-primary) !important;
-}
-
-.leaflet-bar a:first-child {
-  border-radius: 12px 12px 0 0 !important;
-}
-
-.leaflet-bar a:last-child {
-  border-bottom: none !important;
-  border-radius: 0 0 12px 12px !important;
-}
-
-/* Attribution discreto */
+/* Attribution Control */
 .leaflet-control-attribution {
   background: rgba(255, 255, 255, 0.7) !important;
   backdrop-filter: blur(4px);
@@ -228,7 +160,7 @@ textarea {
   text-decoration: none !important;
 }
 
-/* --- ANIMACIONES --- */
+/* --- ANIMATIONS & TRANSITIONS --- */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -263,31 +195,6 @@ textarea {
   }
 }
 
-@keyframes pulse-subtle {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.6s var(--trans-spring) forwards;
-}
-
-.animate-slide-left {
-  animation: slideInLeft 0.6s var(--trans-spring) forwards;
-}
-
-/* --- MOTION DESIGN 2.0 (Spring Physics) --- */
 @keyframes scaleInSoft {
   0% {
     opacity: 0;
@@ -300,16 +207,30 @@ textarea {
   }
 }
 
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s var(--trans-spring) forwards;
+}
+
+.animate-slide-left {
+  animation: slideInLeft 0.6s var(--trans-spring) forwards;
+}
+
 .animate-scale-in {
   animation: scaleInSoft 0.5s var(--trans-spring) forwards;
-}
-
-.btn-press {
-  transition: transform 0.1s ease-out;
-}
-
-.btn-press:active {
-  transform: scale(0.96);
 }
 
 .hover-scale {
@@ -324,70 +245,25 @@ textarea {
   transform: scale(0.96);
 }
 
-/* --- SPINNER DE CARGA --- */
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(157, 36, 73, 0.1);
-  border-left-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* --- RESETS MOVIL ESPCIFICOS --- */
-@media (max-width: 768px) {
-  .leaflet-control-zoom {
-    display: none !important;
-  }
-
-  /* Ocultar zoom en movil para mas espacio */
-
-  /* Bottom Sheet Style overrides if needed */
-  .mobile-sheet {
-    border-radius: 24px 24px 0 0;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
-  }
-}
-
-/* --- MANUAL TYPOGRAPHY SIMULATION (CDN) --- */
-/* Simulates @tailwindcss/typography 'prose' class */
-
+/* --- TYPOGRAPHY (Prose Simulation) --- */
 .prose {
   color: var(--text-main);
   max-width: 65ch;
   line-height: 1.75;
 }
 
-.prose-sm {
-  font-size: 0.875rem;
-  line-height: 1.7142857;
-}
-
-.prose.max-w-none {
-  max-width: none;
-}
-
 .prose p {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
+  margin: 1.25em 0;
 }
 
 .prose ul {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
+  margin: 1.25em 0;
   list-style-type: disc;
   padding-left: 1.625em;
 }
 
 .prose li {
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin: 0.5em 0;
 }
 
 .prose strong {
@@ -395,15 +271,15 @@ textarea {
   font-weight: 600;
 }
 
-.prose :first-child {
-  margin-top: 0;
-}
-
-.prose :last-child {
-  margin-bottom: 0;
-}
-
-/* Custom list bullet color override */
 .prose ul>li::marker {
   color: var(--text-light);
+}
+
+/* --- MEDIA QUERIES --- */
+@media (max-width: 768px) {
+
+  /* Hide default leaflet zoom controls on mobile if present */
+  .leaflet-control-zoom {
+    display: none !important;
+  }
 }
