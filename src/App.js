@@ -651,9 +651,9 @@ const VisorApp = () => {
               <Tooltip content={isFabOpen ? "Cerrar menú" : "Más opciones"} placement="left">
                 <button
                   onClick={() => setIsFabOpen(!isFabOpen)}
-                  className={`w-12 h-12 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 z-10 ${isFabOpen ? 'bg-gray-700 rotate-90 text-white' : 'bg-[#9d2148] text-white hover:bg-[#8a1c3b] hover:scale-105'}`}
+                  className={`w-10 h-10 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 z-10 ${isFabOpen ? 'bg-gray-700 rotate-90 text-white' : 'bg-[#9d2148] text-white hover:bg-[#8a1c3b] hover:scale-105'}`}
                 >
-                  {isFabOpen ? <Icons.X className="h-6 w-6" /> : <Icons.Menu className="h-6 w-6" />}
+                  {isFabOpen ? <Icons.X className="h-5 w-5" /> : <Icons.Menu className="h-5 w-5" />}
                 </button>
               </Tooltip>
 
