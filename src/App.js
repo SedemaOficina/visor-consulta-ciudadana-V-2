@@ -15,6 +15,11 @@ const PdfExportController = window.App?.Components?.PdfExportController || (() =
 const OnboardingTour = window.App?.Components?.OnboardingTour || (() => null);
 const InstitutionalHeader = window.App?.Components?.InstitutionalHeader || (() => null);
 const SidebarDesktop = window.App?.Components?.SidebarDesktop || (() => null);
+const MobileSearchBar = window.App?.Components?.MobileSearchBar || (() => null);
+const MapViewer = window.App?.Components?.MapViewer || (() => null);
+const Legend = window.App?.Components?.Legend || (() => null);
+const ResultsContent = window.App?.Components?.ResultsContent || (() => null);
+const Icons = window.App?.Components?.Icons || new Proxy({}, { get: () => () => null });
 // import { getReverseGeocoding } from './utils/geocodingService'; // REMOVED
 
 // --- CONFIGURATION ---
