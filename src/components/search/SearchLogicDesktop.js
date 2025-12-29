@@ -143,9 +143,7 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
             <div className="relative">
                 <div className="relative mb-3">
                     <div className="flex items-center justify-between mb-1">
-                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
-                            Buscar por dirección o coordenadas
-                        </label>
+
                         <button
                             type="button"
                             onClick={() => setShowInfo(!showInfo)}
