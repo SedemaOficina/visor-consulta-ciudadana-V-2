@@ -478,7 +478,7 @@ const VisorApp = () => {
         <div className="md:hidden absolute top-4 left-0 right-0 z-[2000] px-4 pointer-events-none flex justify-center">
           <div className="w-full max-w-lg pointer-events-auto">
             <MobileSearchBar
-              onLocationSelect={handleLocationSelect}
+              onLocationSelect={onLocationSelect}
               onReset={handleReset}
               setInputRef={mobileSearchInputRef}
               initialValue={analysis ? `${analysis.coordinate.lat.toFixed(6)}, ${analysis.coordinate.lng.toFixed(6)}` : ''}
@@ -489,7 +489,7 @@ const VisorApp = () => {
         <SidebarDesktop
           analysis={analysis}
           approximateAddress={approximateAddress}
-          onLocationSelect={handleLocationSelectAction}
+          onLocationSelect={onLocationSelect}
           onReset={handleReset}
           isOpen={isSidebarOpen}
           onToggle={() => updateState({ isSidebarOpen: !isSidebarOpen })}
@@ -506,7 +506,7 @@ const VisorApp = () => {
         <div className="relative flex-1 h-full w-full">
           <MapViewer
             location={location}
-            onLocationSelect={handleLocationSelectAction}
+            onLocationSelect={onLocationSelect}
             analysisStatus={analysis?.status}
             isANP={analysis?.isANP}
             visibleMapLayers={visibleMapLayers}
