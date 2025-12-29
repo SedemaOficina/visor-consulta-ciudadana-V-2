@@ -7,14 +7,18 @@
   --color-accent: #b28e5c;
   /* Dorado Institucional */
 
-  /* Modern UI / Glassmorphism */
+  /* Modern UI / Glassmorphism (Refined P1.1) */
   --bg-app: #f0f2f5;
   --bg-soft-gradient: radial-gradient(circle at 50% 10%, #ffffff 0%, #f3f4f6 60%, #e5e7eb 100%);
-  /* Fondo general suave */
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-  --glass-blur: blur(12px);
+
+  /* Fondo más sólido y limpio */
+  --glass-bg: rgba(255, 255, 255, 0.96);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  /* Borde sutil gris en lugar de blanco */
+  --glass-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.08);
+  /* Sombra más suave */
+  --glass-blur: blur(8px);
+  /* Menos blur necesario con más opacidad */
 
   /* Primary Soft for secondary elements */
   --color-primary-soft: rgba(157, 33, 72, 0.08);

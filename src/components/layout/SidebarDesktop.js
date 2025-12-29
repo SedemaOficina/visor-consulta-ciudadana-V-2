@@ -21,7 +21,11 @@ const Tooltip = ({ content, children, placement = 'right' }) => {
         }
     }, [content, placement]);
 
-    return window.React.cloneElement(children, { ref: triggerRef });
+    return (
+        <span ref={triggerRef} className="">
+            {children}
+        </span>
+    );
 };
 
 const SidebarDesktop = ({
@@ -43,11 +47,14 @@ const SidebarDesktop = ({
         <div
             id="sidebar-desktop"
             className={`
-                flex flex-col h-[calc(100%-6rem)] 
+                flex flex-col
+                fixed top-[68px] bottom-4 left-0
                 transition-all duration-300 ease-out
-                glass-panel border-r-0 rounded-r-2xl mr-4 my-4 mt-24
+                glass-panel border-l-0 rounded-r-2xl mr-4
+                z-[1020]
                 ${isOpen ? 'w-[420px]' : 'w-0 border-none opacity-0'}
             `}
+            style={{ height: 'calc(100vh - 68px - 16px)' }}
         >
             <div
                 className={`
@@ -68,33 +75,21 @@ const SidebarDesktop = ({
                     />
 
                     {!analysis && !isLoading && (
-                        <div className="flex flex-col items-center justify-center text-center py-10 px-6 animate-in fade-in zoom-in duration-500 select-none">
-                            {/* Ilustración Hero */}
-                            <div className="relative mb-4 group">
-                                <div className="absolute inset-0 bg-[#9d2148] rounded-full blur-2xl opacity-5 group-hover:opacity-10 transition-opacity duration-700"></div>
-                                <div className="relative w-20 h-20 bg-gradient-to-tr from-white to-gray-50 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex items-center justify-center transform group-hover:-translate-y-1 transition-transform duration-500">
-                                    <Icons.MapIcon className="h-9 w-9 text-[#9d2148] opacity-80" strokeWidth={1.5} />
-
-                                    {/* Badge Flotante */}
-                                    <div className="absolute -bottom-2 -right-2 bg-white p-1.5 rounded-xl shadow-sm border border-gray-50 text-[#BC955C]">
-                                        <Icons.Navigation className="h-3.5 w-3.5" />
-                                    </div>
+                        <div className="flex flex-col items-center justify-center text-center py-6 px-4 animate-in fade-in zoom-in duration-500 select-none opacity-80 mt-8">
+                            {/* Ilustración Hero Compacta */}
+                            <div className="relative mb-3 group">
+                                <div className="absolute inset-0 bg-[#9d2148] rounded-full blur-xl opacity-5 group-hover:opacity-10 transition-opacity duration-700"></div>
+                                <div className="relative w-14 h-14 bg-gradient-to-tr from-white to-gray-50 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center">
+                                    <Icons.MapIcon className="h-6 w-6 text-[#9d2148] opacity-80" strokeWidth={1.5} />
                                 </div>
                             </div>
 
-                            <h3 className="text-base font-bold text-gray-800 mb-1.5">
-                                Bienvenido al Visor Ciudadano
+                            <h3 className="text-sm font-bold text-gray-700 mb-1">
+                                Visor Ciudadano
                             </h3>
-                            <p className="text-sm text-gray-500 leading-relaxed max-w-[260px] mx-auto">
-                                Para comenzar, selecciona un punto en el mapa o busca una dirección específica.
+                            <p className="text-xs text-gray-500 leading-snug max-w-[200px] mx-auto">
+                                Selecciona un punto o busca una dirección.
                             </p>
-
-                            {/* Decorative dots */}
-                            <div className="flex gap-2 justify-center mt-5 opacity-30">
-                                <div className="w-1 h-1 rounded-full bg-[#9d2148]"></div>
-                                <div className="w-1 h-1 rounded-full bg-[#9d2148]"></div>
-                                <div className="w-1 h-1 rounded-full bg-[#9d2148]"></div>
-                            </div>
                         </div>
                     )}
 
@@ -102,12 +97,12 @@ const SidebarDesktop = ({
 
                     {analysis && !isLoading && (
                         <>
-                            <div className="flex items-center gap-3 py-4">
-                                <div className="h-px bg-gray-200 flex-1"></div>
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                            <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm -mx-4 px-4 py-3 border-b border-gray-100 shadow-sm flex items-center justify-between mb-2">
+                                <span className="text-xs font-bold text-[#9d2449] uppercase tracking-wider flex items-center gap-2">
+                                    <Icons.ChartBar className="h-4 w-4" />
                                     Resultados del Análisis
                                 </span>
-                                <div className="h-px bg-gray-200 flex-1"></div>
+                                {/* Optional: Add collapse/expand icon here if needed later */}
                             </div>
                             <ResultsContent analysis={analysis} approximateAddress={approximateAddress} onExportPDF={onExportPDF} isExporting={isExporting} exportProgress={exportProgress} />
                         </>
@@ -122,20 +117,19 @@ const SidebarDesktop = ({
             <button
                 onClick={onToggle}
                 className="
-                    absolute top-1/2 -translate-y-1/2 left-full
-                    transform -translate-x-0 z-[2050]
-                    w-6 h-16 
+                    absolute top-6 left-full
+                    transform translate-x-[1px] z-[1030]
+                    w-6 h-12
                     bg-[#9d2148] text-white 
                     shadow-md rounded-r-lg
                     flex items-center justify-center 
-                    hover:bg-[#7d1d3a] 
-                    active:scale-95 
-                    focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#9d2148] outline-none
+                    hover:bg-[#8a1c3b]
+                    focus:outline-none focus:ring-2 focus:ring-[#9d2148] focus:ring-offset-2
                     transition-all duration-200
                 "
                 aria-label={isOpen ? 'Ocultar panel' : 'Mostrar panel'}
             >
-                <span className="text-sm font-bold">{isOpen ? '«' : '»'}</span>
+                <span className="text-xs font-bold leading-none">{isOpen ? '«' : '»'}</span>
             </button>
         </Tooltip>
     </div>

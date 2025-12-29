@@ -11,10 +11,10 @@ const Utils = AppGlobals.Utils || {};
 const Components = AppGlobals.Components || {};
 const Analysis = AppGlobals.Analysis || {};
 
-const PdfExportController = window.App.Components.PdfExportController;
-const OnboardingTour = window.App.Components.OnboardingTour;
-const InstitutionalHeader = window.App.Components.InstitutionalHeader;
-const SidebarDesktop = window.App.Components.SidebarDesktop;
+const PdfExportController = window.App?.Components?.PdfExportController || (() => null);
+const OnboardingTour = window.App?.Components?.OnboardingTour || (() => null);
+const InstitutionalHeader = window.App?.Components?.InstitutionalHeader || (() => null);
+const SidebarDesktop = window.App?.Components?.SidebarDesktop || (() => null);
 // import { getReverseGeocoding } from './utils/geocodingService'; // REMOVED
 
 // --- CONFIGURATION ---
@@ -99,7 +99,11 @@ const Tooltip = ({ content, children, placement = 'left' }) => {
     }
   }, [content, placement]);
 
-  return React.cloneElement(children, { ref: triggerRef });
+  return (
+    <span ref={triggerRef} className="inline-block">
+      {children}
+    </span>
+  );
 };
 
 /* 7.3 Bottom Sheet Móvil */

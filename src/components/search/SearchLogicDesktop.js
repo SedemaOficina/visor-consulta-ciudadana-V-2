@@ -23,7 +23,11 @@ const Tooltip = ({ content, children, placement = 'top' }) => {
         }
     }, [content, placement]);
 
-    return window.React.cloneElement(children, { ref: triggerRef });
+    return (
+        <span ref={triggerRef} className="">
+            {children}
+        </span>
+    );
 };
 
 const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialValue }) => {
@@ -40,10 +44,10 @@ const SearchLogicDesktop = ({ onLocationSelect, onReset, setInputRef, initialVal
     const debounceRef = useRef(null);
     const localInputRef = useRef(null);
 
-    // ✅ Sync con estado padre
+    // ✅ Sync con estado padre (Solo al montar o reset explícito)
     useEffect(() => {
-        setQuery(initialValue || '');
-    }, [initialValue]);
+        if (initialValue) setQuery(initialValue);
+    }, []); // Removed [initialValue] to prevent overwriting user input on re-renders
 
     // ✅ Setter externo (sin window)
     useEffect(() => {
